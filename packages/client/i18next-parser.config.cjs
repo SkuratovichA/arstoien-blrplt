@@ -1,0 +1,16 @@
+module.exports = {
+  locales: ['en', 'cs', 'sk'],
+  output: 'src/locales/$LOCALE/translation.json',
+  input: ['src/**/*.{ts,tsx}'],
+  sort: true,
+  createOldCatalogs: false,
+  keepRemoved: false,
+  defaultNamespace: 'translation',
+  defaultValue: (locale, namespace, key) => key,
+  indentation: 2,
+  lineEnding: 'auto',
+  keySeparator: '.',
+  namespaceSeparator: ':',
+  pluralSeparator: '_',
+  contextSeparator: '_',
+};

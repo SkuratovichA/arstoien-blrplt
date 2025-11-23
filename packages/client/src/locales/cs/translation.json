@@ -1,0 +1,173 @@
+{
+  "common": {
+    "loading": "Načítání...",
+    "yes": "Ano",
+    "no": "Ne",
+    "enabled": "Povoleno",
+    "disabled": "Zakázáno"
+  },
+  "loading": "Načítání...",
+  "error": {
+    "title": "Ups! Něco se pokazilo",
+    "description": "Narazili jsme na neočekávanou chybu. Zkuste to prosím znovu.",
+    "reload": "Obnovit stránku"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "profile": "Profil"
+  },
+  "footer": {
+    "copyright": "© {{year}} {{appName}}. Všechna práva vyhrazena.",
+    "privacy": "Zásady ochrany osobních údajů",
+    "terms": "Podmínky služby",
+    "contact": "Kontakt"
+  },
+  "landing": {
+    "title": "Vítejte v Arstoien Boilerplate",
+    "description": "Moderní full-stack aplikace s autentizací, GraphQL a React 19",
+    "getStarted": "Začít",
+    "signIn": "Přihlásit se",
+    "goToDashboard": "Přejít na Dashboard",
+    "features": {
+      "auth": {
+        "title": "Zabezpečená autentizace",
+        "description": "Kompletní autentizační systém s ověřením emailu a podporou 2FA"
+      },
+      "graphql": {
+        "title": "GraphQL API",
+        "description": "Výkonné GraphQL API s Apollo Client a typově bezpečnými operacemi"
+      },
+      "modern": {
+        "title": "Moderní stack",
+        "description": "Postaveno na React 19, TypeScript, TanStack Router a Tailwind CSS"
+      }
+    }
+  },
+  "auth": {
+    "fields": {
+      "email": "Email",
+      "emailPlaceholder": "Zadejte váš email",
+      "password": "Heslo",
+      "passwordPlaceholder": "Zadejte vaše heslo",
+      "newPassword": "Nové heslo",
+      "confirmPassword": "Potvrdit heslo",
+      "confirmPasswordPlaceholder": "Potvrďte vaše heslo",
+      "firstName": "Jméno",
+      "firstNamePlaceholder": "Zadejte vaše jméno",
+      "lastName": "Příjmení",
+      "lastNamePlaceholder": "Zadejte vaše příjmení"
+    },
+    "login": {
+      "title": "Přihlásit se",
+      "description": "Zadejte své přihlašovací údaje pro přístup k účtu",
+      "submit": "Přihlásit se",
+      "success": "Úspěšně přihlášeno",
+      "error": "Neplatné přihlašovací údaje",
+      "forgotPassword": "Zapomenuté heslo?",
+      "noAccount": "Nemáte účet?",
+      "signUp": "Zaregistrovat se"
+    },
+    "register": {
+      "title": "Vytvořit účet",
+      "description": "Vytvořte si nový účet pro začátek",
+      "submit": "Vytvořit účet",
+      "success": "Účet úspěšně vytvořen",
+      "error": "Nepodařilo se vytvořit účet",
+      "hasAccount": "Již máte účet?",
+      "signIn": "Přihlásit se"
+    },
+    "logout": {
+      "button": "Odhlásit se",
+      "success": "Úspěšně odhlášeno",
+      "error": "Nepodařilo se odhlásit"
+    },
+    "forgotPassword": {
+      "title": "Zapomenuté heslo",
+      "description": "Zadejte svůj email a zašleme vám odkaz pro obnovení",
+      "submit": "Odeslat odkaz",
+      "success": "Odkaz pro obnovení hesla byl odeslán",
+      "error": "Nepodařilo se odeslat odkaz",
+      "emailSent": "Zkontrolujte váš email",
+      "checkEmail": "Poslali jsme odkaz pro obnovení hesla na váš email",
+      "backToLogin": "Zpět na přihlášení"
+    },
+    "resetPassword": {
+      "title": "Obnovit heslo",
+      "description": "Zadejte nové heslo",
+      "submit": "Obnovit heslo",
+      "success": "Heslo úspěšně obnoveno",
+      "error": "Nepodařilo se obnovit heslo"
+    },
+    "verifyEmail": {
+      "title": "Ověřte váš email",
+      "description": "Prosím ověřte svou emailovou adresu pro pokračování",
+      "checkEmail": "Poslali jsme ověřovací odkaz na {{email}}",
+      "resendButton": "Znovu odeslat ověřovací email",
+      "resendSuccess": "Ověřovací email odeslán",
+      "resendError": "Nepodařilo se odeslat ověřovací email",
+      "success": "Email úspěšně ověřen",
+      "error": "Nepodařilo se ověřit email",
+      "verified": "Email ověřen",
+      "verifiedDescription": "Váš email byl úspěšně ověřen",
+      "goToDashboard": "Přejít na Dashboard"
+    },
+    "twoFactor": {
+      "title": "Dvoufázové ověření",
+      "description": "Zadejte 6místný kód z vaší autentizační aplikace",
+      "codeLabel": "Ověřovací kód",
+      "codePlaceholder": "000000",
+      "submit": "Ověřit",
+      "success": "Ověření úspěšné",
+      "error": "Neplatný ověřovací kód"
+    }
+  },
+  "dashboard": {
+    "welcome": "Vítejte, {{name}}!",
+    "accountInfo": "Informace o účtu",
+    "email": "Email",
+    "name": "Jméno",
+    "emailVerified": "Email ověřen",
+    "twoFactor": "Dvoufázové ověření",
+    "quickActions": "Rychlé akce",
+    "quickActionsDescription": "Spravujte svůj účet a nastavení",
+    "recentActivity": "Nedávná aktivita",
+    "noActivity": "Žádná nedávná aktivita"
+  },
+  "profile": {
+    "title": "Nastavení profilu",
+    "personalInfo": "Osobní informace",
+    "personalInfoDescription": "Aktualizujte své osobní informace",
+    "updateButton": "Aktualizovat profil",
+    "updateSuccess": "Profil úspěšně aktualizován",
+    "updateError": "Nepodařilo se aktualizovat profil",
+    "changePassword": "Změnit heslo",
+    "changePasswordDescription": "Aktualizujte heslo k účtu",
+    "currentPassword": "Současné heslo",
+    "newPassword": "Nové heslo",
+    "changePasswordButton": "Změnit heslo",
+    "passwordChangeSuccess": "Heslo úspěšně změněno",
+    "passwordChangeError": "Nepodařilo se změnit heslo",
+    "twoFactor": "Dvoufázové ověření",
+    "twoFactorDescription": "Přidejte další vrstvu zabezpečení k vašemu účtu",
+    "twoFactorStatus": "Stav",
+    "enableTwoFactor": "Povolit 2FA",
+    "disableTwoFactor": "Zakázat 2FA",
+    "twoFactorEnableSuccess": "2FA úspěšně povoleno",
+    "twoFactorEnableError": "Nepodařilo se povolit 2FA",
+    "twoFactorDisableSuccess": "2FA úspěšně zakázáno",
+    "twoFactorDisableError": "Nepodařilo se zakázat 2FA",
+    "twoFactorDisableConfirm": "Opravdu chcete zakázat 2FA?",
+    "twoFactorConfirmError": "Nepodařilo se ověřit kód",
+    "scanQrCode": "Naskenujte tento QR kód pomocí vaší autentizační aplikace",
+    "manualEntry": "Nebo zadejte tento kód ručně",
+    "enterVerificationCode": "Zadejte ověřovací kód z vaší aplikace",
+    "confirmTwoFactor": "Potvrdit a povolit",
+    "enterPassword": "Zadejte vaše heslo",
+    "dangerZone": "Nebezpečná zóna",
+    "dangerZoneDescription": "Nevratné akce, které trvale ovlivní váš účet",
+    "deleteAccount": "Smazat účet",
+    "deleteAccountConfirm": "Opravdu chcete smazat svůj účet? Tuto akci nelze vrátit zpět.",
+    "deleteAccountSuccess": "Účet úspěšně smazán",
+    "deleteAccountError": "Nepodařilo se smazat účet"
+  }
+}
