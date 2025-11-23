@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ENUMS
+enum UserStatus {
+  PENDING_APPROVAL
+  FRESHLY_CREATED_REQUIRES_PASSWORD
+  ACTIVE
+  SUSPENDED
+  BLOCKED
+  REJECTED
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+// MODELS
+model Address {
+  id         String   @id @default(uuid())
+  street     String   @db.VarChar(255)
+  city       String   @db.VarChar(100)
+  postalCode String   @db.VarChar(20)
+  country    String   @db.VarChar(100)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  companies Company[]
+
+  @@index([city])
+  @@index([postalCode])
+}
+
+model Company {
+  id         String    @id @default(uuid())
+  name       String    @db.VarChar(255)
+  addressId  String?
+  address    Address?  @relation(fields: [addressId], references: [id])
+  phone      String?   @db.VarChar(20)
+  email      String?   @db.VarChar(255)
+  website    String?   @db.VarChar(255)
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  users User[]
+
+  @@index([verifiedAt])
+  @@index([addressId])
+}
+
+model User {
+  id           String       @id @default(uuid())
+  email        String       @unique @db.VarChar(255)
+  passwordHash String?
+  googleId     String?      @unique
+  authProvider AuthProvider @default(EMAIL)
+  firstName    String       @db.VarChar(100)
+  lastName     String       @db.VarChar(100)
+  phone        String?      @db.VarChar(20)
+  status       UserStatus   @default(PENDING_APPROVAL)
+  role         UserRole     @default(USER)
+  companyId    String?
+  company      Company?     @relation(fields: [companyId], references: [id])
+  avatar       String?
+  bio          String?      @db.Text
+
+  // User preferences
+  preferredLocale String? @db.VarChar(10) @default("cs")
+
+  // Auth tokens and security
+  refreshTokens      RefreshToken[]
+  verificationTokens VerificationToken[]
+  twoFactorSecrets   TwoFactorSecret[]
+  sessions           Session[]
+
+  // Activity tracking
+  lastLoginAt     DateTime?
+  emailVerifiedAt DateTime?
+  approvedAt      DateTime?
+  approvedById    String?
+  approvedBy      User?   @relation("UserApprovals", fields: [approvedById], references: [id])
+  approvedUsers   User[]  @relation("UserApprovals")
+  rejectionReason String?
+
+  // Relations
+  notifications Notification[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([email])
+  @@index([companyId])
+  @@index([status])
+  @@index([role])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   @default("EMAIL_VERIFICATION") // EMAIL_VERIFICATION, PASSWORD_RESET, etc.
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model TwoFactorSecret {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  secret    String    // Encrypted TOTP secret
+  enabled   Boolean   @default(false)
+  enabledAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionToken String   @unique
+  provider     String?  @db.VarChar(50) // OAuth provider if applicable
+  expiresAt    DateTime
+  ipAddress    String?  @db.VarChar(45)
+  userAgent    String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([sessionToken])
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String    @db.VarChar(50)
+  title     String    @db.VarChar(255)
+  message   String    @db.Text
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([readAt])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String   @db.VarChar(100)
+  entityType String   @db.VarChar(50)
+  entityId   String?
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?  @db.VarChar(45)
+  userAgent  String?  @db.Text
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([createdAt])
+}
+
+model SystemSettings {
+  id           String   @id @default(uuid())
+  supportEmail String   @db.VarChar(255)
+  updatedAt    DateTime @updatedAt
+  updatedBy    String?  // User ID who last updated
+  createdAt    DateTime @default(now())
+}

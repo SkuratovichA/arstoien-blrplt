@@ -1,0 +1,36 @@
+{
+  "name": "arstoien-boilerplate",
+  "version": "1.0.0",
+  "description": "Production-ready boilerplate for full-stack applications",
+  "private": true,
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "yarn@4.0.2",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"yarn workspace @blrplt/server dev\" \"yarn workspace @blrplt/client dev\" \"yarn workspace @blrplt/admin dev\"",
+    "build": "yarn workspaces foreach -pt run build",
+    "test": "yarn workspaces foreach -pt run test",
+    "lint:check": "yarn workspaces foreach -pt run lint:check",
+    "lint:fix": "yarn workspaces foreach -pt run lint:fix",
+    "prettier:check": "yarn workspaces foreach -pt run prettier:check",
+    "prettier:fix": "yarn workspaces foreach -pt run prettier:fix",
+    "typecheck": "yarn workspaces foreach -pt run typecheck",
+    "db:migrate": "yarn workspace @blrplt/server db:migrate",
+    "db:push": "yarn workspace @blrplt/server db:push",
+    "db:seed": "yarn workspace @blrplt/server db:seed",
+    "db:studio": "yarn workspace @blrplt/server db:studio",
+    "codegen": "yarn workspaces foreach -pt run codegen",
+    "i18n": "yarn workspaces foreach -pt run i18n"
+  },
+  "devDependencies": {
+    "@arstoien/devtools": "^1.0.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^9.14.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.3.3"
+  }
+}

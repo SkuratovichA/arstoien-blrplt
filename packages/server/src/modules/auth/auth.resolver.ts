@@ -1,0 +1,202 @@
+import { Context, Resolver, Mutation, Args } from '@nestjs/graphql';
+import { Logger } from '@nestjs/common';
+import { Request } from 'express';
+import { AuthService } from './auth.service';
+import { AuthResponse } from './dto/auth-response.dto';
+import { LoginInput } from './dto/login.input';
+import { RegisterInput } from './dto/register.input';
+import { RegisterWithPasswordInput } from './dto/register-with-password.input';
+import { SetPasswordInput } from './dto/set-password.input';
+import { RegisterResponse } from './dto/register-response.dto';
+import { SetPasswordWithTokenInput } from './dto/set-password-with-token.input';
+import { ForgotPasswordInput } from './dto/forgot-password.input';
+import { ResetPasswordInput } from './dto/reset-password.input';
+import { ConfigType } from '@nestjs/config';
+import { Inject } from '@nestjs/common';
+import { appConfig } from '@config/app.config';
+import { runEffect } from '@/common/effect';
+
+@Resolver()
+export class AuthResolver {
+  private readonly logger = new Logger(AuthResolver.name);
+
+  constructor(
+    @Inject(appConfig.KEY)
+    private readonly appConfiguration: ConfigType<typeof appConfig>,
+    private authService: AuthService
+  ) {}
+
+  @Mutation(() => AuthResponse, { description: 'Login with email and password' })
+  async login(
+    @Args('input') input: LoginInput,
+    @Context('req') req: Request
+  ): Promise<AuthResponse> {
+    const authResponse = await this.authService.loginAsync(input.email, input.password);
+
+    // Set tokens in httpOnly cookies
+    if (req.res) {
+      req.res.cookie('accessToken', authResponse.accessToken, this.appConfiguration.cookieOptions);
+      req.res.cookie(
+        'refreshToken',
+        authResponse.refreshToken,
+        this.appConfiguration.cookieOptions
+      );
+    }
+
+    this.logger.log(`User logged in: ${authResponse.user.id}`);
+    return authResponse;
+  }
+
+  @Mutation(() => AuthResponse, { description: 'Register new user account with password (legacy)' })
+  async registerWithPassword(
+    @Args('input') input: RegisterWithPasswordInput,
+    @Context('req') req: Request
+  ): Promise<AuthResponse> {
+    const authResponse = await this.authService.registerWithPasswordAsync(
+      input.email,
+      input.password,
+      input.firstName,
+      input.lastName
+    );
+
+    // Set tokens in httpOnly cookies
+    if (req.res) {
+      req.res.cookie('accessToken', authResponse.accessToken, this.appConfiguration.cookieOptions);
+      req.res.cookie(
+        'refreshToken',
+        authResponse.refreshToken,
+        this.appConfiguration.cookieOptions
+      );
+    }
+
+    this.logger.log(`User registered with password: ${authResponse.user.id}`);
+    return authResponse;
+  }
+
+  @Mutation(() => Boolean, { description: 'Logout user and clear authentication cookies' })
+  public async logout(@Context('req') req: Request) {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (refreshToken) {
+      await this.authService.logout(refreshToken);
+    }
+
+    req.res?.clearCookie('accessToken', this.appConfiguration.cookieOptions);
+    req.res?.clearCookie('refreshToken', this.appConfiguration.cookieOptions);
+
+    this.logger.log('User logged out successfully');
+    return true;
+  }
+
+  @Mutation(() => String, {
+    description: 'Refresh access token using refresh token from cookies',
+    nullable: true,
+  })
+  async refresh(@Context('req') req: Request): Promise<string | null> {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+      this.logger.warn('No refresh token provided in cookies');
+
+      // Clear cookies if no refresh token
+      if (req.res) {
+        req.res.clearCookie('accessToken', this.appConfiguration.cookieOptions);
+        req.res.clearCookie('refreshToken', this.appConfiguration.cookieOptions);
+      }
+
+      return null;
+    }
+
+    const newAccessToken = await this.authService.reissueAccessToken(refreshToken);
+
+    if (!newAccessToken) {
+      this.logger.warn('Invalid refresh token, clearing cookies');
+
+      // Clear cookies if refresh token is invalid
+      if (req.res) {
+        req.res.clearCookie('accessToken', this.appConfiguration.cookieOptions);
+        req.res.clearCookie('refreshToken', this.appConfiguration.cookieOptions);
+      }
+
+      return null;
+    }
+
+    // Set new access token in cookie
+    if (req.res) {
+      req.res.cookie('accessToken', newAccessToken, this.appConfiguration.cookieOptions);
+    }
+
+    this.logger.log('Access token refreshed successfully');
+    return newAccessToken;
+  }
+
+  @Mutation(() => RegisterResponse, {
+    description:
+      'User registration with personal details and optional company ICO. Admin approval required.',
+  })
+  async register(
+    @Args('input') input: RegisterInput
+  ): Promise<RegisterResponse> {
+    return runEffect(
+      this.authService.register(
+        input.email,
+        input.firstName,
+        input.lastName,
+        input.phone,
+        input.ico,
+        input.companyPhone
+      )
+    );
+  }
+
+  @Mutation(() => AuthResponse, {
+    description: 'Set password using verification token from email and return auth tokens',
+  })
+  async setPasswordWithToken(
+    @Args('input') input: SetPasswordWithTokenInput,
+    @Context('req') req: Request
+  ): Promise<AuthResponse> {
+    const authResponse = await this.authService.setPasswordWithTokenAsync(
+      input.token,
+      input.password
+    );
+
+    // Set tokens in httpOnly cookies
+    if (req.res) {
+      req.res.cookie('accessToken', authResponse.accessToken, this.appConfiguration.cookieOptions);
+      req.res.cookie(
+        'refreshToken',
+        authResponse.refreshToken,
+        this.appConfiguration.cookieOptions
+      );
+    }
+
+    this.logger.log(`Password set for user: ${authResponse.user.id}`);
+    return authResponse;
+  }
+
+  @Mutation(() => AuthResponse, {
+    description:
+      'Set password for users in FRESHLY_CREATED_REQUIRES_PASSWORD status and return auth tokens',
+  })
+  async setPassword(@Args('input') input: SetPasswordInput): Promise<AuthResponse> {
+    return this.authService.setPasswordAsync(input.userId, input.password);
+  }
+
+  @Mutation(() => Boolean, {
+    description:
+      'Request password reset email. Returns true even if email does not exist (security).',
+  })
+  async forgotPassword(@Args('input') input: ForgotPasswordInput): Promise<boolean> {
+    this.logger.log(`Forgot password request for email: ${input.email}`);
+    return this.authService.forgotPasswordAsync(input.email);
+  }
+
+  @Mutation(() => Boolean, {
+    description: 'Reset password using token from email. Token valid for 30 minutes.',
+  })
+  async resetPassword(@Args('input') input: ResetPasswordInput): Promise<boolean> {
+    this.logger.log('Reset password request');
+    return this.authService.resetPasswordAsync(input.token, input.newPassword);
+  }
+}

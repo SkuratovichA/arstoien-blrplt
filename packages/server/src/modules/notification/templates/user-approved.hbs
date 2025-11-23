@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Váš účet byl schválen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background-color: #10b981;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px 8px 0 0;
+    }
+    .content {
+      background-color: #f9fafb;
+      padding: 30px;
+      border: 1px solid #e5e7eb;
+    }
+    .highlight {
+      background-color: #d1fae5;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #10b981;
+    }
+    .button {
+      display: inline-block;
+      background-color: #2563eb;
+      color: white;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .features {
+      background-color: #dbeafe;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎉 Vítejte v Aukcích Autobusů!</h1>
+  </div>
+
+  <div class="content">
+    <p>Dobrý den {{userName}},</p>
+
+    <p>Skvělá zpráva! Váš účet byl schválen a nyní můžete plně využívat všechny funkce naší platformy.</p>
+
+    <div class="highlight">
+      <p style="margin: 0;"><strong>✓ Váš účet je nyní aktivní!</strong></p>
+    </div>
+
+    <div class="features">
+      <p><strong>Co můžete dělat:</strong></p>
+      <ul>
+        <li>Prohlížet a sledovat aukce</li>
+        <li>Podávat nabídky na vozidla</li>
+        <li>Vytvářet vlastní inzeráty</li>
+        <li>Spravovat své aukce</li>
+        <li>Komunikovat s dalšími uživateli</li>
+      </ul>
+    </div>
+
+    <a href="{{loginUrl}}" class="button">Přihlásit se</a>
+
+    <p style="margin-top: 30px;">
+      Přejeme mnoho úspěšných obchodů!<br>
+      <strong>Tým Aukcí Autobusů</strong>
+    </p>
+  </div>
+
+  <div class="footer">
+    <p>Tento e-mail byl odeslán automaticky. Neodpovídejte na něj.</p>
+    <p>&copy; 2025 Aukce Autobusů. Všechna práva vyhrazena.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vyhráli jste aukci</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background-color: #10b981;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px 8px 0 0;
+    }
+    .content {
+      background-color: #f9fafb;
+      padding: 30px;
+      border: 1px solid #e5e7eb;
+    }
+    .highlight {
+      background-color: #d1fae5;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #10b981;
+    }
+    .amount {
+      font-size: 28px;
+      font-weight: bold;
+      color: #10b981;
+    }
+    .button {
+      display: inline-block;
+      background-color: #2563eb;
+      color: white;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-top: 20px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .next-steps {
+      background-color: #dbeafe;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎉 Gratulujeme! Vyhráli jste aukci!</h1>
+  </div>
+
+  <div class="content">
+    <p>Dobrý den {{userName}},</p>
+
+    <p>S radostí vám oznamujeme, že jste vyhráli aukci!</p>
+
+    <div class="highlight">
+      <p><strong>Vítězná nabídka:</strong></p>
+      <p class="amount">{{winningBid}} {{currency}}</p>
+      <p style="margin-top: 15px;"><strong>Vozidlo:</strong> {{listingTitle}}</p>
+    </div>
+
+    <div class="next-steps">
+      <p><strong>Další kroky:</strong></p>
+      <ol>
+        <li>Prodávající vás bude kontaktovat do 24 hodin</li>
+        <li>Dohodněte se na způsobu platby a předání</li>
+        <li>Po dokončení transakce můžete zanechat hodnocení</li>
+      </ol>
+    </div>
+
+    <p><strong>Kontaktní údaje prodávajícího:</strong><br>
+    E-mail: {{sellerEmail}}<br>
+    {{#if sellerPhone}}Telefon: {{sellerPhone}}{{/if}}</p>
+
+    <a href="{{listingUrl}}" class="button">Zobrazit detail</a>
+
+    <p style="margin-top: 30px;">
+      Děkujeme za využití našich služeb!<br>
+      <strong>Tým Aukcí Autobusů</strong>
+    </p>
+  </div>
+
+  <div class="footer">
+    <p>Tento e-mail byl odeslán automaticky. Neodpovídejte na něj.</p>
+    <p>&copy; 2025 Aukce Autobusů. Všechna práva vyhrazena.</p>
+  </div>
+</body>
+</html>
