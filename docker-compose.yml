@@ -6,14 +6,13 @@ services:
     container_name: blrplt-postgres
     restart: unless-stopped
     ports:
-      - '5432:5432'
+      - '5433:5432' # Changed to 5433 to avoid conflict with auctions project
     environment:
       POSTGRES_USER: blrplt_user
       POSTGRES_PASSWORD: blrplt_password
       POSTGRES_DB: blrplt_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U blrplt_user -d blrplt_db']
       interval: 5s
@@ -25,7 +24,7 @@ services:
     container_name: blrplt-redis
     restart: unless-stopped
     ports:
-      - '6379:6379'
+      - '6380:6379' # Changed to 6380 to avoid conflict with auctions project
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
@@ -40,8 +39,8 @@ services:
     container_name: blrplt-mailpit
     restart: unless-stopped
     ports:
-      - '1025:1025' # SMTP server
-      - '8025:8025' # Web UI
+      - '1026:1025' # SMTP server (changed to avoid conflict)
+      - '8026:8025' # Web UI (changed to avoid conflict)
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1

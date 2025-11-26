@@ -1,6 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { UserStatus, UserRole, AuthProvider, Currency } from '@/common/graphql/enums';
-import { CompanyObjectType } from '@modules/company/dto/company.object-type';
+import { UserStatus, UserRole, AuthProvider } from '@/common/graphql/enums';
 
 @ObjectType()
 export class UserObjectType {
@@ -34,9 +33,6 @@ export class UserObjectType {
   @Field({ nullable: true })
   bio?: string;
 
-  @Field(() => CompanyObjectType, { nullable: true })
-  company?: CompanyObjectType;
-
   @Field({ nullable: true })
   lastLoginAt?: Date;
 
@@ -61,8 +57,8 @@ export class UserObjectType {
   @Field(() => String, { nullable: true })
   preferredLocale?: string | null;
 
-  @Field(() => Currency, { nullable: true })
-  preferredCurrency?: Currency | null;
+  @Field(() => String, { nullable: true })
+  preferredCurrency?: string | null;
 
   @Field()
   createdAt!: Date;

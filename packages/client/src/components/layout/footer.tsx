@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { env } from '../../lib/env';
+import { env } from '@lib/env';
 
 export function Footer() {
   const { t } = useTranslation();

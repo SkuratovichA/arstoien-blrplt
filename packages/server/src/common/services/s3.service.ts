@@ -9,7 +9,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
-import { AppConfig } from '../../config/app.config';
+import { AppConfig } from '@config/app.config';
 
 export interface UploadResult {
   key: string;
@@ -269,22 +269,52 @@ export class S3Service {
    * @param _options - Dimension constraints
    */
   async validateImageDimensions(
-    _buffer: Buffer,
-    _options: {
+    buffer: Buffer,
+    options: {
       minWidth?: number;
       maxWidth?: number;
       minHeight?: number;
       maxHeight?: number;
     }
   ): Promise<void> {
-    // TODO: Install 'image-size' package and implement dimension validation
-    // const dimensions = sizeOf(_buffer);
-    // if (options.minWidth && dimensions.width < options.minWidth) {
-    //   throw new Error(`Image width must be at least ${options.minWidth}px`);
-    // }
-    // ... etc
+    const sizeOf = await import('image-size');
 
-    this.logger.debug('Image dimension validation not implemented yet');
+    try {
+      const dimensions = sizeOf.default(buffer);
+
+      if (!dimensions.width || !dimensions.height) {
+        throw new Error('Unable to determine image dimensions');
+      }
+
+      // Validate minimum width
+      if (options.minWidth && dimensions.width < options.minWidth) {
+        throw new Error(`Image width must be at least ${options.minWidth}px (current: ${dimensions.width}px)`);
+      }
+
+      // Validate maximum width
+      if (options.maxWidth && dimensions.width > options.maxWidth) {
+        throw new Error(`Image width must not exceed ${options.maxWidth}px (current: ${dimensions.width}px)`);
+      }
+
+      // Validate minimum height
+      if (options.minHeight && dimensions.height < options.minHeight) {
+        throw new Error(`Image height must be at least ${options.minHeight}px (current: ${dimensions.height}px)`);
+      }
+
+      // Validate maximum height
+      if (options.maxHeight && dimensions.height > options.maxHeight) {
+        throw new Error(`Image height must not exceed ${options.maxHeight}px (current: ${dimensions.height}px)`);
+      }
+
+      this.logger.debug(
+        `Image dimensions validated: ${dimensions.width}x${dimensions.height}px`
+      );
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('unsupported file type')) {
+        throw new Error('Invalid image format or corrupted file');
+      }
+      throw error;
+    }
   }
 
   // Helper methods

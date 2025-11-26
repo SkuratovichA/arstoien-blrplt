@@ -4,19 +4,8 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import Redis from 'ioredis';
 
 export enum PubSubEvents {
-  // Bidding events
-  BID_PLACED = 'bidPlaced',
-  BID_RETRACTED = 'bidRetracted',
-  AUCTION_UPDATED = 'auctionUpdated',
-  AUCTION_ENDED = 'auctionEnded',
-
   // Notification events
   NOTIFICATION_CREATED = 'notificationCreated',
-
-  // Payment events
-  PAYMENT_RECEIVED = 'paymentReceived',
-  DEPOSIT_CAPTURED = 'depositCaptured',
-  DEPOSIT_RELEASED = 'depositReleased',
 
   // Admin events
   ADMIN_PENDING_COUNTS_CHANGED = 'adminPendingCountsChanged',

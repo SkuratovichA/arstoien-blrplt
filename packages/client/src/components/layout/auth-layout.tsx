@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Link } from '@tanstack/react-router';
-import { env } from '../../lib/env';
+import { env } from '@lib/env';
 
 interface AuthLayoutProps {
   children: ReactNode;

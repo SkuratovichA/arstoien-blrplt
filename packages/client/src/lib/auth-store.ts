@@ -6,10 +6,16 @@ interface User {
   email: string;
   firstName?: string | null;
   lastName?: string | null;
-  isEmailVerified: boolean;
-  isTwoFactorEnabled: boolean;
+  phone?: string | null;
+  emailVerifiedAt?: string | null;
+  isTwoFactorEnabled?: boolean;
   createdAt: string;
 }
+
+// Helper to derive boolean from date field
+export const isEmailVerified = (user: User | null): boolean => {
+  return !!user?.emailVerifiedAt;
+};
 
 interface AuthStore {
   user: User | null;

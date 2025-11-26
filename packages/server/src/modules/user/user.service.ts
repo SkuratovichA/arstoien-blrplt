@@ -5,7 +5,7 @@ import { CrudService } from '@/common/services';
 import { NotFoundError, DatabaseError, ValidationError, promiseToEffect } from '@/common/effect';
 import { Prisma, User, UserRole } from '@prisma/client';
 
-type UserWithCompany = Prisma.UserGetPayload<{ include: { company: true } }>;
+// User type removed - using User directly
 
 @Injectable()
 export class UserService extends CrudService<PrismaService['user']> {
@@ -43,12 +43,11 @@ export class UserService extends CrudService<PrismaService['user']> {
    */
   findByIdWithCompany(
     id: string
-  ): Effect.Effect<UserWithCompany, ValidationError | NotFoundError | DatabaseError, never> {
+  ): Effect.Effect<User, ValidationError | NotFoundError | DatabaseError, never> {
     return promiseToEffect(() =>
       this.prisma.user
         .findUnique({
           where: { id },
-          include: { company: true },
         })
         .then((user) => {
           if (!user) {
@@ -66,13 +65,12 @@ export class UserService extends CrudService<PrismaService['user']> {
   /**
    * Create user with company relation
    */
-  createUserWithCompany(
+  createUser(
     data: Prisma.UserCreateInput
-  ): Effect.Effect<UserWithCompany, ValidationError | DatabaseError, never> {
+  ): Effect.Effect<User, ValidationError | DatabaseError, never> {
     return promiseToEffect(() =>
       this.prisma.user.create({
         data,
-        include: { company: true },
       })
     );
   }
@@ -83,13 +81,12 @@ export class UserService extends CrudService<PrismaService['user']> {
   findByEmailOrGoogleId(
     email: string,
     googleId: string
-  ): Effect.Effect<UserWithCompany | null, ValidationError | DatabaseError, never> {
+  ): Effect.Effect<User | null, ValidationError | DatabaseError, never> {
     return promiseToEffect(() =>
       this.prisma.user.findFirst({
         where: {
           OR: [{ googleId }, { email }],
         },
-        include: { company: true },
       })
     );
   }
@@ -97,15 +94,14 @@ export class UserService extends CrudService<PrismaService['user']> {
   /**
    * Update user with company relation
    */
-  updateUserWithCompany(
+  updateUser(
     id: string,
     data: Prisma.UserUpdateInput
-  ): Effect.Effect<UserWithCompany, ValidationError | DatabaseError, never> {
+  ): Effect.Effect<User, ValidationError | DatabaseError, never> {
     return promiseToEffect(() =>
       this.prisma.user.update({
         where: { id },
         data,
-        include: { company: true },
       })
     );
   }

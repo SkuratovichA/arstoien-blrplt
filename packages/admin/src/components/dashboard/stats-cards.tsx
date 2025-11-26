@@ -1,17 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@arstoien/shared-ui';
-import { Users, UserCheck, DollarSign, TrendingUp } from 'lucide-react';
+import { Users, UserCheck, TrendingUp } from 'lucide-react';
 
 interface StatsCardsProps {
   stats?: {
     totalUsers: number;
     activeUsers: number;
     pendingUsers: number;
-    totalRevenue: number;
-    monthlyRevenue: number;
     newUsersThisMonth: number;
     userGrowth: number;
-    revenueGrowth: number;
   };
 }
 
@@ -35,13 +32,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
       description: `${stats.pendingUsers} ${t('pending')}`,
     },
     {
-      title: t('Total Revenue'),
-      value: `$${stats.totalRevenue.toLocaleString()}`,
-      icon: DollarSign,
-      description: `$${stats.monthlyRevenue.toLocaleString()} ${t('this month')}`,
-      trend: stats.revenueGrowth,
-    },
-    {
       title: t('Growth Rate'),
       value: `${stats.userGrowth}%`,
       icon: TrendingUp,
@@ -51,7 +41,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {cards.map((card, index) => (
         <Card key={index}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

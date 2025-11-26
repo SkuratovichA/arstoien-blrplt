@@ -3,30 +3,32 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { AuthLayout } from '../components/layout/auth-layout';
+import { Button } from '@arstoien/shared-ui';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+} from '@arstoien/shared-ui';
+import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
 } from '@arstoien/shared-ui';
+import { Input } from '@arstoien/shared-ui';
 import { RESET_PASSWORD } from '../graphql/auth.graphql';
 import toast from 'react-hot-toast';
-import { requireGuest } from '../lib/auth-guard';
+import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
 
 export const Route = createFileRoute('/reset-password')({
   beforeLoad: ({ context }) => {
-    requireGuest(context);
+    requireGuest(context as AuthGuardContext);
   },
   component: ResetPassword,
   validateSearch: (search: Record<string, unknown>) => ({
@@ -66,7 +68,7 @@ function ResetPassword() {
         variables: {
           input: {
             token,
-            password: data.password,
+            newPassword: data.password,
           },
         },
       });

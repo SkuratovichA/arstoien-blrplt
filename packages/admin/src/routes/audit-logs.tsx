@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { requireAuth } from '@/lib/auth-guard';
@@ -19,9 +19,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
 } from '@arstoien/shared-ui';
 import {
   createColumnHelper,
@@ -38,29 +35,25 @@ export const Route = createFileRoute('/audit-logs')({
 
 function AuditLogsPage() {
   const { t } = useTranslation();
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    search: string;
+    action: string | undefined;
+    entity: string | undefined;
+  }>({
     search: '',
     action: undefined,
     entity: undefined,
   });
-  const [pagination, setPagination] = useState({
-    skip: 0,
-    take: 20,
+  const [pagination] = useState({
+    page: 1,
+    pageSize: 20,
   });
 
   const { data, loading } = useQuery(AUDIT_LOGS_QUERY, {
-    variables: {
-      where: {
-        ...(filters.action && { action: { equals: filters.action } }),
-        ...(filters.entity && { entity: { equals: filters.entity } }),
-      },
-      orderBy: [{ createdAt: 'desc' }],
-      ...pagination,
-    },
+    variables: pagination,
   });
 
-  const auditLogs = data?.auditLogs?.nodes || [];
-  const totalCount = data?.auditLogs?.totalCount || 0;
+  const auditLogs = data?.auditLogs || [];
 
   const columns = [
     columnHelper.accessor('action', {
@@ -69,25 +62,18 @@ function AuditLogsPage() {
         <span className="font-medium">{info.getValue()}</span>
       ),
     }),
-    columnHelper.accessor('entity', {
+    columnHelper.accessor('entityType', {
       header: t('Entity'),
       cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor('user', {
+    columnHelper.accessor('userId', {
       header: t('User'),
       cell: (info) => {
-        const user = info.getValue();
-        if (!user) return <span className="text-muted-foreground">{t('System')}</span>;
+        const userId = info.getValue();
+        if (!userId) return <span className="text-muted-foreground">{t('System')}</span>;
         return (
           <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={user.avatar || undefined} />
-              <AvatarFallback className="text-xs">
-                {user.firstName?.[0]}
-                {user.lastName?.[0]}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-sm">{user.email}</span>
+            <span className="text-sm">{userId}</span>
           </div>
         );
       },

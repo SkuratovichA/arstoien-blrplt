@@ -1,7 +1,6 @@
 import {
   ApolloClient,
   InMemoryCache,
-  HttpLink,
   ApolloLink,
   split,
 } from '@apollo/client';
@@ -9,10 +8,10 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { onError } from '@apollo/client/link/error';
 import { createClient } from 'graphql-ws';
-import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
+import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs';
 import { env } from './env';
 
-const httpLink = createUploadLink({
+const httpLink = new UploadHttpLink({
   uri: env.apiUrl,
   credentials: 'include',
 }) as unknown as ApolloLink;
@@ -23,11 +22,16 @@ const wsLink = new GraphQLWsLink(
   })
 );
 
-const errorLink = onError(({ graphQLErrors, networkError }) => {
+const errorLink = onError((options) => {
+  const { graphQLErrors, networkError } = options as {
+    graphQLErrors?: ReadonlyArray<{ message: string; locations?: unknown; path?: unknown }>;
+    networkError?: Error;
+  };
+
   if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, locations, path }) =>
+    graphQLErrors.forEach((error) =>
       console.error(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+        `[GraphQL error]: Message: ${error.message}, Location: ${error.locations}, Path: ${error.path}`
       )
     );
   }

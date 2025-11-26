@@ -15,6 +15,7 @@ enum UserStatus {
   SUSPENDED
   BLOCKED
   REJECTED
+  DELETED
 }
 
 enum AuthProvider {
@@ -26,6 +27,9 @@ enum UserRole {
   USER
   ADMIN
   MODERATOR
+  SUPER_ADMIN
+  MANAGER
+  SUPPORT
 }
 
 // MODELS
@@ -38,28 +42,8 @@ model Address {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  companies Company[]
-
   @@index([city])
   @@index([postalCode])
-}
-
-model Company {
-  id         String    @id @default(uuid())
-  name       String    @db.VarChar(255)
-  addressId  String?
-  address    Address?  @relation(fields: [addressId], references: [id])
-  phone      String?   @db.VarChar(20)
-  email      String?   @db.VarChar(255)
-  website    String?   @db.VarChar(255)
-  verifiedAt DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-
-  users User[]
-
-  @@index([verifiedAt])
-  @@index([addressId])
 }
 
 model User {
@@ -73,8 +57,6 @@ model User {
   phone        String?      @db.VarChar(20)
   status       UserStatus   @default(PENDING_APPROVAL)
   role         UserRole     @default(USER)
-  companyId    String?
-  company      Company?     @relation(fields: [companyId], references: [id])
   avatar       String?
   bio          String?      @db.Text
 
@@ -85,6 +67,7 @@ model User {
   refreshTokens      RefreshToken[]
   verificationTokens VerificationToken[]
   twoFactorSecrets   TwoFactorSecret[]
+  backupCodes        BackupCode[]
   sessions           Session[]
 
   // Activity tracking
@@ -104,7 +87,6 @@ model User {
   deletedAt DateTime?
 
   @@index([email])
-  @@index([companyId])
   @@index([status])
   @@index([role])
 }
@@ -143,6 +125,18 @@ model TwoFactorSecret {
   enabledAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model BackupCode {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String   // Hashed backup code
+  used      Boolean  @default(false)
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
 
   @@index([userId])
 }

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -44,19 +44,23 @@ function PendingUsersPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  const { data, loading, refetch } = useQuery(PENDING_USERS_QUERY, {
-    variables: { skip: 0, take: 50 },
-  });
+  const { data, loading, refetch } = useQuery(PENDING_USERS_QUERY as Parameters<typeof useQuery>[0]);
 
   const [approveUser] = useMutation(APPROVE_USER_MUTATION);
   const [rejectUser] = useMutation(REJECT_USER_MUTATION);
 
-  const pendingUsers = data?.pendingUsers?.nodes || [];
+  const responseData = data as { pendingUsers: Array<{ id: string; email: string; firstName: string; lastName: string; phone?: string | null; role: string; status: string; avatar?: string | null; emailVerifiedAt?: string | null; createdAt: string; updatedAt: string }> } | undefined;
+  const pendingUsers = responseData?.pendingUsers || [];
 
   const handleApprove = async (userId: string) => {
     try {
       await approveUser({
-        variables: { id: userId },
+        variables: {
+          input: {
+            userId,
+            approved: true,
+          }
+        },
       });
       toast.success(t('User approved successfully'));
       refetch();
@@ -72,8 +76,10 @@ function PendingUsersPage() {
     try {
       await rejectUser({
         variables: {
-          id: selectedUserId,
-          reason: rejectReason,
+          input: {
+            userId: selectedUserId,
+            reason: rejectReason,
+          }
         },
       });
       toast.success(t('User rejected'));

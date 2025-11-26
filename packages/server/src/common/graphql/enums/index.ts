@@ -13,6 +13,4 @@
 
 // Export all enums
 export * from './notification.enums';
-export * from './payment.enums';
 export * from './user.enums';
-export * from './bidding.enums';

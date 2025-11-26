@@ -3,81 +3,72 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { AuthLayout } from '../components/layout/auth-layout';
+import { Button } from '@arstoien/shared-ui';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
+} from '@arstoien/shared-ui';
+import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
 } from '@arstoien/shared-ui';
+import { Input } from '@arstoien/shared-ui';
 import { REGISTER } from '../graphql/auth.graphql';
-import { useAuthStore } from '../lib/auth-store';
 import toast from 'react-hot-toast';
-import { requireGuest } from '../lib/auth-guard';
+import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
 
 export const Route = createFileRoute('/register')({
   beforeLoad: ({ context }) => {
-    requireGuest(context);
+    requireGuest(context as AuthGuardContext);
   },
   component: Register,
 });
 
-const registerSchema = z
-  .object({
-    email: z.string().email(),
-    password: z.string().min(8),
-    confirmPassword: z.string(),
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+const registerSchema = z.object({
+  email: z.string().email(),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  phone: z.string().min(1, 'Phone is required'),
+});
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setUser } = useAuthStore();
   const [register, { loading }] = useMutation(REGISTER);
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       email: '',
-      password: '',
-      confirmPassword: '',
       firstName: '',
       lastName: '',
+      phone: '',
     },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const { confirmPassword, ...input } = data;
       const result = await register({
         variables: {
-          input,
+          input: data,
         },
       });
 
-      if (result.data?.register.user) {
-        setUser(result.data.register.user);
-        toast.success(t('auth.register.success'));
-        navigate({ to: '/verify-email' });
+      if (result.data?.register.success) {
+        toast.success(result.data.register.message || t('auth.register.success'));
+        navigate({ to: '/login' });
       }
     } catch (error) {
       toast.error(t('auth.register.error'));
@@ -150,34 +141,14 @@ function Register() {
 
               <FormField
                 control={form.control}
-                name="password"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('auth.fields.password')}</FormLabel>
+                    <FormLabel>{t('auth.fields.phone')}</FormLabel>
                     <FormControl>
                       <Input
-                        type="password"
-                        placeholder={t('auth.fields.passwordPlaceholder')}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.fields.confirmPassword')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder={t(
-                          'auth.fields.confirmPasswordPlaceholder'
-                        )}
+                        type="tel"
+                        placeholder={t('auth.fields.phonePlaceholder')}
                         {...field}
                       />
                     </FormControl>

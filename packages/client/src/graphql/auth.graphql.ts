@@ -1,112 +1,116 @@
-import { gql } from '@apollo/client';
+import { graphql } from '../gql';
 
-export const REGISTER = gql`
+// Register mutation returns RegisterResponse with success and message only
+export const REGISTER = graphql(`
   mutation Register($input: RegisterInput!) {
     register(input: $input) {
-      user {
-        id
-        email
-        firstName
-        lastName
-        isEmailVerified
-        isTwoFactorEnabled
-        createdAt
-      }
+      success
       message
     }
   }
-`;
+`);
 
-export const LOGIN = gql`
+// Login mutation returns AuthResponse with tokens and user
+export const LOGIN = graphql(`
   mutation Login($input: LoginInput!) {
     login(input: $input) {
+      accessToken
+      refreshToken
       user {
         id
         email
         firstName
         lastName
-        isEmailVerified
-        isTwoFactorEnabled
+        role
+        status
+        avatar
+        emailVerifiedAt
         createdAt
+        updatedAt
       }
-      requiresTwoFactor
-      message
     }
   }
-`;
+`);
 
-export const VERIFY_TWO_FACTOR = gql`
-  mutation VerifyTwoFactor($input: VerifyTwoFactorInput!) {
-    verifyTwoFactor(input: $input) {
-      user {
-        id
-        email
-        firstName
-        lastName
-        isEmailVerified
-        isTwoFactorEnabled
-        createdAt
-      }
-      message
-    }
-  }
-`;
-
-export const LOGOUT = gql`
+// Logout mutation returns Boolean
+export const LOGOUT = graphql(`
   mutation Logout {
-    logout {
-      success
-      message
-    }
+    logout
   }
-`;
+`);
 
-export const FORGOT_PASSWORD = gql`
+// Forgot password mutation returns Boolean
+export const FORGOT_PASSWORD = graphql(`
   mutation ForgotPassword($input: ForgotPasswordInput!) {
-    forgotPassword(input: $input) {
-      success
-      message
-    }
+    forgotPassword(input: $input)
   }
-`;
+`);
 
-export const RESET_PASSWORD = gql`
+// Reset password mutation returns Boolean
+export const RESET_PASSWORD = graphql(`
   mutation ResetPassword($input: ResetPasswordInput!) {
-    resetPassword(input: $input) {
-      success
-      message
+    resetPassword(input: $input)
+  }
+`);
+
+// Current user query
+export const CURRENT_USER_QUERY = graphql(`
+  query CurrentUser {
+    currentUser {
+      id
+      email
+      firstName
+      lastName
+      phone
+      role
+      status
+      authProvider
+      emailVerifiedAt
+      preferredLocale
+      preferredCurrency
+      createdAt
+      updatedAt
     }
   }
-`;
+`);
 
-export const VERIFY_EMAIL = gql`
+// Verify email mutation
+export const VERIFY_EMAIL = graphql(`
   mutation VerifyEmail($token: String!) {
     verifyEmail(token: $token) {
       success
       message
     }
   }
-`;
+`);
 
-export const RESEND_VERIFICATION_EMAIL = gql`
+// Resend verification email mutation
+export const RESEND_VERIFICATION_EMAIL = graphql(`
   mutation ResendVerificationEmail {
     resendVerificationEmail {
       success
       message
     }
   }
-`;
+`);
 
-export const ME_QUERY = gql`
-  query Me {
-    me {
-      id
-      email
-      firstName
-      lastName
-      isEmailVerified
-      isTwoFactorEnabled
-      createdAt
+// Verify two-factor authentication
+export const VERIFY_TWO_FACTOR = graphql(`
+  mutation VerifyTwoFactor($input: VerifyTwoFactorInput!) {
+    verifyTwoFactor(input: $input) {
+      accessToken
+      refreshToken
+      user {
+        id
+        email
+        firstName
+        lastName
+        role
+        status
+        emailVerifiedAt
+        createdAt
+        updatedAt
+      }
     }
   }
-`;
+`);

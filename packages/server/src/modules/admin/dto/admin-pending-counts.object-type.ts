@@ -4,7 +4,4 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 export class AdminPendingCountsType {
   @Field(() => Int, { description: 'Number of users pending approval' })
   pendingUsers!: number;
-
-  @Field(() => Int, { description: 'Number of listings pending approval' })
-  pendingListings!: number;
 }

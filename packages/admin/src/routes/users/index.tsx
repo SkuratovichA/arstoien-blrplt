@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { requireAuth } from '@/lib/auth-guard';
@@ -8,8 +8,7 @@ import { AdminLayout } from '@/components/layout/admin-layout';
 import { UserTable } from '@/components/users/user-table';
 import { UserFilters } from '@/components/users/user-filters';
 import { Loading } from '@/components/shared/loading';
-import { Button } from '@arstoien/shared-ui';
-import { Plus } from 'lucide-react';
+import { AddUserModal } from '@/components/users/add-user-modal';
 
 export const Route = createFileRoute('/users/')({
   beforeLoad: () => requireAuth(),
@@ -18,7 +17,11 @@ export const Route = createFileRoute('/users/')({
 
 function UsersPage() {
   const { t } = useTranslation();
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    search: string;
+    role: string | undefined;
+    status: string | undefined;
+  }>({
     search: '',
     role: undefined,
     status: undefined,
@@ -28,26 +31,21 @@ function UsersPage() {
     take: 10,
   });
 
-  const { data, loading, refetch } = useQuery(USERS_QUERY, {
+  const { data, loading, refetch } = useQuery(USERS_QUERY as Parameters<typeof useQuery>[0], {
     variables: {
-      where: {
-        ...(filters.search && {
-          OR: [
-            { email: { contains: filters.search } },
-            { firstName: { contains: filters.search } },
-            { lastName: { contains: filters.search } },
-          ],
-        }),
-        ...(filters.role && { role: { equals: filters.role } }),
-        ...(filters.status && { status: { equals: filters.status } }),
-      },
-      orderBy: [{ createdAt: 'desc' }],
+      search: filters.search || undefined,
+      role: filters.role || undefined,
+      status: filters.status || undefined,
       ...pagination,
     },
   });
 
-  const users = data?.users?.nodes || [];
-  const totalCount = data?.users?.totalCount || 0;
+  const responseData = data as { users: Array<{ id: string; email: string; firstName: string; lastName: string; phone?: string | null; role: string; status: string; createdAt: string; updatedAt: string }> } | undefined;
+  const users = (responseData?.users || []).map(user => ({
+    ...user,
+    emailVerified: false, // TODO: Add emailVerifiedAt to query and compute this
+  }));
+  const totalCount = users.length;
 
   return (
     <AdminLayout>
@@ -57,10 +55,7 @@ function UsersPage() {
             <h1 className="text-3xl font-bold tracking-tight">{t('Users')}</h1>
             <p className="text-muted-foreground">{t('Manage all users in the system')}</p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('Add User')}
-          </Button>
+          <AddUserModal onUserCreated={refetch}/>
         </div>
 
         <UserFilters filters={filters} onFiltersChange={setFilters} />

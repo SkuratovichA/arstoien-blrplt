@@ -5,137 +5,68 @@ const prisma = new PrismaClient();
 
 async function main() {
   // eslint-disable-next-line no-console
-  console.log('🌱 Seeding database...');
+  console.log('🌱 Seeding database...\n');
 
-  // Create admin user
-  const adminPassword = await bcrypt.hash('Admin123!', 10);
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@auctions.cz' },
-    update: {},
-    create: {
-      email: 'admin@auctions.cz',
-      passwordHash: adminPassword,
-      firstName: 'Admin',
+  // Test credentials
+  const testUsers = [
+    {
+      email: 'admin@example.com',
+      password: 'Admin123!',
+      firstName: 'Super',
+      lastName: 'Admin',
+      role: 'SUPER_ADMIN' as const,
+    },
+    {
+      email: 'moderator@example.com',
+      password: 'Moderator123!',
+      firstName: 'Moderator',
       lastName: 'User',
-      role: 'SUPER_ADMIN',
-      status: 'ACTIVE',
-      authProvider: 'EMAIL',
+      role: 'MODERATOR' as const,
     },
-  });
-
-  // eslint-disable-next-line no-console
-  console.log('✅ Admin user created:', admin.email);
-
-  // Create test company
-  const company = await prisma.company.upsert({
-    where: { ico: '12345678' },
-    update: {},
-    create: {
-      ico: '12345678',
-      name: 'Test Company s.r.o.',
-      address: {
-        create: {
-          street: 'Testovací 123',
-          city: 'Praha',
-          postalCode: '11000',
-          country: 'CZ',
-        },
-      },
-      verifiedAt: new Date(),
+    {
+      email: 'user@example.com',
+      password: 'User123!',
+      firstName: 'Test',
+      lastName: 'User',
+      role: 'USER' as const,
     },
-  });
+  ];
 
   // eslint-disable-next-line no-console
-  console.log('✅ Test company created:', company.name);
+  console.log('📋 Creating test users with the following credentials:\n');
 
-  // Create categories
-  const categories = await Promise.all([
-    prisma.category.upsert({
-      where: { slug: 'autobusy' },
-      update: {},
-      create: {
-        name: 'Autobusy',
-        slug: 'autobusy',
-        description: 'Městské a meziměstské autobusy',
-      },
-    }),
-    prisma.category.upsert({
-      where: { slug: 'minibusy' },
-      update: {},
-      create: {
-        name: 'Minibusy',
-        slug: 'minibusy',
-        description: 'Malé autobusy do 30 míst',
-      },
-    }),
-  ]);
+  for (const userData of testUsers) {
+    const passwordHash = await bcrypt.hash(userData.password, 10);
 
-  // eslint-disable-next-line no-console
-  console.log('✅ Categories created:', categories.length);
+    await prisma.user.upsert({
+      where: { email: userData.email },
+      update: {},
+      create: {
+        email: userData.email,
+        passwordHash,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        role: userData.role,
+        status: 'ACTIVE',
+        authProvider: 'EMAIL',
+        emailVerifiedAt: new Date(),
+      },
+    });
 
-  // Create Euro Classes
-  const euroClasses = await Promise.all([
-    prisma.euroClass.upsert({
-      where: { code: 'Euro 3' },
-      update: {},
-      create: {
-        code: 'Euro 3',
-        name: 'Euro 3',
-        sortOrder: 1,
-        active: true,
-      },
-    }),
-    prisma.euroClass.upsert({
-      where: { code: 'Euro 4' },
-      update: {},
-      create: {
-        code: 'Euro 4',
-        name: 'Euro 4',
-        sortOrder: 2,
-        active: true,
-      },
-    }),
-    prisma.euroClass.upsert({
-      where: { code: 'Euro 5' },
-      update: {},
-      create: {
-        code: 'Euro 5',
-        name: 'Euro 5',
-        sortOrder: 3,
-        active: true,
-      },
-    }),
-    prisma.euroClass.upsert({
-      where: { code: 'Euro 6' },
-      update: {},
-      create: {
-        code: 'Euro 6',
-        name: 'Euro 6',
-        sortOrder: 4,
-        active: true,
-      },
-    }),
-    prisma.euroClass.upsert({
-      where: { code: 'EEV' },
-      update: {},
-      create: {
-        code: 'EEV',
-        name: 'Enhanced Environmentally Friendly Vehicle (EEV)',
-        sortOrder: 5,
-        active: true,
-      },
-    }),
-  ]);
+    // eslint-disable-next-line no-console
+    console.log(`✅ ${userData.role.padEnd(12)} | ${userData.email.padEnd(25)} | Password: ${userData.password}`);
+  }
 
   // eslint-disable-next-line no-console
-  console.log('✅ Euro Classes created:', euroClasses.length);
+  console.log('\n🎉 Seeding completed successfully!');
   // eslint-disable-next-line no-console
-  console.log('🎉 Seeding completed!');
+  console.log('\n💡 You can now login with any of the above credentials.');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seeding failed:', e);
+    // eslint-disable-next-line no-console
+    console.error('Error during seeding:', e);
     process.exit(1);
   })
   .finally(async () => {

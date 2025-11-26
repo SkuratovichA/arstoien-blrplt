@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { LOGIN_MUTATION } from '@/graphql/admin.graphql';
-import { useAuthStore } from '@/lib/auth-store';
+import { useAuthStore, type User, UserRole } from '@/lib/auth-store';
+import { hasAdminAccess } from '@/lib/auth-guard';
 import {
   Button,
   Card,
@@ -51,19 +52,19 @@ function LoginPage() {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       const { data } = await login({
-        variables: values,
+        variables: { input: values },
       });
 
       if (data?.login) {
-        const { token, user } = data.login;
+        const { accessToken, user } = data.login;
 
-        // Check if user has admin or moderator role
-        if (user.role !== 'ADMIN' && user.role !== 'MODERATOR') {
+        // Check if user has admin access (SUPER_ADMIN, ADMIN, or MODERATOR)
+        if (!hasAdminAccess(user.role as UserRole)) {
           toast.error(t('You do not have permission to access the admin panel'));
           return;
         }
 
-        setAuth(token, user);
+        setAuth(accessToken, user as User);
         toast.success(t('Login successful'));
         navigate({ to: '/' });
       }

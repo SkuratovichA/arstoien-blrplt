@@ -5,12 +5,12 @@ import { Kind, ValueNode } from 'graphql';
 export class DateScalar implements CustomScalar<number, Date> {
   description = 'Date custom scalar type';
 
-  // @ts-expect-error - generic issue?
+  // @ts-expect-error
   parseValue(value: number): Date {
     return new Date(value); // value from the client
   }
 
-  // @ts-expect-error - generic issue?
+  // @ts-expect-error
   serialize(value: Date): number {
     return new Date(value).getTime(); // value sent to the client
   }

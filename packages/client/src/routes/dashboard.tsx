@@ -2,13 +2,13 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '../components/layout/main-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@arstoien/shared-ui';
-import { useAuthStore } from '../lib/auth-store';
-import { requireAuth, requireEmailVerified } from '../lib/auth-guard';
+import { useAuthStore, isEmailVerified } from '../lib/auth-store';
+import { requireAuth, requireEmailVerified, type AuthGuardContext } from '../lib/auth-guard';
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: ({ context }) => {
-    requireAuth(context);
-    requireEmailVerified(context);
+    requireAuth(context as AuthGuardContext);
+    requireEmailVerified(context as AuthGuardContext);
   },
   component: Dashboard,
 });
@@ -51,7 +51,7 @@ function Dashboard() {
                   {t('dashboard.emailVerified')}
                 </p>
                 <p className="font-medium">
-                  {user?.isEmailVerified ? t('common.yes') : t('common.no')}
+                  {isEmailVerified(user) ? t('common.yes') : t('common.no')}
                 </p>
               </div>
               <div>

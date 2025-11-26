@@ -10,14 +10,17 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { PermissionsGuard } from './guards/permissions.guard';
+import { RolesGuard } from './guards/roles.guard';
 import { UserModule } from '../user/user.module';
 import { NotificationModule } from '../notification/notification.module';
 import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
-import { CompanyModule } from '../company/company.module';
 import { AdminModule } from '../admin/admin.module';
+import { PrismaModule } from '@prisma/prisma.module';
 
 @Module({
   imports: [
+    PrismaModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -32,7 +35,6 @@ import { AdminModule } from '../admin/admin.module';
     UserModule,
     NotificationModule,
     RefreshTokenModule,
-    CompanyModule,
     forwardRef(() => AdminModule),
   ],
   controllers: [AuthController],
@@ -43,7 +45,9 @@ import { AdminModule } from '../admin/admin.module';
     JwtRefreshStrategy,
     LocalStrategy,
     GoogleStrategy,
+    PermissionsGuard,
+    RolesGuard,
   ],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService, JwtModule, PermissionsGuard, RolesGuard],
 })
 export class AuthModule {}

@@ -1,26 +1,24 @@
 import { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
+  overwrite: true,
   schema: 'http://localhost:4000/graphql',
   documents: ['src/**/*.graphql.ts'],
+  ignoreNoDocuments: true,
   generates: {
-    './src/graphql/generated.ts': {
-      plugins: [
-        'typescript',
-        'typescript-operations',
-        'typescript-react-apollo',
-      ],
+    'schema.graphql': {
+      plugins: ['schema-ast'],
+    },
+    './src/gql/': {
+      preset: 'client',
       config: {
-        withHooks: true,
-        withComponent: false,
-        withHOC: false,
+        useTypeImports: true,
+      },
+      presetConfig: {
+        fragmentMasking: false,
       },
     },
-    './src/graphql/introspection.json': {
-      plugins: ['introspection'],
-    },
   },
-  ignoreNoDocuments: true,
 };
 
 export default config;

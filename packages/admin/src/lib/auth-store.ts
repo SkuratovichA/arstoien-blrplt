@@ -3,8 +3,11 @@ import { persist } from 'zustand/middleware';
 
 export enum UserRole {
   USER = 'USER',
-  MODERATOR = 'MODERATOR',
   ADMIN = 'ADMIN',
+  MODERATOR = 'MODERATOR',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  MANAGER = 'MANAGER',
+  SUPPORT = 'SUPPORT',
 }
 
 export interface User {
@@ -21,7 +24,9 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   setAuth: (token: string, user: User) => void;
+  setToken: (token: string) => void;
   clearAuth: () => void;
+  logout: () => void;
   updateUser: (user: Partial<User>) => void;
 }
 
@@ -37,7 +42,18 @@ export const useAuthStore = create<AuthState>()(
           user,
           isAuthenticated: true,
         }),
+      setToken: (token) =>
+        set(() => ({
+          token,
+          isAuthenticated: !!token,
+        })),
       clearAuth: () =>
+        set({
+          token: null,
+          user: null,
+          isAuthenticated: false,
+        }),
+      logout: () =>
         set({
           token: null,
           user: null,

@@ -1,18 +1,24 @@
 import { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
+  overwrite: true,
   schema: process.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql',
   documents: ['src/**/*.graphql.ts'],
+  ignoreNoDocuments: true,
   generates: {
-    './src/__generated__/': {
+    'schema.graphql': {
+      plugins: ['schema-ast'],
+    },
+    './src/gql/': {
       preset: 'client',
-      plugins: [],
+      config: {
+        useTypeImports: true,
+      },
       presetConfig: {
-        gqlTagName: 'gql',
+        fragmentMasking: false,
       },
     },
   },
-  ignoreNoDocuments: true,
 };
 
 export default config;

@@ -1,45 +1,65 @@
-import { gql } from '@apollo/client';
+import { graphql } from '../gql';
 
-export const GET_NOTIFICATIONS = gql`
-  query GetNotifications($limit: Int, $offset: Int) {
-    notifications(limit: $limit, offset: $offset) {
+// Get user's notifications with optional filters
+export const GET_NOTIFICATIONS = graphql(`
+  query MyNotifications($filters: NotificationFiltersInputType) {
+    myNotifications(filters: $filters) {
       id
       type
       title
       message
-      isRead
+      status
+      readAt
       createdAt
+      updatedAt
     }
   }
-`;
+`);
 
-export const MARK_NOTIFICATION_AS_READ = gql`
-  mutation MarkNotificationAsRead($id: ID!) {
-    markNotificationAsRead(id: $id) {
+// Get unread notification count
+export const UNREAD_NOTIFICATION_COUNT = graphql(`
+  query UnreadNotificationCount {
+    unreadNotificationCount
+  }
+`);
+
+// Mark notification as read
+export const MARK_NOTIFICATION_AS_READ = graphql(`
+  mutation MarkNotificationAsRead($notificationId: ID!) {
+    markNotificationAsRead(notificationId: $notificationId) {
       id
-      isRead
+      status
+      readAt
     }
   }
-`;
+`);
 
-export const MARK_ALL_NOTIFICATIONS_AS_READ = gql`
+// Mark all notifications as read (returns count)
+export const MARK_ALL_NOTIFICATIONS_AS_READ = graphql(`
   mutation MarkAllNotificationsAsRead {
-    markAllNotificationsAsRead {
-      success
-      message
+    markAllNotificationsAsRead
+  }
+`);
+
+// Delete notification
+export const DELETE_NOTIFICATION = graphql(`
+  mutation DeleteNotification($notificationId: ID!) {
+    deleteNotification(notificationId: $notificationId) {
+      id
     }
   }
-`;
+`);
 
-export const NOTIFICATION_SUBSCRIPTION = gql`
-  subscription OnNotificationCreated {
-    notificationCreated {
+// Notification subscription
+export const NOTIFICATION_SUBSCRIPTION = graphql(`
+  subscription NotificationAdded {
+    notificationAdded {
       id
       type
       title
       message
-      isRead
+      status
       createdAt
     }
   }
-`;
+`);

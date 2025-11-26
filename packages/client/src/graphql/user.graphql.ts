@@ -1,29 +1,34 @@
-import { gql } from '@apollo/client';
+import { graphql } from '../gql';
 
-export const UPDATE_PROFILE = gql`
-  mutation UpdateProfile($input: UpdateProfileInput!) {
+// Update profile mutation
+export const UPDATE_PROFILE = graphql(`
+  mutation UpdateProfile($input: UpdateProfileInputType!) {
     updateProfile(input: $input) {
       id
       email
       firstName
       lastName
-      isEmailVerified
-      isTwoFactorEnabled
+      phone
+      preferredLocale
+      preferredCurrency
+      emailVerifiedAt
       createdAt
     }
   }
-`;
+`);
 
-export const CHANGE_PASSWORD = gql`
-  mutation ChangePassword($input: ChangePasswordInput!) {
+// Change password mutation
+export const CHANGE_PASSWORD = graphql(`
+  mutation ChangePassword($input: ChangePasswordInputType!) {
     changePassword(input: $input) {
       success
       message
     }
   }
-`;
+`);
 
-export const ENABLE_TWO_FACTOR = gql`
+// Enable two-factor authentication
+export const ENABLE_TWO_FACTOR = graphql(`
   mutation EnableTwoFactor {
     enableTwoFactor {
       secret
@@ -31,32 +36,34 @@ export const ENABLE_TWO_FACTOR = gql`
       backupCodes
     }
   }
-`;
+`);
 
-export const CONFIRM_TWO_FACTOR = gql`
-  mutation ConfirmTwoFactor($input: ConfirmTwoFactorInput!) {
+// Confirm two-factor authentication
+export const CONFIRM_TWO_FACTOR = graphql(`
+  mutation ConfirmTwoFactor($input: ConfirmTwoFactorInputType!) {
     confirmTwoFactor(input: $input) {
       success
       message
-      backupCodes
     }
   }
-`;
+`);
 
-export const DISABLE_TWO_FACTOR = gql`
-  mutation DisableTwoFactor($input: DisableTwoFactorInput!) {
+// Disable two-factor authentication
+export const DISABLE_TWO_FACTOR = graphql(`
+  mutation DisableTwoFactor($input: DisableTwoFactorInputType!) {
     disableTwoFactor(input: $input) {
       success
       message
     }
   }
-`;
+`);
 
-export const DELETE_ACCOUNT = gql`
-  mutation DeleteAccount($input: DeleteAccountInput!) {
+// Delete account mutation
+export const DELETE_ACCOUNT = graphql(`
+  mutation DeleteAccount($input: DeleteAccountInputType!) {
     deleteAccount(input: $input) {
       success
       message
     }
   }
-`;
+`);

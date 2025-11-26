@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -78,7 +78,7 @@ function UserDetailPage() {
   const [deleteUser, { loading: deleting }] = useMutation(DELETE_USER_MUTATION);
 
   const user = data?.user;
-  const auditLogs = auditData?.userAuditLogs?.nodes || [];
+  const auditLogs = auditData?.userAuditLogs || [];
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
@@ -86,9 +86,9 @@ function UserDetailPage() {
       firstName: user.firstName || '',
       lastName: user.lastName || '',
       email: user.email,
-      role: user.role,
-      status: user.status,
-      phoneNumber: user.phoneNumber || '',
+      role: user.role as 'USER' | 'MODERATOR' | 'ADMIN',
+      status: user.status as 'ACTIVE' | 'PENDING' | 'SUSPENDED' | 'BANNED',
+      phoneNumber: user.phone || '',
     } : undefined,
   });
 
@@ -96,8 +96,11 @@ function UserDetailPage() {
     try {
       await updateUser({
         variables: {
-          id,
-          data: values,
+          input: {
+            userId: id,
+            ...values,
+            phone: values.phoneNumber,
+          },
         },
       });
       toast.success(t('User updated successfully'));
@@ -110,7 +113,11 @@ function UserDetailPage() {
   const handleDelete = async () => {
     try {
       await deleteUser({
-        variables: { id },
+        variables: {
+          input: {
+            userId: id,
+          } as { userId: string; hardDelete?: boolean },
+        },
       });
       toast.success(t('User deleted successfully'));
       navigate({ to: '/users' });
@@ -317,17 +324,14 @@ function UserDetailPage() {
                         <div className="flex items-start justify-between">
                           <div>
                             <p className="font-medium">{log.action}</p>
-                            <p className="text-sm text-muted-foreground">{log.entity}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {log.entityType} {log.entityId && `(${log.entityId})`}
+                            </p>
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {new Date(log.createdAt).toLocaleString()}
                           </p>
                         </div>
-                        {log.changes && (
-                          <pre className="text-xs text-muted-foreground">
-                            {JSON.stringify(log.changes, null, 2)}
-                          </pre>
-                        )}
                       </div>
                     ))
                   )}

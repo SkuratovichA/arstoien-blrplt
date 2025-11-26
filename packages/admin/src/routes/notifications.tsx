@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,8 +9,6 @@ import toast from 'react-hot-toast';
 import { requireAuth } from '@/lib/auth-guard';
 import {
   NOTIFICATIONS_QUERY,
-  CREATE_NOTIFICATION_MUTATION,
-  SEND_NOTIFICATION_MUTATION,
   DELETE_NOTIFICATION_MUTATION,
 } from '@/graphql/settings.graphql';
 import { AdminLayout } from '@/components/layout/admin-layout';
@@ -65,16 +63,12 @@ function NotificationsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data, loading, refetch } = useQuery(NOTIFICATIONS_QUERY, {
-    variables: { skip: 0, take: 50 },
+    variables: { filters: {} },
   });
 
-  const [createNotification, { loading: creating }] = useMutation(
-    CREATE_NOTIFICATION_MUTATION
-  );
-  const [sendNotification] = useMutation(SEND_NOTIFICATION_MUTATION);
   const [deleteNotification] = useMutation(DELETE_NOTIFICATION_MUTATION);
 
-  const notifications = data?.notifications?.nodes || [];
+  const notifications = data?.myNotifications || [];
 
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),
@@ -87,30 +81,23 @@ function NotificationsPage() {
     },
   });
 
-  const onSubmit = async (values: NotificationFormValues) => {
+  const onSubmit = async (_values: NotificationFormValues) => {
     try {
-      await createNotification({
-        variables: {
-          data: values,
-        },
-      });
-      toast.success(t('Notification created successfully'));
+      // TODO: CREATE_NOTIFICATION_MUTATION is not properly implemented in GraphQL
+      // For now, just close the dialog and show a message
+      toast(t('Notification creation is not yet implemented'));
       setIsDialogOpen(false);
       form.reset();
-      refetch();
     } catch (error) {
       toast.error(t('Failed to create notification'));
       console.error('Create error:', error);
     }
   };
 
-  const handleSend = async (id: string) => {
+  const handleSend = async (_id: string) => {
     try {
-      await sendNotification({
-        variables: { id },
-      });
-      toast.success(t('Notification sent successfully'));
-      refetch();
+      // TODO: SEND_NOTIFICATION_MUTATION is not properly implemented in GraphQL
+      toast(t('Notification sending is not yet implemented'));
     } catch (error) {
       toast.error(t('Failed to send notification'));
       console.error('Send error:', error);
@@ -120,7 +107,7 @@ function NotificationsPage() {
   const handleDelete = async (id: string) => {
     try {
       await deleteNotification({
-        variables: { id },
+        variables: { notificationId: id },
       });
       toast.success(t('Notification deleted successfully'));
       refetch();
@@ -272,8 +259,8 @@ function NotificationsPage() {
                     >
                       {t('Cancel')}
                     </Button>
-                    <Button type="submit" disabled={creating}>
-                      {creating ? t('Creating...') : t('Create')}
+                    <Button type="submit">
+                      {t('Create')}
                     </Button>
                   </div>
                 </form>
@@ -292,7 +279,7 @@ function NotificationsPage() {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {notifications.map((notification) => (
+            {notifications.map((notification: typeof notifications[0]) => (
               <Card key={notification.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -302,10 +289,9 @@ function NotificationsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline">{notification.type}</Badge>
-                      <Badge variant="outline">{notification.priority}</Badge>
                       <Badge
                         variant={
-                          notification.status === 'SENT' ? 'default' : 'secondary'
+                          notification.status === 'READ' ? 'default' : 'secondary'
                         }
                       >
                         {notification.status}
@@ -317,19 +303,16 @@ function NotificationsPage() {
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
                       <p>
-                        {t('Recipients')}: {notification.recipientType}
-                      </p>
-                      <p>
                         {t('Created')}: {new Date(notification.createdAt).toLocaleString()}
                       </p>
-                      {notification.sentAt && (
+                      {notification.readAt && (
                         <p>
-                          {t('Sent')}: {new Date(notification.sentAt).toLocaleString()}
+                          {t('Read')}: {new Date(notification.readAt).toLocaleString()}
                         </p>
                       )}
                     </div>
                     <div className="flex gap-2">
-                      {notification.status !== 'SENT' && (
+                      {notification.status !== 'READ' && (
                         <Button
                           size="sm"
                           onClick={() => handleSend(notification.id)}

@@ -3,33 +3,35 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { AuthLayout } from '../components/layout/auth-layout';
+import { Button } from '@arstoien/shared-ui';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
+} from '@arstoien/shared-ui';
+import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
 } from '@arstoien/shared-ui';
+import { Input } from '@arstoien/shared-ui';
 import { LOGIN } from '../graphql/auth.graphql';
 import { useAuthStore } from '../lib/auth-store';
 import toast from 'react-hot-toast';
 import { Link } from '@tanstack/react-router';
-import { requireGuest } from '../lib/auth-guard';
+import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
 
 export const Route = createFileRoute('/login')({
   beforeLoad: ({ context }) => {
-    requireGuest(context);
+    requireGuest(context as AuthGuardContext);
   },
   component: Login,
 });
@@ -63,18 +65,35 @@ function Login() {
         },
       });
 
-      if (result.data?.login.requiresTwoFactor) {
-        navigate({ to: '/two-factor' });
-        return;
-      }
+      if (result.data?.login) {
+        const { accessToken, refreshToken, user } = result.data.login;
 
-      if (result.data?.login.user) {
-        setUser(result.data.login.user);
+        // Store tokens if needed (server might be setting httpOnly cookies)
+        if (accessToken) {
+          localStorage.setItem('accessToken', accessToken);
+        }
+        if (refreshToken) {
+          localStorage.setItem('refreshToken', refreshToken);
+        }
+
+        setUser({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          emailVerifiedAt: user.emailVerifiedAt,
+          isTwoFactorEnabled: false, // TODO: Update when 2FA is implemented
+          createdAt: user.createdAt,
+        });
         toast.success(t('auth.login.success'));
-        navigate({ to: '/dashboard' });
+        navigate({ to: '/dashboard', search: {} });
+      } else {
+        throw new Error(t('auth.login.error'));
       }
     } catch (error) {
-      toast.error(t('auth.login.error'));
+      console.error('Login error:', error);
+      const errorMessage = error instanceof Error ? error.message : t('auth.login.error');
+      toast.error(errorMessage);
     }
   };
 

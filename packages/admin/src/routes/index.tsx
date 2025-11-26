@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { useTranslation } from 'react-i18next';
 import { requireAuth } from '@/lib/auth-guard';
 import { DASHBOARD_STATS_QUERY, RECENT_ACTIVITY_QUERY } from '@/graphql/admin.graphql';
@@ -38,8 +38,17 @@ function DashboardPage() {
     );
   }
 
-  const stats = statsData?.dashboardStats;
+  const rawStats = statsData?.adminStatistics;
   const activities = activityData?.recentActivity || [];
+
+  // Map the available stats to the expected format
+  const stats = rawStats ? {
+    totalUsers: rawStats.totalUsers,
+    activeUsers: rawStats.totalUsers - rawStats.pendingUsers, // Estimate active users
+    pendingUsers: rawStats.pendingUsers,
+    newUsersThisMonth: rawStats.todayRegistrations, // Using today's registrations as a placeholder
+    userGrowth: 0, // Not available from current API
+  } : undefined;
 
   return (
     <AdminLayout>
@@ -69,9 +78,7 @@ function DashboardPage() {
                       <div className="flex-1 space-y-1">
                         <p className="text-sm font-medium">{activity.description}</p>
                         <p className="text-xs text-muted-foreground">
-                          {activity.user
-                            ? `${activity.user.firstName || ''} ${activity.user.lastName || ''} (${activity.user.email})`
-                            : t('System')}
+                          {activity.userEmail || t('System')}
                         </p>
                       </div>
                       <p className="text-xs text-muted-foreground">

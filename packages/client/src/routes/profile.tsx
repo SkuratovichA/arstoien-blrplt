@@ -3,24 +3,25 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { MainLayout } from '../components/layout/main-layout';
+import { Button } from '@arstoien/shared-ui';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+} from '@arstoien/shared-ui';
+import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
-  Separator,
 } from '@arstoien/shared-ui';
+import { Input } from '@arstoien/shared-ui';
 import {
   UPDATE_PROFILE,
   CHANGE_PASSWORD,
@@ -31,13 +32,13 @@ import {
 } from '../graphql/user.graphql';
 import { useAuthStore } from '../lib/auth-store';
 import toast from 'react-hot-toast';
-import { requireAuth, requireEmailVerified } from '../lib/auth-guard';
+import { requireAuth, requireEmailVerified, type AuthGuardContext } from '../lib/auth-guard';
 import { useState } from 'react';
 
 export const Route = createFileRoute('/profile')({
   beforeLoad: ({ context }) => {
-    requireAuth(context);
-    requireEmailVerified(context);
+    requireAuth(context as AuthGuardContext);
+    requireEmailVerified(context as AuthGuardContext);
   },
   component: Profile,
 });
@@ -75,7 +76,7 @@ function Profile() {
   } | null>(null);
 
   const [updateProfile, { loading: updatingProfile }] =
-    useMutation(UPDATE_PROFILE);
+    useMutation(UPDATE_PROFILE as Parameters<typeof useMutation>[0]);
   const [changePassword, { loading: changingPassword }] =
     useMutation(CHANGE_PASSWORD);
   const [enableTwoFactor, { loading: enablingTwoFactor }] =
@@ -118,8 +119,16 @@ function Profile() {
         variables: { input: data },
       });
 
-      if (result.data?.updateProfile) {
-        setUser(result.data.updateProfile);
+      const responseData = result.data as { updateProfile: { id: string; email: string; firstName: string; lastName: string; phone?: string | null; emailVerifiedAt?: string | null; createdAt: string } } | null;
+      if (responseData?.updateProfile && user) {
+        const updated = responseData.updateProfile;
+        setUser({
+          ...user,
+          firstName: updated.firstName,
+          lastName: updated.lastName,
+          phone: updated.phone || undefined,
+          emailVerifiedAt: updated.emailVerifiedAt,
+        });
         toast.success(t('profile.updateSuccess'));
       }
     } catch (error) {

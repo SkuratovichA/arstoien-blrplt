@@ -3,23 +3,25 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { AuthLayout } from '../components/layout/auth-layout';
+import { Button } from '@arstoien/shared-ui';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+} from '@arstoien/shared-ui';
+import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
 } from '@arstoien/shared-ui';
+import { Input } from '@arstoien/shared-ui';
 import { VERIFY_TWO_FACTOR } from '../graphql/auth.graphql';
 import { useAuthStore } from '../lib/auth-store';
 import toast from 'react-hot-toast';
@@ -38,7 +40,7 @@ function TwoFactor() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
-  const [verifyTwoFactor, { loading }] = useMutation(VERIFY_TWO_FACTOR);
+  const [verifyTwoFactor, { loading }] = useMutation(VERIFY_TWO_FACTOR as Parameters<typeof useMutation>[0]);
 
   const form = useForm<TwoFactorFormData>({
     resolver: zodResolver(twoFactorSchema),
@@ -55,8 +57,18 @@ function TwoFactor() {
         },
       });
 
-      if (result.data?.verifyTwoFactor.user) {
-        setUser(result.data.verifyTwoFactor.user);
+      const responseData = result.data as { verifyTwoFactor: { user: { id: string; email: string; firstName: string; lastName: string; emailVerifiedAt?: string | null; createdAt: string } } } | null;
+      if (responseData?.verifyTwoFactor.user) {
+        const user = responseData.verifyTwoFactor.user;
+        setUser({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          emailVerifiedAt: user.emailVerifiedAt,
+          isTwoFactorEnabled: true, // User just verified 2FA
+          createdAt: user.createdAt,
+        });
         toast.success(t('auth.twoFactor.success'));
         navigate({ to: '/dashboard' });
       }

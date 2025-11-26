@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -61,7 +61,7 @@ function ProfilePage() {
   const [updateProfile, { loading: updating }] = useMutation(UPDATE_PROFILE_MUTATION);
   const [changePassword, { loading: changingPassword }] = useMutation(CHANGE_PASSWORD_MUTATION);
 
-  const user = data?.me;
+  const user = data?.currentUser;
 
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -85,7 +85,7 @@ function ProfilePage() {
     try {
       const { data } = await updateProfile({
         variables: {
-          data: values,
+          input: values,
         },
       });
       if (data?.updateProfile) {
@@ -102,8 +102,10 @@ function ProfilePage() {
     try {
       const { data } = await changePassword({
         variables: {
-          currentPassword: values.currentPassword,
-          newPassword: values.newPassword,
+          input: {
+            currentPassword: values.currentPassword,
+            newPassword: values.newPassword,
+          },
         },
       });
       if (data?.changePassword?.success) {

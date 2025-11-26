@@ -1,0 +1,419 @@
+type AdminPendingCountsType {
+  """Number of users pending approval"""
+  pendingUsers: Int!
+}
+
+type AdminStatsType {
+  pendingUsers: Int!
+  todayRegistrations: Int!
+  totalUsers: Int!
+}
+
+input ApproveUserInput {
+  approved: Boolean!
+  reason: String
+  userId: ID!
+}
+
+type AuditLogObjectType {
+  action: String!
+  createdAt: DateTime!
+  entityId: String
+  entityType: String!
+  id: ID!
+  ipAddress: String
+  userAgent: String
+  userId: String
+}
+
+"""Authentication provider used by the user"""
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
+type AuthResponse {
+  accessToken: String!
+  refreshToken: String!
+  user: UserResponse!
+}
+
+type BasicResponse {
+  message: String!
+  success: Boolean!
+}
+
+input ChangePasswordInputType {
+  currentPassword: String!
+  newPassword: String!
+}
+
+input ConfirmTwoFactorInputType {
+  code: String!
+}
+
+input CreateUserInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  password: String
+  phone: String
+  role: String = "USER"
+}
+
+"""Date custom scalar type"""
+scalar Date
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input DeleteAccountInputType {
+  confirmText: String
+  password: String
+  reason: String
+}
+
+input DeleteUserInput {
+  hardDelete: Boolean = false
+  reason: String
+  userId: String!
+}
+
+input DisableTwoFactorInputType {
+  password: String!
+}
+
+input ForgotPasswordInput {
+  email: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  approveUser(input: ApproveUserInput!): UserObjectType!
+
+  """Change user password"""
+  changePassword(input: ChangePasswordInputType!): BasicResponse!
+
+  """Confirm and activate two-factor authentication"""
+  confirmTwoFactor(input: ConfirmTwoFactorInputType!): BasicResponse!
+  createUser(input: CreateUserInput!): UserObjectType!
+
+  """Delete user account"""
+  deleteAccount(input: DeleteAccountInputType!): BasicResponse!
+
+  """Delete notification"""
+  deleteNotification(notificationId: ID!): Notification!
+  deleteUser(input: DeleteUserInput!): UserObjectType!
+
+  """Disable two-factor authentication"""
+  disableTwoFactor(input: DisableTwoFactorInputType!): BasicResponse!
+
+  """Enable two-factor authentication"""
+  enableTwoFactor: TwoFactorResponse!
+
+  """
+  Request password reset email. Returns true even if email does not exist (security).
+  """
+  forgotPassword(input: ForgotPasswordInput!): Boolean!
+
+  """Login with email and password"""
+  login(input: LoginInput!): AuthResponse!
+
+  """Logout user and clear authentication cookies"""
+  logout: Boolean!
+
+  """Mark all notifications as read"""
+  markAllNotificationsAsRead: Int!
+
+  """Mark notification as read"""
+  markNotificationAsRead(notificationId: ID!): Notification!
+
+  """Refresh access token using refresh token from cookies"""
+  refresh: String
+
+  """
+  User registration with personal details and optional company ICO. Admin approval required.
+  """
+  register(input: RegisterInput!): RegisterResponse!
+
+  """Register new user account with password (legacy)"""
+  registerWithPassword(input: RegisterWithPasswordInput!): AuthResponse!
+  rejectUser(input: RejectUserInput!): UserObjectType!
+
+  """Resend email verification link to user"""
+  resendVerificationEmail: BasicResponse!
+
+  """Reset password using token from email. Token valid for 30 minutes."""
+  resetPassword(input: ResetPasswordInput!): Boolean!
+
+  """
+  Set password for users in FRESHLY_CREATED_REQUIRES_PASSWORD status and return auth tokens
+  """
+  setPassword(input: SetPasswordInput!): AuthResponse!
+
+  """
+  Set password using verification token from email and return auth tokens
+  """
+  setPasswordWithToken(input: SetPasswordWithTokenInput!): AuthResponse!
+
+  """
+  Update current user profile (including locale and currency preferences)
+  """
+  updateProfile(input: UpdateProfileInputType!): UserObjectType!
+
+  """Update system settings (admin only)"""
+  updateSystemSettings(input: UpdateSystemSettingsInputType!): SystemSettingsObjectType!
+  updateUser(input: UpdateUserInput!): UserObjectType!
+  updateUserStatus(input: UpdateUserStatusInput!): UserObjectType!
+
+  """Verify email address using token from verification email"""
+  verifyEmail(token: String!): BasicResponse!
+
+  """Verify two-factor authentication code during login"""
+  verifyTwoFactor(input: VerifyTwoFactorInput!): AuthResponse!
+}
+
+type Notification {
+  createdAt: Date!
+  id: ID!
+  message: String!
+  readAt: Date
+  status: NotificationStatus!
+  title: String!
+  type: NotificationType!
+  updatedAt: Date!
+  user: UserObjectType
+  userId: String!
+}
+
+input NotificationFiltersInputType {
+  endDate: String
+  limit: Int
+  offset: Int
+  startDate: String
+  status: String
+  type: String
+}
+
+"""The status of a notification"""
+enum NotificationStatus {
+  ARCHIVED
+  READ
+  UNREAD
+}
+
+"""The type of notification"""
+enum NotificationType {
+  SYSTEM_ANNOUNCEMENT
+  USER_VERIFIED
+}
+
+type Query {
+  """Get counts of pending users for admin notifications"""
+  adminPendingCounts: AdminPendingCountsType!
+  adminStatistics: AdminStatsType!
+  auditLogs(page: Int = 1, pageSize: Int = 50): [AuditLogObjectType!]!
+
+  """Get the currently authenticated user"""
+  currentUser: UserObjectType
+
+  """Get current user's notifications"""
+  myNotifications(filters: NotificationFiltersInputType): [Notification!]!
+  pendingUsers: [UserObjectType!]!
+  recentActivity(limit: Int = 10): [RecentActivityType!]!
+
+  """Get system settings (admin only)"""
+  systemSettings: SystemSettingsObjectType!
+
+  """Get unread notification count"""
+  unreadNotificationCount: Int!
+  user(id: ID!): UserObjectType!
+  userAuditLogs(action: String, entityType: String, skip: Int = 0, take: Int = 20, userId: String!): [AuditLogObjectType!]!
+  userGrowthStats(months: Int = 6): UserGrowthStatsType!
+  users(role: String, search: String, skip: Int = 0, status: String, take: Int = 50): [UserObjectType!]!
+}
+
+type RecentActivityType {
+  action: String!
+  createdAt: Date!
+  description: String!
+  id: String!
+  userEmail: String
+  userId: String
+}
+
+input RegisterInput {
+  companyPhone: String
+  email: String!
+  firstName: String!
+
+  """8-digit Czech company ID (recommended for CZ companies)"""
+  ico: String
+  lastName: String!
+  phone: String!
+}
+
+type RegisterResponse {
+  message: String!
+  success: Boolean!
+}
+
+input RegisterWithPasswordInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  password: String!
+}
+
+input RejectUserInput {
+  reason: String!
+  userId: String!
+}
+
+input ResetPasswordInput {
+  newPassword: String!
+  token: String!
+}
+
+input SetPasswordInput {
+  password: String!
+  userId: String!
+}
+
+input SetPasswordWithTokenInput {
+  password: String!
+  token: String!
+}
+
+type Subscription {
+  """Subscribe to real-time updates of pending users counts"""
+  adminPendingCountsChanged: AdminPendingCountsType!
+
+  """Subscribe to new notifications"""
+  notificationAdded: Notification!
+}
+
+type SystemSettingsObjectType {
+  createdAt: Date!
+  id: ID!
+  supportEmail: String!
+  updatedAt: Date!
+}
+
+type TwoFactorResponse {
+  backupCodes: [String!]!
+  qrCode: String!
+  secret: String!
+}
+
+input UpdateProfileInputType {
+  avatar: String
+  bio: String
+  firstName: String
+  lastName: String
+  phone: String
+  preferredCurrency: String
+  preferredLocale: String
+}
+
+input UpdateSystemSettingsInputType {
+  supportEmail: String!
+}
+
+input UpdateUserInput {
+  email: String
+  firstName: String
+  lastName: String
+  phone: String
+  role: String
+  status: String
+  userId: String!
+}
+
+input UpdateUserStatusInput {
+  status: UserStatus!
+  userId: ID!
+}
+
+type UserGrowthDataPoint {
+  activeUsers: Int!
+  newUsers: Int!
+  pendingUsers: Int!
+  period: String!
+  totalUsers: Int!
+}
+
+type UserGrowthStatsType {
+  data: [UserGrowthDataPoint!]!
+  endDate: Date!
+  startDate: Date!
+}
+
+type UserObjectType {
+  approvedAt: Date
+  aresCheckedAt: Date
+  aresError: String
+  authProvider: AuthProvider!
+  avatar: String
+  bio: String
+  createdAt: Date!
+  documentsRequestedAt: Date
+  email: String!
+  emailVerifiedAt: Date
+  firstName: String!
+  id: ID!
+  lastLoginAt: Date
+  lastName: String!
+  phone: String
+  preferredCurrency: String
+  preferredLocale: String
+  rejectionReason: String
+  role: UserRole!
+  status: UserStatus!
+  updatedAt: Date!
+}
+
+type UserResponse {
+  avatar: String
+  createdAt: Date!
+  email: String!
+  firstName: String!
+  ico: String
+  id: String!
+  lastName: String!
+  role: String!
+  status: String!
+  updatedAt: Date!
+}
+
+"""The role of a user in the system"""
+enum UserRole {
+  ADMIN
+  MANAGER
+  MODERATOR
+  SUPER_ADMIN
+  SUPPORT
+  USER
+}
+
+"""The status of a user account"""
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+  FRESHLY_CREATED_REQUIRES_PASSWORD
+  PENDING_APPROVAL
+  REJECTED
+  SUSPENDED
+}
+
+input VerifyTwoFactorInput {
+  code: String!
+  email: String!
+}

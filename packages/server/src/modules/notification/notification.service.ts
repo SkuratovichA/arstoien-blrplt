@@ -257,62 +257,6 @@ export class NotificationService extends CrudService<PrismaService['notification
 
       // Send email based on notification type
       switch (type) {
-        case NotificationType.BID_PLACED:
-          yield* self.emailService.sendBidPlacedEmail(user.email, {
-            userName: `${user.firstName} ${user.lastName}`,
-            ...data,
-          });
-          break;
-
-        case NotificationType.BID_OUTBID:
-          yield* self.emailService.sendOutbidEmail(user.email, {
-            userName: `${user.firstName} ${user.lastName}`,
-            ...data,
-          });
-          break;
-
-        case NotificationType.AUCTION_WON:
-          yield* self.emailService.sendAuctionWonEmail(user.email, {
-            userName: `${user.firstName} ${user.lastName}`,
-            ...data,
-          });
-          break;
-
-        case NotificationType.AUCTION_ENDED:
-          yield* self.emailService.sendAuctionEndedEmail(user.email, {
-            userName: `${user.firstName} ${user.lastName}`,
-            ...data,
-          });
-          break;
-
-        case NotificationType.LISTING_APPROVED:
-          yield* self.emailService.sendListingApprovedEmail(user.email, {
-            userName: `${user.firstName} ${user.lastName}`,
-            ...data,
-          });
-          break;
-
-        case NotificationType.LISTING_REJECTED:
-          yield* self.emailService.sendListingRejectedEmail(user.email, {
-            userName: `${user.firstName} ${user.lastName}`,
-            ...data,
-          });
-          break;
-
-        case NotificationType.PAYMENT_RECEIVED:
-          yield* self.emailService.sendPaymentReceivedEmail(user.email, {
-            userName: `${user.firstName} ${user.lastName}`,
-            ...data,
-          });
-          break;
-
-        case NotificationType.PAYMENT_REMINDER:
-          yield* self.emailService.sendPaymentReminderEmail(user.email, {
-            userName: `${user.firstName} ${user.lastName}`,
-            ...data,
-          });
-          break;
-
         case NotificationType.USER_VERIFIED:
           yield* self.emailService.sendUserVerifiedEmail(user.email, {
             userName: `${user.firstName} ${user.lastName}`,
@@ -331,15 +275,6 @@ export class NotificationService extends CrudService<PrismaService['notification
    */
   private getNotificationTitle(type: NotificationType): string {
     const titles: Record<NotificationType, string> = {
-      [NotificationType.BID_PLACED]: 'New Bid on Your Listing',
-      [NotificationType.BID_OUTBID]: 'You Have Been Outbid',
-      [NotificationType.AUCTION_WON]: 'Congratulations! You Won the Auction',
-      [NotificationType.AUCTION_ENDED]: 'Auction Has Ended',
-      [NotificationType.LISTING_STARTED]: 'Auction Started',
-      [NotificationType.LISTING_APPROVED]: 'Your Listing Has Been Approved',
-      [NotificationType.LISTING_REJECTED]: 'Your Listing Has Been Rejected',
-      [NotificationType.PAYMENT_RECEIVED]: 'Payment Received',
-      [NotificationType.PAYMENT_REMINDER]: 'Payment Reminder',
       [NotificationType.USER_VERIFIED]: 'Your Account Has Been Verified',
       [NotificationType.SYSTEM_ANNOUNCEMENT]: 'System Announcement',
     };
@@ -352,30 +287,6 @@ export class NotificationService extends CrudService<PrismaService['notification
    */
   private getNotificationMessage(type: NotificationType, data: Record<string, unknown>): string {
     switch (type) {
-      case NotificationType.BID_PLACED:
-        return `A new bid of ${data.amount} ${data.currency} was placed on your listing "${data.listingTitle}".`;
-
-      case NotificationType.BID_OUTBID:
-        return `You have been outbid on "${data.listingTitle}". The current highest bid is ${data.amount} ${data.currency}.`;
-
-      case NotificationType.AUCTION_WON:
-        return `Congratulations! You won the auction for "${data.listingTitle}" with a bid of ${data.amount} ${data.currency}.`;
-
-      case NotificationType.AUCTION_ENDED:
-        return `The auction for "${data.listingTitle}" has ended.`;
-
-      case NotificationType.LISTING_APPROVED:
-        return `Your listing "${data.listingTitle}" has been approved and is now active.`;
-
-      case NotificationType.LISTING_REJECTED:
-        return `Your listing "${data.listingTitle}" has been rejected. Reason: ${data.reason ?? 'Not specified'}.`;
-
-      case NotificationType.PAYMENT_RECEIVED:
-        return `Payment of ${data.amount} ${data.currency} has been received for "${data.listingTitle}".`;
-
-      case NotificationType.PAYMENT_REMINDER:
-        return `Reminder: Payment for "${data.listingTitle}" is due.`;
-
       case NotificationType.USER_VERIFIED:
         return 'Your account has been verified. You can now start buying and selling.';
 

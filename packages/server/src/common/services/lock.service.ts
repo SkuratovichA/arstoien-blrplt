@@ -2,6 +2,26 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redlock, { Lock } from 'redlock';
 import Redis from 'ioredis';
+import { Effect, Data, pipe } from 'effect';
+import { BusinessLogicError } from '../effect/errors';
+
+/**
+ * Lock acquisition error
+ */
+export class LockAcquisitionError extends Data.TaggedError('LockAcquisitionError')<{
+  message: string;
+  resource: string;
+  cause?: unknown;
+}> {}
+
+/**
+ * Lock release error
+ */
+export class LockReleaseError extends Data.TaggedError('LockReleaseError')<{
+  message: string;
+  lockId?: string;
+  cause?: unknown;
+}> {}
 
 @Injectable()
 export class LockService implements OnModuleDestroy {
@@ -52,46 +72,99 @@ export class LockService implements OnModuleDestroy {
   }
 
   /**
-   * Acquire a distributed lock
-   * @param resource - The resource to lock (e.g., 'bid:listing:123')
+   * Acquire a distributed lock (Effect version)
+   * @param resource - The resource to lock
    * @param ttl - Time to live in milliseconds (default: 5000ms)
-   * @returns Lock instance
+   * @returns Effect containing Lock instance
    */
-  async acquire(resource: string, ttl: number = 5000): Promise<Lock> {
-    try {
-      return await this.redlock.acquire([resource], ttl);
-    } catch (error) {
-      throw new Error(`Failed to acquire lock for resource: ${resource}. ${error}`);
-    }
+  acquireEffect(resource: string, ttl: number = 5000): Effect.Effect<Lock, LockAcquisitionError> {
+    return Effect.tryPromise({
+      try: () => this.redlock.acquire([resource], ttl),
+      catch: (error) =>
+        new LockAcquisitionError({
+          message: `Failed to acquire lock for resource: ${resource}`,
+          resource,
+          cause: error,
+        }),
+    });
   }
 
   /**
-   * Release a distributed lock
+   * Release a distributed lock (Effect version)
    * @param lock - The lock instance to release
+   * @returns Effect indicating success or logged warning
    */
-  async release(lock: Lock): Promise<void> {
-    try {
-      await lock.release();
-    } catch (error) {
-      // Lock may have already expired, log but don't throw
-      console.warn('Failed to release lock:', error);
-    }
+  releaseEffect(lock: Lock): Effect.Effect<void, never> {
+    return Effect.tryPromise({
+      try: () => lock.release(),
+      catch: (error) => {
+        // Lock may have already expired, log but don't throw
+        console.warn('Failed to release lock:', error);
+        return undefined;
+      },
+    }).pipe(
+      Effect.catchAll(() => Effect.succeed(undefined))
+    );
   }
 
   /**
-   * Execute a function with a distributed lock
+   * Execute a function with a distributed lock (Effect version)
    * @param resource - The resource to lock
    * @param ttl - Time to live in milliseconds
-   * @param fn - Function to execute while holding the lock
-   * @returns Result of the function execution
+   * @param fn - Effect function to execute while holding the lock
+   * @returns Effect containing result of the function execution
+   */
+  withLockEffect<E, R, A>(
+    resource: string,
+    ttl: number,
+    fn: Effect.Effect<A, E, R>
+  ): Effect.Effect<A, E | LockAcquisitionError, R> {
+    return pipe(
+      this.acquireEffect(resource, ttl),
+      Effect.flatMap(lock =>
+        pipe(
+          fn,
+          Effect.ensuring(this.releaseEffect(lock))
+        )
+      )
+    );
+  }
+
+  /**
+   * Legacy Promise-based acquire method
+   * @deprecated Use acquireEffect instead
+   */
+  async acquire(resource: string, ttl: number = 5000): Promise<Lock> {
+    return Effect.runPromise(this.acquireEffect(resource, ttl));
+  }
+
+  /**
+   * Legacy Promise-based release method
+   * @deprecated Use releaseEffect instead
+   */
+  async release(lock: Lock): Promise<void> {
+    return Effect.runPromise(this.releaseEffect(lock));
+  }
+
+  /**
+   * Legacy Promise-based withLock method
+   * @deprecated Use withLockEffect instead
    */
   async withLock<T>(resource: string, ttl: number, fn: () => Promise<T>): Promise<T> {
-    const lock = await this.acquire(resource, ttl);
-    try {
-      return await fn();
-    } finally {
-      await this.release(lock);
-    }
+    return Effect.runPromise(
+      this.withLockEffect(
+        resource,
+        ttl,
+        Effect.tryPromise({
+          try: fn,
+          catch: (error) =>
+            new BusinessLogicError({
+              message: 'Lock operation failed',
+              code: 'LOCK_OPERATION_FAILED',
+            }),
+        })
+      )
+    );
   }
 
   async onModuleDestroy() {

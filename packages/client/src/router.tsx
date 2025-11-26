@@ -1,5 +1,6 @@
 import { createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
+import type { AuthGuardContext } from './lib/auth-guard';
 import { useAuthStore } from './lib/auth-store';
 
 export const router = createRouter({
@@ -7,7 +8,8 @@ export const router = createRouter({
   context: {
     isAuthenticated: false,
     user: null,
-  },
+    isEmailVerified: false,
+  } as AuthGuardContext,
   defaultPreload: 'intent',
 });
 

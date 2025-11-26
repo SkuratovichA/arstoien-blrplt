@@ -1,6 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsOptional, IsString, MaxLength, IsPhoneNumber, IsUrl, IsEnum } from 'class-validator';
-import { Currency } from '@/common/graphql/enums';
+import { IsOptional, IsString, MaxLength, IsPhoneNumber, IsUrl } from 'class-validator';
 
 @InputType()
 export class UpdateProfileInputType {
@@ -38,8 +37,9 @@ export class UpdateProfileInputType {
   @MaxLength(10)
   preferredLocale?: string;
 
-  @Field(() => Currency, { nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
-  @IsEnum(Currency)
-  preferredCurrency?: Currency;
+  @IsString()
+  @MaxLength(3)
+  preferredCurrency?: string;
 }

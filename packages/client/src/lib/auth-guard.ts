@@ -1,12 +1,14 @@
 import { redirect } from '@tanstack/react-router';
+import { isEmailVerified as checkEmailVerified } from './auth-store';
 
 export interface AuthGuardContext {
   isAuthenticated: boolean;
   user?: {
     id: string;
     email: string;
-    isEmailVerified: boolean;
-    isTwoFactorEnabled: boolean;
+    emailVerifiedAt?: string | null;
+    isTwoFactorEnabled?: boolean;
+    createdAt: string;
   } | null;
 }
 
@@ -25,6 +27,7 @@ export const requireGuest = (context: AuthGuardContext) => {
   if (context.isAuthenticated && context.user) {
     throw redirect({
       to: '/dashboard',
+      search: {},
     });
   }
 };
@@ -32,9 +35,10 @@ export const requireGuest = (context: AuthGuardContext) => {
 export const requireEmailVerified = (context: AuthGuardContext) => {
   requireAuth(context);
 
-  if (context.user && !context.user.isEmailVerified) {
+  if (context.user && !checkEmailVerified(context.user)) {
     throw redirect({
       to: '/verify-email',
+      search: { token: '' },
     });
   }
 };

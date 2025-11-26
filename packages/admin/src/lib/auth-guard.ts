@@ -13,8 +13,8 @@ export function requireAuth() {
     });
   }
 
-  // Check if user has admin or moderator role
-  if (user && user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR) {
+  // Check if user has admin access (SUPER_ADMIN, ADMIN, or MODERATOR)
+  if (user && !hasAdminAccess(user.role)) {
     throw redirect({
       to: '/login',
     });
@@ -43,7 +43,7 @@ export function requireAdminRole() {
 }
 
 export function isAdmin(role: UserRole): boolean {
-  return role === UserRole.ADMIN;
+  return role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN;
 }
 
 export function isModerator(role: UserRole): boolean {
@@ -51,5 +51,5 @@ export function isModerator(role: UserRole): boolean {
 }
 
 export function hasAdminAccess(role: UserRole): boolean {
-  return role === UserRole.ADMIN || role === UserRole.MODERATOR;
+  return role === UserRole.SUPER_ADMIN || role === UserRole.ADMIN || role === UserRole.MODERATOR;
 }

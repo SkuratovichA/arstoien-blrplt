@@ -5,7 +5,7 @@ const config: Config = {
   content: [
     './index.html',
     './src/**/*.{ts,tsx}',
-    '../../packages/shared-ui/src/**/*.{ts,tsx}',
+    '../../node_modules/@arstoien/shared-ui/dist/**/*.{js,mjs,cjs}',
   ],
   theme: {
     container: {
