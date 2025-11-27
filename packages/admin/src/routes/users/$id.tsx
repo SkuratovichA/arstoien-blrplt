@@ -1,16 +1,25 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@apollo/client/react';
+import { useMutation, useQuery } from '@apollo/client/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { requireAuth } from '@/lib/auth-guard';
-import { USER_QUERY, UPDATE_USER_MUTATION, DELETE_USER_MUTATION } from '@/graphql/users.graphql';
+import { DELETE_USER_MUTATION, UPDATE_USER_MUTATION, USER_QUERY } from '@/graphql/users.graphql';
 import { USER_AUDIT_LOGS_QUERY } from '@/graphql/audit.graphql';
 import { AdminLayout } from '@/components/layout/admin-layout';
 import { Loading } from '@/components/shared/loading';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
   Button,
   Card,
   CardContent,
@@ -33,15 +42,6 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@arstoien/shared-ui';
 import { Trash2 } from 'lucide-react';
 
@@ -78,18 +78,20 @@ function UserDetailPage() {
   const [deleteUser, { loading: deleting }] = useMutation(DELETE_USER_MUTATION);
 
   const user = data?.user;
-  const auditLogs = auditData?.userAuditLogs || [];
+  const auditLogs = auditData?.userAuditLogs ?? [];
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
-    values: user ? {
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      email: user.email,
-      role: user.role as 'USER' | 'MODERATOR' | 'ADMIN',
-      status: user.status as 'ACTIVE' | 'PENDING' | 'SUSPENDED' | 'BANNED',
-      phoneNumber: user.phone || '',
-    } : undefined,
+    values: user
+      ? {
+          firstName: user.firstName ?? '',
+          lastName: user.lastName ?? '',
+          email: user.email,
+          role: user.role as 'USER' | 'MODERATOR' | 'ADMIN',
+          status: user.status as 'ACTIVE' | 'PENDING' | 'SUSPENDED' | 'BANNED',
+          phoneNumber: user.phone ?? '',
+        }
+      : undefined,
   });
 
   const onSubmit = async (values: UserFormValues) => {
@@ -139,7 +141,7 @@ function UserDetailPage() {
     return (
       <AdminLayout>
         <div className="text-center">
-          <p className="text-lg text-muted-foreground">{t('User not found')}</p>
+          <p className="text-muted-foreground text-lg">{t('User not found')}</p>
         </div>
       </AdminLayout>
     );
@@ -166,14 +168,14 @@ function UserDetailPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>{t('Are you sure?')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {t('This action cannot be undone. This will permanently delete the user account.')}
+                  {t(
+                    'This action cannot be undone. This will permanently delete the user account.'
+                  )}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>{t('Cancel')}</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>
-                  {t('Delete')}
-                </AlertDialogAction>
+                <AlertDialogAction onClick={handleDelete}>{t('Delete')}</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -253,10 +255,7 @@ function UserDetailPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{t('Role')}</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue />
@@ -278,10 +277,7 @@ function UserDetailPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{t('Status')}</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue />
@@ -317,18 +313,18 @@ function UserDetailPage() {
               <CardContent>
                 <div className="space-y-4">
                   {auditLogs.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">{t('No activity found')}</p>
+                    <p className="text-muted-foreground text-sm">{t('No activity found')}</p>
                   ) : (
                     auditLogs.map((log) => (
                       <div key={log.id} className="flex flex-col gap-2 border-b pb-4 last:border-0">
                         <div className="flex items-start justify-between">
                           <div>
                             <p className="font-medium">{log.action}</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground text-sm">
                               {log.entityType} {log.entityId && `(${log.entityId})`}
                             </p>
                           </div>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-muted-foreground text-xs">
                             {new Date(log.createdAt).toLocaleString()}
                           </p>
                         </div>

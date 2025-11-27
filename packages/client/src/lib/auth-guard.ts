@@ -7,7 +7,6 @@ export interface AuthGuardContext {
     id: string;
     email: string;
     emailVerifiedAt?: string | null;
-    isTwoFactorEnabled?: boolean;
     createdAt: string;
   } | null;
 }

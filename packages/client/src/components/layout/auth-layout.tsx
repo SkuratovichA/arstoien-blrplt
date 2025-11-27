@@ -8,7 +8,7 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/50 px-4">
+    <div className="bg-muted/50 flex min-h-screen flex-col items-center justify-center px-4">
       <div className="mb-8">
         <Link to="/" className="text-2xl font-bold">
           {env.appName}

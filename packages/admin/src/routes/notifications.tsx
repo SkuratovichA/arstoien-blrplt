@@ -7,10 +7,7 @@ import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { requireAuth } from '@/lib/auth-guard';
-import {
-  NOTIFICATIONS_QUERY,
-  DELETE_NOTIFICATION_MUTATION,
-} from '@/graphql/settings.graphql';
+import { NOTIFICATIONS_QUERY, DELETE_NOTIFICATION_MUTATION } from '@/graphql/settings.graphql';
 import { AdminLayout } from '@/components/layout/admin-layout';
 import { Loading } from '@/components/shared/loading';
 import {
@@ -68,7 +65,7 @@ function NotificationsPage() {
 
   const [deleteNotification] = useMutation(DELETE_NOTIFICATION_MUTATION);
 
-  const notifications = data?.myNotifications || [];
+  const notifications = data?.myNotifications ?? [];
 
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),
@@ -123,9 +120,7 @@ function NotificationsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{t('Notifications')}</h1>
-            <p className="text-muted-foreground">
-              {t('Create and manage system notifications')}
-            </p>
+            <p className="text-muted-foreground">{t('Create and manage system notifications')}</p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -176,10 +171,7 @@ function NotificationsPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>{t('Type')}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue />
@@ -202,10 +194,7 @@ function NotificationsPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>{t('Priority')}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue />
@@ -228,10 +217,7 @@ function NotificationsPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>{t('Recipients')}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue />
@@ -240,9 +226,7 @@ function NotificationsPage() {
                             <SelectContent>
                               <SelectItem value="ALL">{t('All Users')}</SelectItem>
                               <SelectItem value="ADMINS">{t('Admins')}</SelectItem>
-                              <SelectItem value="MODERATORS">
-                                {t('Moderators')}
-                              </SelectItem>
+                              <SelectItem value="MODERATORS">{t('Moderators')}</SelectItem>
                               <SelectItem value="USERS">{t('Users')}</SelectItem>
                             </SelectContent>
                           </Select>
@@ -252,16 +236,10 @@ function NotificationsPage() {
                     />
                   </div>
                   <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                    >
+                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                       {t('Cancel')}
                     </Button>
-                    <Button type="submit">
-                      {t('Create')}
-                    </Button>
+                    <Button type="submit">{t('Create')}</Button>
                   </div>
                 </form>
               </Form>
@@ -279,7 +257,7 @@ function NotificationsPage() {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {notifications.map((notification: typeof notifications[0]) => (
+            {notifications.map((notification: (typeof notifications)[0]) => (
               <Card key={notification.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -289,11 +267,7 @@ function NotificationsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline">{notification.type}</Badge>
-                      <Badge
-                        variant={
-                          notification.status === 'READ' ? 'default' : 'secondary'
-                        }
-                      >
+                      <Badge variant={notification.status === 'READ' ? 'default' : 'secondary'}>
                         {notification.status}
                       </Badge>
                     </div>
@@ -301,7 +275,7 @@ function NotificationsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       <p>
                         {t('Created')}: {new Date(notification.createdAt).toLocaleString()}
                       </p>
@@ -313,10 +287,7 @@ function NotificationsPage() {
                     </div>
                     <div className="flex gap-2">
                       {notification.status !== 'READ' && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleSend(notification.id)}
-                        >
+                        <Button size="sm" onClick={() => handleSend(notification.id)}>
                           <Send className="mr-2 h-4 w-4" />
                           {t('Send')}
                         </Button>

@@ -383,6 +383,7 @@ type UserResponse {
   avatar: String
   createdAt: Date!
   email: String!
+  emailVerifiedAt: Date
   firstName: String!
   ico: String
   id: String!

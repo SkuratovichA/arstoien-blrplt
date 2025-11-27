@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Váš účet byl zamítnut</title>
+  <title>Your Account Was Not Approved</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -60,40 +60,40 @@
 </head>
 <body>
   <div class="header">
-    <h1>Registrace nebyla schválena</h1>
+    <h1>Registration Not Approved</h1>
   </div>
 
   <div class="content">
-    <p>Dobrý den {{userName}},</p>
+    <p>Hello {{userName}},</p>
 
-    <p>Bohužel musíme informovat, že vaše registrace nebyla schválena.</p>
+    <p>Unfortunately, we must inform you that your registration was not approved.</p>
 
     <div class="highlight">
-      <p style="margin: 0;"><strong>Status účtu:</strong> Zamítnuto</p>
+      <p style="margin: 0;"><strong>Account Status:</strong> Rejected</p>
     </div>
 
     {{#if reason}}
     <div class="reason">
-      <p><strong>Důvod:</strong></p>
+      <p><strong>Reason:</strong></p>
       <p>{{reason}}</p>
     </div>
     {{/if}}
 
-    <p>Pokud si myslíte, že došlo k chybě nebo máte-li další dotazy, neváhejte nás kontaktovat na <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>.</p>
+    <p>If you believe this was an error or have any questions, please don't hesitate to contact us at <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>.</p>
 
-    <p>Můžete se pokusit zaregistrovat znovu s kompletními a správnými údaji.</p>
+    <p>You may try to register again with complete and accurate information.</p>
 
-    <a href="{{registerUrl}}" class="button">Zaregistrovat se znovu</a>
+    <a href="{{registerUrl}}" class="button">Register Again</a>
 
     <p style="margin-top: 30px;">
-      S pozdravem,<br>
-      <strong>Tým Aukcí Autobusů</strong>
+      Best regards,<br>
+      <strong>The Boilerplate Team</strong>
     </p>
   </div>
 
   <div class="footer">
-    <p>Tento e-mail byl odeslán automaticky. Neodpovídejte na něj.</p>
-    <p>&copy; 2025 Aukce Autobusů. Všechna práva vyhrazena.</p>
+    <p>This email was sent automatically. Please do not reply to it.</p>
+    <p>&copy; 2025 Boilerplate. All rights reserved.</p>
   </div>
 </body>
 </html>

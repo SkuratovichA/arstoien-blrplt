@@ -8,7 +8,16 @@ import type {
   FieldDescriptionProps,
   SubmitButtonProps,
 } from '@arstoien/former';
-import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@arstoien/shared-ui';
+import {
+  Button,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@arstoien/shared-ui';
 import { type CreateUserFormData, createUserSchema } from './create-user-form-schema';
 
 /**
@@ -17,7 +26,16 @@ import { type CreateUserFormData, createUserSchema } from './create-user-form-sc
 export const createUserFormOverrides = (
   t: (key: string) => string
 ): ComponentPaletteOverrides<CreateUserFormData> => ({
-  TextInput: ({ id, placeholder, disabled, required, value, onChange, onBlur, name }: TextInputProps<CreateUserFormData>) => (
+  TextInput: ({
+    id,
+    placeholder,
+    disabled,
+    required,
+    value,
+    onChange,
+    onBlur,
+    name,
+  }: TextInputProps<CreateUserFormData>) => (
     <Input
       id={id}
       name={name}
@@ -30,7 +48,16 @@ export const createUserFormOverrides = (
       onBlur={onBlur}
     />
   ),
-  PasswordInput: ({ id, placeholder, disabled, required, value, onChange, onBlur, name }: PasswordInputProps<CreateUserFormData>) => (
+  PasswordInput: ({
+    id,
+    placeholder,
+    disabled,
+    required,
+    value,
+    onChange,
+    onBlur,
+    name,
+  }: PasswordInputProps<CreateUserFormData>) => (
     <Input
       id={id}
       name={name}
@@ -43,7 +70,15 @@ export const createUserFormOverrides = (
       onBlur={onBlur}
     />
   ),
-  Select: ({ id, options, disabled, value, onChange, placeholder, name }: SelectProps<CreateUserFormData>) => (
+  Select: ({
+    id,
+    options,
+    disabled,
+    value,
+    onChange,
+    placeholder,
+    name,
+  }: SelectProps<CreateUserFormData>) => (
     <Select
       value={value as string}
       onValueChange={(newValue) => {
@@ -70,7 +105,8 @@ export const createUserFormOverrides = (
   ),
   FieldLabel: ({ htmlFor, label }: FieldLabelProps) => {
     const fieldId = htmlFor;
-    const isRequired = !createUserSchema.shape[fieldId as keyof typeof createUserSchema.shape]?.isOptional();
+    const isRequired =
+      !createUserSchema.shape[fieldId as keyof typeof createUserSchema.shape]?.isOptional();
 
     return (
       <Label htmlFor={htmlFor}>
@@ -79,13 +115,13 @@ export const createUserFormOverrides = (
     );
   },
   ErrorMessage: ({ message }: ErrorMessageProps) => (
-    <p className="text-sm text-destructive mt-1">{message}</p>
+    <p className="text-destructive mt-1 text-sm">{message}</p>
   ),
   FieldDescription: ({ description }: FieldDescriptionProps) => (
-    <p className="text-xs text-muted-foreground mt-1">{description}</p>
+    <p className="text-muted-foreground mt-1 text-xs">{description}</p>
   ),
   SubmitButton: ({ label, isSubmitting, disabled }: SubmitButtonProps) => (
-    <Button type="submit" className="w-full" disabled={disabled || isSubmitting}>
+    <Button type="submit" className="w-full" disabled={disabled ?? isSubmitting}>
       {isSubmitting ? t('Creating...') : label}
     </Button>
   ),

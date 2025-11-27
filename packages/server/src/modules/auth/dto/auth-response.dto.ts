@@ -1,4 +1,4 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import { User } from '@prisma/client';
 
 @ObjectType()
@@ -38,6 +38,9 @@ export class UserResponse {
 
   @Field()
   status!: string;
+
+  @Field({ nullable: true })
+  emailVerifiedAt?: Date;
 
   @Field()
   createdAt!: Date;

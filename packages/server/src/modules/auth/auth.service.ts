@@ -1,30 +1,16 @@
-import {
-  Injectable,
-  Logger,
-  UnauthorizedException,
-  Inject,
-  forwardRef,
-  Optional,
-} from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, Optional, UnauthorizedException, } from '@nestjs/common';
 import { AdminService } from '../admin/admin.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { Effect, Either } from 'effect';
+import { Effect } from 'effect';
 
 import { PrismaService } from '@/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../notification/email.service';
 import { RefreshTokenService } from '../refresh-token/refresh-token.service';
-import { AuthProvider, Prisma, User, UserStatus } from '@prisma/client';
-import {
-  ConflictError,
-  DatabaseError,
-  promiseToEffect,
-  runEffect,
-  UnauthorizedError,
-  ValidationError,
-} from '@/common/effect';
+import { AuthProvider, User, UserStatus } from '@prisma/client';
+import { ConflictError, DatabaseError, promiseToEffect, runEffect, UnauthorizedError, ValidationError, } from '@/common/effect';
 import { PubSubService } from '@common/pubsub/pubsub.service';
 
 export interface JwtPayload {
@@ -191,13 +177,6 @@ export class AuthService {
           'Registration submitted. An administrator will review your application and you will receive an email once approved.',
       };
     });
-  }
-
-  async registerWithIcoAsync(
-    email: string,
-    ico: string
-  ): Promise<{ success: boolean; message: string }> {
-    return runEffect(this.register(email, '', '', ''));
   }
 
   registerWithPassword(
@@ -736,9 +715,9 @@ export class AuthService {
     await this.emailService.sendVerificationEmail(email, verificationLink);
 
     // Log for debugging in development
-    if (this.configService.get('NODE_ENV') === 'development') {
-      console.log(`Verification email sent to ${email}`);
-      console.log(`Verification link: ${verificationLink}`);
+    if (this.configService.get('app.environment') !== 'production') {
+      this.logger.log(`Verification email sent to ${email}`);
+      this.logger.log(`Verification link: ${verificationLink}`);
     }
   }
 

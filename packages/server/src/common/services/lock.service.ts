@@ -157,7 +157,7 @@ export class LockService implements OnModuleDestroy {
         ttl,
         Effect.tryPromise({
           try: fn,
-          catch: (error) =>
+          catch: () =>
             new BusinessLogicError({
               message: 'Lock operation failed',
               code: 'LOCK_OPERATION_FAILED',

@@ -6,13 +6,7 @@ import { z } from 'zod';
 import { useMutation } from '@apollo/client/react';
 import { AuthLayout } from '../components/layout/auth-layout';
 import { Button } from '@arstoien/shared-ui';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@arstoien/shared-ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
 import {
   Form,
   FormControl,
@@ -21,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@arstoien/shared-ui';
-import { Input } from '@arstoien/shared-ui';
+import { PasswordInput } from '@arstoien/shared-ui';
 import { RESET_PASSWORD } from '../graphql/auth.graphql';
 import toast from 'react-hot-toast';
 import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
@@ -73,10 +67,10 @@ function ResetPassword() {
         },
       });
 
-      toast.success(t('auth.resetPassword.success'));
+      toast.success(t('Password reset successful'));
       navigate({ to: '/login' });
-    } catch (error) {
-      toast.error(t('auth.resetPassword.error'));
+    } catch {
+      toast.error(t('Failed to reset password'));
     }
   };
 
@@ -84,10 +78,8 @@ function ResetPassword() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('auth.resetPassword.title')}</CardTitle>
-          <CardDescription>
-            {t('auth.resetPassword.description')}
-          </CardDescription>
+          <CardTitle>{t('Reset password')}</CardTitle>
+          <CardDescription>{t('Enter your new password')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -97,13 +89,9 @@ function ResetPassword() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('auth.fields.newPassword')}</FormLabel>
+                    <FormLabel>{t('New password')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder={t('auth.fields.passwordPlaceholder')}
-                        {...field}
-                      />
+                      <PasswordInput placeholder={t('Enter your password')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -115,15 +103,9 @@ function ResetPassword() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('auth.fields.confirmPassword')}</FormLabel>
+                    <FormLabel>{t('Confirm password')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder={t(
-                          'auth.fields.confirmPasswordPlaceholder'
-                        )}
-                        {...field}
-                      />
+                      <PasswordInput placeholder={t('Confirm your password')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -131,9 +113,7 @@ function ResetPassword() {
               />
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading
-                  ? t('common.loading')
-                  : t('auth.resetPassword.submit')}
+                {loading ? t('Loading...') : t('Reset password')}
               </Button>
             </form>
           </Form>

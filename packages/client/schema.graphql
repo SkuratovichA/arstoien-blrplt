@@ -48,8 +48,13 @@ input ChangePasswordInputType {
   newPassword: String!
 }
 
-input ConfirmTwoFactorInputType {
-  code: String!
+input CreateUserInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  password: String
+  phone: String
+  role: String = "USER"
 }
 
 """Date custom scalar type"""
@@ -61,11 +66,15 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 input DeleteAccountInputType {
-  password: String!
+  confirmText: String
+  password: String
+  reason: String
 }
 
-input DisableTwoFactorInputType {
-  password: String!
+input DeleteUserInput {
+  hardDelete: Boolean = false
+  reason: String
+  userId: String!
 }
 
 input ForgotPasswordInput {
@@ -82,21 +91,14 @@ type Mutation {
 
   """Change user password"""
   changePassword(input: ChangePasswordInputType!): BasicResponse!
-
-  """Confirm and activate two-factor authentication"""
-  confirmTwoFactor(input: ConfirmTwoFactorInputType!): BasicResponse!
+  createUser(input: CreateUserInput!): UserObjectType!
 
   """Delete user account"""
   deleteAccount(input: DeleteAccountInputType!): BasicResponse!
 
   """Delete notification"""
   deleteNotification(notificationId: ID!): Notification!
-
-  """Disable two-factor authentication"""
-  disableTwoFactor(input: DisableTwoFactorInputType!): BasicResponse!
-
-  """Enable two-factor authentication"""
-  enableTwoFactor: TwoFactorResponse!
+  deleteUser(input: DeleteUserInput!): UserObjectType!
 
   """
   Request password reset email. Returns true even if email does not exist (security).
@@ -125,6 +127,7 @@ type Mutation {
 
   """Register new user account with password (legacy)"""
   registerWithPassword(input: RegisterWithPasswordInput!): AuthResponse!
+  rejectUser(input: RejectUserInput!): UserObjectType!
 
   """Resend email verification link to user"""
   resendVerificationEmail: BasicResponse!
@@ -149,13 +152,11 @@ type Mutation {
 
   """Update system settings (admin only)"""
   updateSystemSettings(input: UpdateSystemSettingsInputType!): SystemSettingsObjectType!
+  updateUser(input: UpdateUserInput!): UserObjectType!
   updateUserStatus(input: UpdateUserStatusInput!): UserObjectType!
 
   """Verify email address using token from verification email"""
   verifyEmail(token: String!): BasicResponse!
-
-  """Verify two-factor authentication code during login"""
-  verifyTwoFactor(input: VerifyTwoFactorInput!): AuthResponse!
 }
 
 type Notification {
@@ -205,15 +206,26 @@ type Query {
   """Get current user's notifications"""
   myNotifications(filters: NotificationFiltersInputType): [Notification!]!
   pendingUsers: [UserObjectType!]!
+  recentActivity(limit: Int = 10): [RecentActivityType!]!
 
   """Get system settings (admin only)"""
   systemSettings: SystemSettingsObjectType!
 
   """Get unread notification count"""
   unreadNotificationCount: Int!
+  user(id: ID!): UserObjectType!
+  userAuditLogs(action: String, entityType: String, skip: Int = 0, take: Int = 20, userId: String!): [AuditLogObjectType!]!
+  userGrowthStats(months: Int = 6): UserGrowthStatsType!
+  users(role: String, search: String, skip: Int = 0, status: String, take: Int = 50): [UserObjectType!]!
+}
 
-  """Get user by ID (admin only)"""
-  user(id: ID!): UserObjectType
+type RecentActivityType {
+  action: String!
+  createdAt: Date!
+  description: String!
+  id: String!
+  userEmail: String
+  userId: String
 }
 
 input RegisterInput {
@@ -237,6 +249,11 @@ input RegisterWithPasswordInput {
   firstName: String!
   lastName: String!
   password: String!
+}
+
+input RejectUserInput {
+  reason: String!
+  userId: String!
 }
 
 input ResetPasswordInput {
@@ -269,12 +286,6 @@ type SystemSettingsObjectType {
   updatedAt: Date!
 }
 
-type TwoFactorResponse {
-  backupCodes: [String!]!
-  qrCode: String!
-  secret: String!
-}
-
 input UpdateProfileInputType {
   avatar: String
   bio: String
@@ -289,9 +300,33 @@ input UpdateSystemSettingsInputType {
   supportEmail: String!
 }
 
+input UpdateUserInput {
+  email: String
+  firstName: String
+  lastName: String
+  phone: String
+  role: String
+  status: String
+  userId: String!
+}
+
 input UpdateUserStatusInput {
   status: UserStatus!
   userId: ID!
+}
+
+type UserGrowthDataPoint {
+  activeUsers: Int!
+  newUsers: Int!
+  pendingUsers: Int!
+  period: String!
+  totalUsers: Int!
+}
+
+type UserGrowthStatsType {
+  data: [UserGrowthDataPoint!]!
+  endDate: Date!
+  startDate: Date!
 }
 
 type UserObjectType {
@@ -322,6 +357,7 @@ type UserResponse {
   avatar: String
   createdAt: Date!
   email: String!
+  emailVerifiedAt: Date
   firstName: String!
   ico: String
   id: String!
@@ -345,12 +381,9 @@ enum UserRole {
 enum UserStatus {
   ACTIVE
   BLOCKED
+  DELETED
   FRESHLY_CREATED_REQUIRES_PASSWORD
   PENDING_APPROVAL
   REJECTED
   SUSPENDED
-}
-
-input VerifyTwoFactorInput {
-  code: String!
 }

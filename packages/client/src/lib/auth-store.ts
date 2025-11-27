@@ -8,7 +8,6 @@ interface User {
   lastName?: string | null;
   phone?: string | null;
   emailVerifiedAt?: string | null;
-  isTwoFactorEnabled?: boolean;
   createdAt: string;
 }
 

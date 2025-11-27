@@ -7,16 +7,24 @@ import type { Logger } from '@nestjs/common';
 /**
  * Base type for Prisma delegates
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PrismaDelegate = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   findUnique: (...args: any) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   findFirst: (...args: any) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   findMany: (...args: any) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   create: (...args: any) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   update: (...args: any) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   upsert: (...args: any) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete: (...args: any) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   deleteMany: (...args: any) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   count: (...args: any) => any;
 };
 

@@ -16,23 +16,23 @@ function Index() {
     <MainLayout>
       <div className="container mx-auto px-4 py-16">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="mb-6 text-5xl font-bold">{t('landing.title')}</h1>
-          <p className="mb-8 text-xl text-muted-foreground">
-            {t('landing.description')}
+          <h1 className="mb-6 text-5xl font-bold">{t('Welcome to Boilerplate')}</h1>
+          <p className="text-muted-foreground mb-8 text-xl">
+            {t('A modern full-stack application with authentication and GraphQL')}
           </p>
           <div className="flex justify-center gap-4">
             {user ? (
               <Link to="/dashboard">
-                <Button size="lg">{t('landing.goToDashboard')}</Button>
+                <Button size="lg">{t('Go to dashboard')}</Button>
               </Link>
             ) : (
               <>
                 <Link to="/register">
-                  <Button size="lg">{t('landing.getStarted')}</Button>
+                  <Button size="lg">{t('Get started')}</Button>
                 </Link>
                 <Link to="/login">
                   <Button variant="outline" size="lg">
-                    {t('landing.signIn')}
+                    {t('Sign in')}
                   </Button>
                 </Link>
               </>
@@ -42,27 +42,21 @@ function Index() {
 
         <div className="mt-16 grid gap-8 md:grid-cols-3">
           <div className="text-center">
-            <h3 className="mb-2 text-xl font-semibold">
-              {t('landing.features.auth.title')}
-            </h3>
+            <h3 className="mb-2 text-xl font-semibold">{t('Authentication')}</h3>
             <p className="text-muted-foreground">
-              {t('landing.features.auth.description')}
+              {t('Secure authentication with JWT, email verification, and 2FA support')}
             </p>
           </div>
           <div className="text-center">
-            <h3 className="mb-2 text-xl font-semibold">
-              {t('landing.features.graphql.title')}
-            </h3>
+            <h3 className="mb-2 text-xl font-semibold">{t('GraphQL API')}</h3>
             <p className="text-muted-foreground">
-              {t('landing.features.graphql.description')}
+              {t('Type-safe GraphQL API powered by NestJS and Apollo')}
             </p>
           </div>
           <div className="text-center">
-            <h3 className="mb-2 text-xl font-semibold">
-              {t('landing.features.modern.title')}
-            </h3>
+            <h3 className="mb-2 text-xl font-semibold">{t('Modern stack')}</h3>
             <p className="text-muted-foreground">
-              {t('landing.features.modern.description')}
+              {t('Built with React, TypeScript, and TailwindCSS')}
             </p>
           </div>
         </div>

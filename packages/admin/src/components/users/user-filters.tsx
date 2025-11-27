@@ -40,15 +40,11 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
           <Input
             placeholder={t('Search by name or email...')}
             value={filters.search}
-            onChange={(e) =>
-              onFiltersChange({ ...filters, search: e.target.value })
-            }
+            onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
           />
           <Select
             value={filters.role}
-            onValueChange={(value) =>
-              onFiltersChange({ ...filters, role: value || undefined })
-            }
+            onValueChange={(value) => onFiltersChange({ ...filters, role: value || undefined })}
           >
             <SelectTrigger>
               <SelectValue placeholder={t('All Roles')} />
@@ -62,9 +58,7 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
           </Select>
           <Select
             value={filters.status}
-            onValueChange={(value) =>
-              onFiltersChange({ ...filters, status: value || undefined })
-            }
+            onValueChange={(value) => onFiltersChange({ ...filters, status: value || undefined })}
           >
             <SelectTrigger>
               <SelectValue placeholder={t('All Statuses')} />

@@ -14,7 +14,6 @@ export const Route = createRootRoute({
             id: user.id,
             email: user.email,
             emailVerifiedAt: user.emailVerifiedAt,
-            isTwoFactorEnabled: user.isTwoFactorEnabled,
             createdAt: user.createdAt,
           }
         : null,

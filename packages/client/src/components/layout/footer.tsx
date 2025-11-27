@@ -9,18 +9,21 @@ export function Footer() {
     <footer className="border-t">
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <p className="text-sm text-muted-foreground">
-            {t('footer.copyright', { year: currentYear, appName: env.appName })}
+          <p className="text-muted-foreground text-sm">
+            {t('© {{year}} {{appName}}. All rights reserved.', {
+              year: currentYear,
+              appName: env.appName,
+            })}
           </p>
-          <div className="flex gap-6 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex gap-6 text-sm">
             <a href="#" className="hover:text-foreground">
-              {t('footer.privacy')}
+              {t('Privacy')}
             </a>
             <a href="#" className="hover:text-foreground">
-              {t('footer.terms')}
+              {t('Terms')}
             </a>
             <a href="#" className="hover:text-foreground">
-              {t('footer.contact')}
+              {t('Contact')}
             </a>
           </div>
         </div>

@@ -1,13 +1,6 @@
 import type { Table as TanStackTable } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@arstoien/shared-ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@arstoien/shared-ui';
 
 interface DataTableProps<TData> {
   table: TanStackTable<TData>;

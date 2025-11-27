@@ -536,15 +536,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@arstoien/former@link:../../../former::locator=%40blrplt%2Fadmin%40workspace%3Apackages%2Fadmin":
-  version: 0.0.0-use.local
-  resolution: "@arstoien/former@link:../../../former::locator=%40blrplt%2Fadmin%40workspace%3Apackages%2Fadmin"
+"@arstoien/former@file:../../../former::locator=%40blrplt%2Fadmin%40workspace%3Apackages%2Fadmin":
+  version: 0.4.4
+  resolution: "@arstoien/former@file:../../../former#../../../former::hash=56ada2&locator=%40blrplt%2Fadmin%40workspace%3Apackages%2Fadmin"
+  peerDependencies:
+    react: ^19.0.0
+    react-dom: ^19.0.0
+    react-hook-form: ^7.0.0
+    zod: ^3.22.0 || ^4.0.0
+  checksum: 80bd543389ba5c56998776d96aba0340cf27e8612a69fd689730ec2f7ca4695fd298eae40ae6eaeab658adb920b73b9781e6b37e3b4223db6f4a9b6f67668917
   languageName: node
-  linkType: soft
+  linkType: hard
 
-"@arstoien/shared-ui@npm:1.0.6":
-  version: 1.0.6
-  resolution: "@arstoien/shared-ui@npm:1.0.6"
+"@arstoien/shared-ui@npm:1.0.7":
+  version: 1.0.7
+  resolution: "@arstoien/shared-ui@npm:1.0.7"
   dependencies:
     i18next: "npm:^25.6.0"
     react-hook-form: "npm:^7.66.0"
@@ -589,7 +595,7 @@ __metadata:
     tailwindcss: ^3.4.0
     tailwindcss-animate: ^1.0.7
     zod: ^3.22.4
-  checksum: 9370f0871bb89c6ac1758be5e6336833cb8ca3c31d1823d33ad76c5d6e9e0114d43ca7b647ae898f790e7a558d88ed4b6988b25a6c6a22e4a44473ecd576a00d
+  checksum: b073922e3f6d05dd9acb515292fae16f0eac047d0237472aedcddafcde3897fc01be254f6f4ba1462bf7fe95465c1b8690df584f886973b62644208787100547
   languageName: node
   linkType: hard
 
@@ -2131,8 +2137,8 @@ __metadata:
   dependencies:
     "@apollo/client": "npm:^4.0.9"
     "@arstoien/devtools": "npm:^1.0.1"
-    "@arstoien/former": "link:../../../former"
-    "@arstoien/shared-ui": "npm:1.0.6"
+    "@arstoien/former": "file:../../../former"
+    "@arstoien/shared-ui": "npm:1.0.7"
     "@graphql-codegen/cli": "npm:^5.0.0"
     "@graphql-codegen/client-preset": "npm:^4.1.0"
     "@graphql-codegen/introspection": "npm:^4.0.0"
@@ -2201,7 +2207,7 @@ __metadata:
   dependencies:
     "@apollo/client": "npm:^4.0.9"
     "@arstoien/devtools": "npm:^1.0.1"
-    "@arstoien/shared-ui": "npm:1.0.6"
+    "@arstoien/shared-ui": "npm:1.0.7"
     "@graphql-codegen/cli": "npm:^5.0.0"
     "@graphql-codegen/client-preset": "npm:^4.1.0"
     "@graphql-codegen/introspection": "npm:^4.0.0"

@@ -1,47 +1,14 @@
-import {
-  Args,
-  Context,
-  ID,
-  Int,
-  Mutation,
-  Parent,
-  Query,
-  ResolveField,
-  Resolver,
-  Subscription,
-} from '@nestjs/graphql';
-import { UseGuards, Logger } from '@nestjs/common';
-import {
-  CurrentUser,
-  Permissions,
-  Resource,
-  Action,
-  RequireUserManagement,
-  RequireFullUserControl,
-  RequireAuditLogAccess,
-  RequireStatisticsAccess,
-} from '@modules/auth/decorators';
+import { Args, Context, ID, Int, Mutation, Query, Resolver, Subscription, } from '@nestjs/graphql';
+import { Logger, UseGuards } from '@nestjs/common';
+import { Action, CurrentUser, Permissions, RequireAuditLogAccess, RequireStatisticsAccess, Resource, } from '@modules/auth/decorators';
 import { AdminService } from './admin.service';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
-import { AuditLog, User, UserRole, Prisma } from '@prisma/client';
-import {
-  AdminPendingCountsType,
-  AdminStatsType,
-  ApproveUserInput,
-  AuditLogObjectType,
-  UpdateUserStatusInput,
-  RejectUserInput,
-  UpdateUserInput,
-  DeleteUserInput,
-  RecentActivityType,
-  CreateUserInput,
-  UserGrowthStatsType,
-  UserGrowthDataPoint,
-} from '@modules/admin/dto';
+import { AuditLog, Prisma, User } from '@prisma/client';
+import { AdminPendingCountsType, AdminStatsType, ApproveUserInput, AuditLogObjectType, CreateUserInput, DeleteUserInput, RecentActivityType, RejectUserInput, UpdateUserInput, UpdateUserStatusInput, UserGrowthDataPoint, UserGrowthStatsType, } from '@modules/admin/dto';
 import { UserObjectType } from '@modules/user/dto/user.object-type';
 import { Effect } from 'effect';
-import { PubSubService, PubSubEvents } from '@common/pubsub/pubsub.service';
+import { PubSubEvents, PubSubService } from '@common/pubsub/pubsub.service';
 import { PrismaService } from '@prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
@@ -137,7 +104,6 @@ export class AdminResolver {
 
     // Generate data points for each month
     const dataPoints: UserGrowthDataPoint[] = [];
-    const now = new Date();
 
     for (let i = 0; i < monthsToFetch; i++) {
       const periodStart = new Date(startDate);
@@ -442,7 +408,7 @@ export class AdminResolver {
           firstName: input.firstName,
           lastName: input.lastName,
           phone: input.phone,
-          role: input.role || 'USER',
+          role: input.role ?? 'USER',
           passwordHash: hashedPassword,
           status: 'ACTIVE',
           emailVerifiedAt: new Date(), // Admin-created users are pre-verified

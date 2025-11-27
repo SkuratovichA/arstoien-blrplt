@@ -44,13 +44,31 @@ function PendingUsersPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  const { data, loading, refetch } = useQuery(PENDING_USERS_QUERY as Parameters<typeof useQuery>[0]);
+  const { data, loading, refetch } = useQuery(
+    PENDING_USERS_QUERY as Parameters<typeof useQuery>[0]
+  );
 
   const [approveUser] = useMutation(APPROVE_USER_MUTATION);
   const [rejectUser] = useMutation(REJECT_USER_MUTATION);
 
-  const responseData = data as { pendingUsers: Array<{ id: string; email: string; firstName: string; lastName: string; phone?: string | null; role: string; status: string; avatar?: string | null; emailVerifiedAt?: string | null; createdAt: string; updatedAt: string }> } | undefined;
-  const pendingUsers = responseData?.pendingUsers || [];
+  const responseData = data as
+    | {
+        pendingUsers: Array<{
+          id: string;
+          email: string;
+          firstName: string;
+          lastName: string;
+          phone?: string | null;
+          role: string;
+          status: string;
+          avatar?: string | null;
+          emailVerifiedAt?: string | null;
+          createdAt: string;
+          updatedAt: string;
+        }>;
+      }
+    | undefined;
+  const pendingUsers = responseData?.pendingUsers ?? [];
 
   const handleApprove = async (userId: string) => {
     try {
@@ -59,7 +77,7 @@ function PendingUsersPage() {
           input: {
             userId,
             approved: true,
-          }
+          },
         },
       });
       toast.success(t('User approved successfully'));
@@ -79,7 +97,7 @@ function PendingUsersPage() {
           input: {
             userId: selectedUserId,
             reason: rejectReason,
-          }
+          },
         },
       });
       toast.success(t('User rejected'));
@@ -117,7 +135,7 @@ function PendingUsersPage() {
                 <CardHeader>
                   <div className="flex items-center gap-4">
                     <Avatar>
-                      <AvatarImage src={user.avatar || undefined} />
+                      <AvatarImage src={user.avatar ?? undefined} />
                       <AvatarFallback>
                         {user.firstName?.[0]}
                         {user.lastName?.[0]}
@@ -133,15 +151,11 @@ function PendingUsersPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {t('Registered')}: {new Date(user.createdAt).toLocaleDateString()}
                     </p>
                     <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleApprove(user.id)}
-                      >
+                      <Button size="sm" className="flex-1" onClick={() => handleApprove(user.id)}>
                         <Check className="mr-1 h-4 w-4" />
                         {t('Approve')}
                       </Button>

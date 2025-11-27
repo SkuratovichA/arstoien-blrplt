@@ -32,15 +32,14 @@ export function Charts({ stats }: ChartsProps) {
   if (!stats) return null;
 
   // Use real data from the query, or fall back to basic stats if loading
-  const userData = loading || !growthData?.userGrowthStats
-    ? [
-        { month: t('Loading...'), users: 0, active: 0 },
-      ]
-    : growthData.userGrowthStats.data.map((point) => ({
-        month: t(point.period),
-        users: point.totalUsers,
-        active: point.activeUsers,
-      }));
+  const userData =
+    loading || !growthData?.userGrowthStats
+      ? [{ month: t('Loading...'), users: 0, active: 0 }]
+      : growthData.userGrowthStats.data.map((point) => ({
+          month: t(point.period),
+          users: point.totalUsers,
+          active: point.activeUsers,
+        }));
 
   return (
     <Card>

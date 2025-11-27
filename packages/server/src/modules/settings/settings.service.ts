@@ -1,7 +1,7 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Effect } from 'effect';
 import { PrismaService } from '@/prisma/prisma.service';
-import { DatabaseError, ValidationError, promiseToEffect } from '@/common/effect';
+import { DatabaseError, promiseToEffect, ValidationError } from '@/common/effect';
 import { SystemSettings } from '@prisma/client';
 import { UpdateSystemSettingsInputType } from './dto';
 
@@ -72,7 +72,7 @@ export class SettingsService {
         })
       );
 
-      self.logger.log(`System settings updated by user ${userId || 'unknown'}`);
+      self.logger.log(`System settings updated by user ${userId ?? 'unknown'}`);
       return updated;
     });
   }

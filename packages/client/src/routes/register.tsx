@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from '@arstoien/shared-ui';
 import { Input } from '@arstoien/shared-ui';
-import { REGISTER } from '../graphql/auth.graphql';
+import { REGISTER } from '../graphql/auth.graphql.ts';
 import toast from 'react-hot-toast';
 import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
 
@@ -35,7 +35,7 @@ export const Route = createFileRoute('/register')({
 });
 
 const registerSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   phone: z.string().min(1, 'Phone is required'),
@@ -67,11 +67,11 @@ function Register() {
       });
 
       if (result.data?.register.success) {
-        toast.success(result.data.register.message || t('auth.register.success'));
+        toast.success(result.data.register.message || t('Registration successful'));
         navigate({ to: '/login' });
       }
-    } catch (error) {
-      toast.error(t('auth.register.error'));
+    } catch {
+      toast.error(t('Registration failed'));
     }
   };
 
@@ -79,8 +79,8 @@ function Register() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('auth.register.title')}</CardTitle>
-          <CardDescription>{t('auth.register.description')}</CardDescription>
+          <CardTitle>{t('Register')}</CardTitle>
+          <CardDescription>{t('Create a new account')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -91,12 +91,9 @@ function Register() {
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('auth.fields.firstName')}</FormLabel>
+                      <FormLabel>{t('First name')}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder={t('auth.fields.firstNamePlaceholder')}
-                          {...field}
-                        />
+                        <Input placeholder={t('Enter your first name')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -108,12 +105,9 @@ function Register() {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('auth.fields.lastName')}</FormLabel>
+                      <FormLabel>{t('Last name')}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder={t('auth.fields.lastNamePlaceholder')}
-                          {...field}
-                        />
+                        <Input placeholder={t('Enter your last name')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -126,13 +120,9 @@ function Register() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('auth.fields.email')}</FormLabel>
+                    <FormLabel>{t('Email')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder={t('auth.fields.emailPlaceholder')}
-                        {...field}
-                      />
+                      <Input type="email" placeholder={t('Enter your email')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -144,13 +134,9 @@ function Register() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('auth.fields.phone')}</FormLabel>
+                    <FormLabel>{t('Phone')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="tel"
-                        placeholder={t('auth.fields.phonePlaceholder')}
-                        {...field}
-                      />
+                      <Input type="tel" placeholder={t('Enter your phone number')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -158,16 +144,16 @@ function Register() {
               />
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('common.loading') : t('auth.register.submit')}
+                {loading ? t('Loading...') : t('Register')}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            {t('auth.register.hasAccount')}{' '}
+          <p className="text-muted-foreground text-sm">
+            {t('Already have an account?')}{' '}
             <Link to="/login" className="text-foreground hover:underline">
-              {t('auth.register.signIn')}
+              {t('Sign in')}
             </Link>
           </p>
         </CardFooter>

@@ -66,8 +66,6 @@ model User {
   // Auth tokens and security
   refreshTokens      RefreshToken[]
   verificationTokens VerificationToken[]
-  twoFactorSecrets   TwoFactorSecret[]
-  backupCodes        BackupCode[]
   sessions           Session[]
 
   // Activity tracking
@@ -114,31 +112,6 @@ model VerificationToken {
 
   @@index([userId])
   @@index([token])
-}
-
-model TwoFactorSecret {
-  id        String    @id @default(uuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  secret    String    // Encrypted TOTP secret
-  enabled   Boolean   @default(false)
-  enabledAt DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  @@index([userId])
-}
-
-model BackupCode {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  code      String   // Hashed backup code
-  used      Boolean  @default(false)
-  usedAt    DateTime?
-  createdAt DateTime @default(now())
-
-  @@index([userId])
 }
 
 model Session {

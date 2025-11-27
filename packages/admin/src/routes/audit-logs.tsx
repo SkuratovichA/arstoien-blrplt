@@ -20,11 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@arstoien/shared-ui';
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 
 const columnHelper = createColumnHelper();
 
@@ -53,14 +49,12 @@ function AuditLogsPage() {
     variables: pagination,
   });
 
-  const auditLogs = data?.auditLogs || [];
+  const auditLogs = data?.auditLogs ?? [];
 
   const columns = [
     columnHelper.accessor('action', {
       header: t('Action'),
-      cell: (info) => (
-        <span className="font-medium">{info.getValue()}</span>
-      ),
+      cell: (info) => <span className="font-medium">{info.getValue()}</span>,
     }),
     columnHelper.accessor('entityType', {
       header: t('Entity'),
@@ -80,15 +74,11 @@ function AuditLogsPage() {
     }),
     columnHelper.accessor('ipAddress', {
       header: t('IP Address'),
-      cell: (info) => (
-        <span className="font-mono text-sm">{info.getValue()}</span>
-      ),
+      cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
     }),
     columnHelper.accessor('createdAt', {
       header: t('Date'),
-      cell: (info) => (
-        <span className="text-sm">{new Date(info.getValue()).toLocaleString()}</span>
-      ),
+      cell: (info) => <span className="text-sm">{new Date(info.getValue()).toLocaleString()}</span>,
     }),
   ];
 
@@ -103,9 +93,7 @@ function AuditLogsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t('Audit Logs')}</h1>
-          <p className="text-muted-foreground">
-            {t('View all system activity and changes')}
-          </p>
+          <p className="text-muted-foreground">{t('View all system activity and changes')}</p>
         </div>
 
         <Card>
@@ -118,15 +106,11 @@ function AuditLogsPage() {
               <Input
                 placeholder={t('Search...')}
                 value={filters.search}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, search: e.target.value }))
-                }
+                onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
               />
               <Select
                 value={filters.action}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, action: value || undefined }))
-                }
+                onValueChange={(value) => setFilters((prev) => ({ ...prev, action: value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={t('All Actions')} />

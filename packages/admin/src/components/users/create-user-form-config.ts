@@ -52,7 +52,9 @@ export const createUserFormConfig = ({ t, onSubmit }: FormConfigOptions) => {
             type: 'password' as const,
             label: t('Password (optional)'),
             placeholder: t('Leave empty to auto-generate'),
-            description: t('If left empty, a temporary password will be generated and sent via email'),
+            description: t(
+              'If left empty, a temporary password will be generated and sent via email'
+            ),
           },
         },
       }),

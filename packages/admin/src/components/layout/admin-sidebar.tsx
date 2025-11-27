@@ -1,15 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@arstoien/shared-ui';
-import {
-  LayoutDashboard,
-  Users,
-  UserCheck,
-  FileText,
-  Settings,
-  Bell,
-  User,
-} from 'lucide-react';
+import { LayoutDashboard, Users, UserCheck, FileText, Settings, Bell, User } from 'lucide-react';
 
 const navigation = [
   {
@@ -53,7 +45,7 @@ export function AdminSidebar() {
   const { t } = useTranslation();
 
   return (
-    <aside className="w-64 border-r bg-card">
+    <aside className="bg-card w-64 border-r">
       <nav className="space-y-1 p-4">
         {navigation.map((item) => (
           <Link

@@ -159,20 +159,34 @@ export class EmailService {
    * Send email verification link
    */
   async sendVerificationEmail(email: string, verificationLink: string): Promise<void> {
-    const effect = this.sendTemplatedEmail(
-      email,
-      'Ověření e-mailové adresy - Aukce Autobusů',
-      'email-verification',
-      {
-        verificationLink,
+    try {
+      // In development mode or when email is not configured, just log the verification link
+      if (!this.transporter) {
+        this.logger.warn(`Email transporter not configured. Verification link for ${email}: ${verificationLink}`);
+        return;
       }
-    );
 
-    // Execute the effect and convert to Promise
-    await Effect.runPromise(effect).catch((error) => {
+      const effect = this.sendTemplatedEmail(
+        email,
+        'Email Verification - Boilerplate',
+        'email-verification',
+        {
+          verificationLink,
+        }
+      );
+
+      // Execute the effect and convert to Promise
+      await Effect.runPromise(effect);
+      this.logger.log(`Verification email sent to ${email}`);
+    } catch (error) {
+      // In development, log the link even if email fails
+      if (process.env.NODE_ENV !== 'production') {
+        this.logger.warn(`Email sending failed in development. Verification link for ${email}: ${verificationLink}`);
+        return;
+      }
       this.logger.error(`Failed to send verification email to ${email}:`, error);
       throw error;
-    });
+    }
   }
 
   /**
@@ -265,10 +279,16 @@ export class EmailService {
     templateName: string,
     data: Record<string, unknown>
   ): Effect.Effect<void, ExternalApiError, never> {
-    return Effect.tryPromise({
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+
+    const effect = Effect.tryPromise({
       try: async () => {
         if (!this.transporter) {
-          this.logger.warn('Email transporter not initialized. Skipping email.');
+          this.logger.warn(`Email transporter not initialized. Skipping email to ${to} with subject: ${subject}`);
+          // Log important data in development
+          if (isDevelopment) {
+            this.logger.debug(`Email data: ${JSON.stringify(data, null, 2)}`);
+          }
           return;
         }
 
@@ -295,6 +315,16 @@ export class EmailService {
         });
       },
     });
+
+    // In development mode, ignore email sending errors
+    if (isDevelopment) {
+      return Effect.catchAll(effect, () => {
+        this.logger.warn(`Development mode: Email failure ignored`);
+        return Effect.void;
+      });
+    }
+
+    return effect;
   }
 
   /**
@@ -330,7 +360,7 @@ export class EmailService {
 
       return template;
     } catch (error) {
-      this.logger.error(`Failed to load template ${templateName}:`, error);
+      this.logger.error(`Failed to load template ${templateName} from path: ${templatePath}`, error);
 
       // Return fallback template
       return handlebars.compile(`

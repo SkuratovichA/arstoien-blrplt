@@ -23,7 +23,6 @@ import {
   Input,
 } from '@arstoien/shared-ui';
 
-
 export const Route = createFileRoute('/settings')({
   beforeLoad: () => requireAdminRole(),
   component: SettingsPage,
@@ -39,7 +38,7 @@ function SettingsPage() {
   // Since systemSettings only has supportEmail, we'll create a simple form for that
   const form = useForm({
     defaultValues: {
-      supportEmail: settings?.supportEmail || '',
+      supportEmail: settings?.supportEmail ?? '',
     },
   });
 
@@ -82,9 +81,7 @@ function SettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>{t('Email Settings')}</CardTitle>
-                <CardDescription>
-                  {t('Configure support email address')}
-                </CardDescription>
+                <CardDescription>{t('Configure support email address')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
@@ -96,9 +93,7 @@ function SettingsPage() {
                       <FormControl>
                         <Input {...field} type="email" placeholder="support@example.com" />
                       </FormControl>
-                      <FormDescription>
-                        {t('Email address for support inquiries')}
-                      </FormDescription>
+                      <FormDescription>{t('Email address for support inquiries')}</FormDescription>
                     </FormItem>
                   )}
                 />

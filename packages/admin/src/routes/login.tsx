@@ -6,7 +6,8 @@ import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { LOGIN_MUTATION } from '@/graphql/admin.graphql';
-import { useAuthStore, type User, UserRole } from '@/lib/auth-store';
+import type { UserRole } from '@/lib/auth-store';
+import { useAuthStore, type User } from '@/lib/auth-store';
 import { hasAdminAccess } from '@/lib/auth-guard';
 import {
   Button,
@@ -91,11 +92,7 @@ function LoginPage() {
                   <FormItem>
                     <FormLabel>{t('Email')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder={t('Enter your email')}
-                        {...field}
-                      />
+                      <Input type="email" placeholder={t('Enter your email')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -108,11 +105,7 @@ function LoginPage() {
                   <FormItem>
                     <FormLabel>{t('Password')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder={t('Enter your password')}
-                        {...field}
-                      />
+                      <Input type="password" placeholder={t('Enter your password')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

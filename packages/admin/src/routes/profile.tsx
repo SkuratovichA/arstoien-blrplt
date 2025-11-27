@@ -6,7 +6,11 @@ import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { requireAuth } from '@/lib/auth-guard';
-import { ME_QUERY, UPDATE_PROFILE_MUTATION, CHANGE_PASSWORD_MUTATION } from '@/graphql/admin.graphql';
+import {
+  ME_QUERY,
+  UPDATE_PROFILE_MUTATION,
+  CHANGE_PASSWORD_MUTATION,
+} from '@/graphql/admin.graphql';
 import { useAuthStore } from '@/lib/auth-store';
 import { AdminLayout } from '@/components/layout/admin-layout';
 import { Loading } from '@/components/shared/loading';
@@ -33,17 +37,19 @@ import {
 const profileSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  email: z.string().email(),
+  email: z.email(),
 });
 
-const passwordSchema = z.object({
-  currentPassword: z.string().min(8),
-  newPassword: z.string().min(8),
-  confirmPassword: z.string().min(8),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const passwordSchema = z
+  .object({
+    currentPassword: z.string().min(8),
+    newPassword: z.string().min(8),
+    confirmPassword: z.string().min(8),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 type PasswordFormValues = z.infer<typeof passwordSchema>;
@@ -65,11 +71,13 @@ function ProfilePage() {
 
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
-    values: user ? {
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      email: user.email,
-    } : undefined,
+    values: user
+      ? {
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          email: user.email,
+        }
+      : undefined,
   });
 
   const passwordForm = useForm<PasswordFormValues>({
@@ -112,7 +120,7 @@ function ProfilePage() {
         toast.success(t('Password changed successfully'));
         passwordForm.reset();
       } else {
-        toast.error(data?.changePassword?.message || t('Failed to change password'));
+        toast.error(data?.changePassword?.message ?? t('Failed to change password'));
       }
     } catch (error) {
       toast.error(t('Failed to change password'));
@@ -209,7 +217,10 @@ function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <Form {...passwordForm}>
-                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                  <form
+                    onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={passwordForm.control}
                       name="currentPassword"

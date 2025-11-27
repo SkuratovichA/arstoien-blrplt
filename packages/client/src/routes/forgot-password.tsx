@@ -62,9 +62,9 @@ function ForgotPassword() {
       });
 
       setEmailSent(true);
-      toast.success(t('auth.forgotPassword.success'));
-    } catch (error) {
-      toast.error(t('auth.forgotPassword.error'));
+      toast.success(t('Password reset email sent'));
+    } catch {
+      toast.error(t('Failed to send password reset email'));
     }
   };
 
@@ -73,17 +73,14 @@ function ForgotPassword() {
       <AuthLayout>
         <Card>
           <CardHeader>
-            <CardTitle>{t('auth.forgotPassword.emailSent')}</CardTitle>
+            <CardTitle>{t('Email sent')}</CardTitle>
             <CardDescription>
-              {t('auth.forgotPassword.checkEmail')}
+              {t('Check your email for password reset instructions')}
             </CardDescription>
           </CardHeader>
           <CardFooter className="flex justify-center">
-            <Link
-              to="/login"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              {t('auth.forgotPassword.backToLogin')}
+            <Link to="/login" className="text-muted-foreground hover:text-foreground text-sm">
+              {t('Back to login')}
             </Link>
           </CardFooter>
         </Card>
@@ -95,9 +92,9 @@ function ForgotPassword() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('auth.forgotPassword.title')}</CardTitle>
+          <CardTitle>{t('Forgot password')}</CardTitle>
           <CardDescription>
-            {t('auth.forgotPassword.description')}
+            {t('Enter your email to receive a password reset link')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,13 +105,9 @@ function ForgotPassword() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('auth.fields.email')}</FormLabel>
+                    <FormLabel>{t('Email')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder={t('auth.fields.emailPlaceholder')}
-                        {...field}
-                      />
+                      <Input type="email" placeholder={t('Enter your email')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -122,19 +115,14 @@ function ForgotPassword() {
               />
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading
-                  ? t('common.loading')
-                  : t('auth.forgotPassword.submit')}
+                {loading ? t('Loading...') : t('Send reset link')}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Link
-            to="/login"
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            {t('auth.forgotPassword.backToLogin')}
+          <Link to="/login" className="text-muted-foreground hover:text-foreground text-sm">
+            {t('Back to login')}
           </Link>
         </CardFooter>
       </Card>

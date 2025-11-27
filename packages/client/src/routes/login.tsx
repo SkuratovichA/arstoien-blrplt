@@ -22,8 +22,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@arstoien/shared-ui';
-import { Input } from '@arstoien/shared-ui';
-import { LOGIN } from '../graphql/auth.graphql';
+import { Input, PasswordInput } from '@arstoien/shared-ui';
+import { LOGIN } from '../graphql/auth.graphql.ts';
 import { useAuthStore } from '../lib/auth-store';
 import toast from 'react-hot-toast';
 import { Link } from '@tanstack/react-router';
@@ -82,17 +82,16 @@ function Login() {
           firstName: user.firstName,
           lastName: user.lastName,
           emailVerifiedAt: user.emailVerifiedAt,
-          isTwoFactorEnabled: false, // TODO: Update when 2FA is implemented
           createdAt: user.createdAt,
         });
-        toast.success(t('auth.login.success'));
+        toast.success(t('Login successful'));
         navigate({ to: '/dashboard', search: {} });
       } else {
-        throw new Error(t('auth.login.error'));
+        throw new Error(t('Login failed'));
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('auth.login.error');
+      const errorMessage = error instanceof Error ? error.message : t('Login failed');
       toast.error(errorMessage);
     }
   };
@@ -101,8 +100,8 @@ function Login() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('auth.login.title')}</CardTitle>
-          <CardDescription>{t('auth.login.description')}</CardDescription>
+          <CardTitle>{t('Login')}</CardTitle>
+          <CardDescription>{t('Sign in to your account')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -112,13 +111,9 @@ function Login() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('auth.fields.email')}</FormLabel>
+                    <FormLabel>{t('Email')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder={t('auth.fields.emailPlaceholder')}
-                        {...field}
-                      />
+                      <Input type="email" placeholder={t('Enter your email')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -130,13 +125,9 @@ function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('auth.fields.password')}</FormLabel>
+                    <FormLabel>{t('Password')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder={t('auth.fields.passwordPlaceholder')}
-                        {...field}
-                      />
+                      <PasswordInput placeholder={t('Enter your password')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -146,23 +137,23 @@ function Login() {
               <div className="text-right">
                 <Link
                   to="/forgot-password"
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground text-sm"
                 >
-                  {t('auth.login.forgotPassword')}
+                  {t('Forgot password?')}
                 </Link>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('common.loading') : t('auth.login.submit')}
+                {loading ? t('Loading...') : t('Sign in')}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            {t('auth.login.noAccount')}{' '}
+          <p className="text-muted-foreground text-sm">
+            {t("Don't have an account?")}{' '}
             <Link to="/register" className="text-foreground hover:underline">
-              {t('auth.login.signUp')}
+              {t('Sign up')}
             </Link>
           </p>
         </CardFooter>

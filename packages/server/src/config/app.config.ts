@@ -1,17 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import type {
-  CookieOptionsConfig,
-  CorsConfig,
-  DatabaseConfig,
-  EmailConfig,
-  GoogleOAuthConfig,
-  GraphqlConfig,
-  JwtConfig,
-  RedisConfig,
-  S3Config,
-  SentryConfig,
-  UploadConfig,
-} from './config-types';
+import type { CookieOptionsConfig, CorsConfig, DatabaseConfig, EmailConfig, GoogleOAuthConfig, GraphqlConfig, JwtConfig, RedisConfig, S3Config, SentryConfig, UploadConfig, } from './config-types';
 
 export type AppConfig = {
   environment: string;

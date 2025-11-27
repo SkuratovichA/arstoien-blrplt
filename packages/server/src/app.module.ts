@@ -8,20 +8,6 @@ import { Request, Response } from 'express';
 
 // Config
 import { appConfig, AppConfig } from '@config/app.config';
-
-interface GraphQLContext {
-  req: Request & {
-    user?: unknown;
-  };
-  res: Response;
-  connection?: {
-    context: {
-      req: unknown;
-      user: unknown;
-    };
-  };
-}
-
 // Modules
 import { PrismaModule } from '@prisma/prisma.module';
 import { PrismaService } from '@prisma/prisma.service';
@@ -39,6 +25,19 @@ import { DateScalar } from '@common/scalars/date.scalar';
 
 // Import to ensure all GraphQL enums are registered
 import '@/common/graphql';
+
+interface GraphQLContext {
+  req: Request & {
+    user?: unknown;
+  };
+  res: Response;
+  connection?: {
+    context: {
+      req: unknown;
+      user: unknown;
+    };
+  };
+}
 
 @Module({
   imports: [

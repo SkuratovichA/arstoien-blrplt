@@ -27,37 +27,6 @@ export const CHANGE_PASSWORD = graphql(`
   }
 `);
 
-// Enable two-factor authentication
-export const ENABLE_TWO_FACTOR = graphql(`
-  mutation EnableTwoFactor {
-    enableTwoFactor {
-      secret
-      qrCode
-      backupCodes
-    }
-  }
-`);
-
-// Confirm two-factor authentication
-export const CONFIRM_TWO_FACTOR = graphql(`
-  mutation ConfirmTwoFactor($input: ConfirmTwoFactorInputType!) {
-    confirmTwoFactor(input: $input) {
-      success
-      message
-    }
-  }
-`);
-
-// Disable two-factor authentication
-export const DISABLE_TWO_FACTOR = graphql(`
-  mutation DisableTwoFactor($input: DisableTwoFactorInputType!) {
-    disableTwoFactor(input: $input) {
-      success
-      message
-    }
-  }
-`);
-
 // Delete account mutation
 export const DELETE_ACCOUNT = graphql(`
   mutation DeleteAccount($input: DeleteAccountInputType!) {

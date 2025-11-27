@@ -1,6 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { S3Service } from '@common/services';
-import { LockService } from '@common/services';
+import { LockService, S3Service } from '@common/services';
 
 /**
  * CommonModule - Global module providing shared services

@@ -6,13 +6,7 @@ import { z } from 'zod';
 import { useMutation } from '@apollo/client/react';
 import { MainLayout } from '../components/layout/main-layout';
 import { Button } from '@arstoien/shared-ui';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@arstoien/shared-ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
 import {
   Form,
   FormControl,
@@ -21,19 +15,11 @@ import {
   FormLabel,
   FormMessage,
 } from '@arstoien/shared-ui';
-import { Input } from '@arstoien/shared-ui';
-import {
-  UPDATE_PROFILE,
-  CHANGE_PASSWORD,
-  ENABLE_TWO_FACTOR,
-  CONFIRM_TWO_FACTOR,
-  DISABLE_TWO_FACTOR,
-  DELETE_ACCOUNT,
-} from '../graphql/user.graphql';
+import { Input, PasswordInput } from '@arstoien/shared-ui';
+import { UPDATE_PROFILE, CHANGE_PASSWORD, DELETE_ACCOUNT } from '../graphql/user.graphql';
 import { useAuthStore } from '../lib/auth-store';
 import toast from 'react-hot-toast';
 import { requireAuth, requireEmailVerified, type AuthGuardContext } from '../lib/auth-guard';
-import { useState } from 'react';
 
 export const Route = createFileRoute('/profile')({
   beforeLoad: ({ context }) => {
@@ -59,41 +45,24 @@ const passwordSchema = z
     path: ['confirmPassword'],
   });
 
-const twoFactorConfirmSchema = z.object({
-  code: z.string().length(6),
-});
-
 type ProfileFormData = z.infer<typeof profileSchema>;
 type PasswordFormData = z.infer<typeof passwordSchema>;
-type TwoFactorConfirmFormData = z.infer<typeof twoFactorConfirmSchema>;
 
 function Profile() {
   const { t } = useTranslation();
   const { user, setUser, logout } = useAuthStore();
-  const [twoFactorSetup, setTwoFactorSetup] = useState<{
-    secret: string;
-    qrCode: string;
-  } | null>(null);
 
-  const [updateProfile, { loading: updatingProfile }] =
-    useMutation(UPDATE_PROFILE as Parameters<typeof useMutation>[0]);
-  const [changePassword, { loading: changingPassword }] =
-    useMutation(CHANGE_PASSWORD);
-  const [enableTwoFactor, { loading: enablingTwoFactor }] =
-    useMutation(ENABLE_TWO_FACTOR);
-  const [confirmTwoFactor, { loading: confirmingTwoFactor }] = useMutation(
-    CONFIRM_TWO_FACTOR
+  const [updateProfile, { loading: updatingProfile }] = useMutation(
+    UPDATE_PROFILE as Parameters<typeof useMutation>[0]
   );
-  const [disableTwoFactor, { loading: disablingTwoFactor }] =
-    useMutation(DISABLE_TWO_FACTOR);
-  const [deleteAccount, { loading: deletingAccount }] =
-    useMutation(DELETE_ACCOUNT);
+  const [changePassword, { loading: changingPassword }] = useMutation(CHANGE_PASSWORD);
+  const [deleteAccount, { loading: deletingAccount }] = useMutation(DELETE_ACCOUNT);
 
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
+      firstName: user?.firstName ?? '',
+      lastName: user?.lastName ?? '',
     },
   });
 
@@ -106,32 +75,35 @@ function Profile() {
     },
   });
 
-  const twoFactorForm = useForm<TwoFactorConfirmFormData>({
-    resolver: zodResolver(twoFactorConfirmSchema),
-    defaultValues: {
-      code: '',
-    },
-  });
-
   const onProfileSubmit = async (data: ProfileFormData) => {
     try {
       const result = await updateProfile({
         variables: { input: data },
       });
 
-      const responseData = result.data as { updateProfile: { id: string; email: string; firstName: string; lastName: string; phone?: string | null; emailVerifiedAt?: string | null; createdAt: string } } | null;
+      const responseData = result.data as {
+        updateProfile: {
+          id: string;
+          email: string;
+          firstName: string;
+          lastName: string;
+          phone?: string | null;
+          emailVerifiedAt?: string | null;
+          createdAt: string;
+        };
+      } | null;
       if (responseData?.updateProfile && user) {
         const updated = responseData.updateProfile;
         setUser({
           ...user,
           firstName: updated.firstName,
           lastName: updated.lastName,
-          phone: updated.phone || undefined,
+          phone: updated.phone ?? undefined,
           emailVerifiedAt: updated.emailVerifiedAt,
         });
         toast.success(t('profile.updateSuccess'));
       }
-    } catch (error) {
+    } catch {
       toast.error(t('profile.updateError'));
     }
   };
@@ -149,60 +121,8 @@ function Profile() {
 
       passwordForm.reset();
       toast.success(t('profile.passwordChangeSuccess'));
-    } catch (error) {
+    } catch {
       toast.error(t('profile.passwordChangeError'));
-    }
-  };
-
-  const handleEnableTwoFactor = async () => {
-    try {
-      const result = await enableTwoFactor();
-
-      if (result.data?.enableTwoFactor) {
-        setTwoFactorSetup({
-          secret: result.data.enableTwoFactor.secret,
-          qrCode: result.data.enableTwoFactor.qrCode,
-        });
-      }
-    } catch (error) {
-      toast.error(t('profile.twoFactorEnableError'));
-    }
-  };
-
-  const onTwoFactorConfirm = async (data: TwoFactorConfirmFormData) => {
-    try {
-      const result = await confirmTwoFactor({
-        variables: { input: data },
-      });
-
-      if (result.data?.confirmTwoFactor.success && user) {
-        setUser({ ...user, isTwoFactorEnabled: true });
-        setTwoFactorSetup(null);
-        twoFactorForm.reset();
-        toast.success(t('profile.twoFactorEnableSuccess'));
-      }
-    } catch (error) {
-      toast.error(t('profile.twoFactorConfirmError'));
-    }
-  };
-
-  const handleDisableTwoFactor = async () => {
-    if (!confirm(t('profile.twoFactorDisableConfirm'))) return;
-
-    try {
-      const password = prompt(t('profile.enterPassword'));
-      if (!password) return;
-
-      const result = await disableTwoFactor({
-        variables: { input: { password } },
-      });
-
-      if (result.data?.disableTwoFactor.success && user) {
-        setUser({ ...user, isTwoFactorEnabled: false });
-        toast.success(t('profile.twoFactorDisableSuccess'));
-      }
-    } catch (error) {
-      toast.error(t('profile.twoFactorDisableError'));
     }
   };
 
@@ -219,7 +139,7 @@ function Profile() {
 
       logout();
       toast.success(t('profile.deleteAccountSuccess'));
-    } catch (error) {
+    } catch {
       toast.error(t('profile.deleteAccountError'));
     }
   };
@@ -234,16 +154,11 @@ function Profile() {
           <Card>
             <CardHeader>
               <CardTitle>{t('profile.personalInfo')}</CardTitle>
-              <CardDescription>
-                {t('profile.personalInfoDescription')}
-              </CardDescription>
+              <CardDescription>{t('profile.personalInfoDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...profileForm}>
-                <form
-                  onSubmit={profileForm.handleSubmit(onProfileSubmit)}
-                  className="space-y-4"
-                >
+                <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <FormField
                       control={profileForm.control}
@@ -280,9 +195,7 @@ function Profile() {
                   </div>
 
                   <Button type="submit" disabled={updatingProfile}>
-                    {updatingProfile
-                      ? t('common.loading')
-                      : t('profile.updateButton')}
+                    {updatingProfile ? t('common.loading') : t('profile.updateButton')}
                   </Button>
                 </form>
               </Form>
@@ -293,16 +206,11 @@ function Profile() {
           <Card>
             <CardHeader>
               <CardTitle>{t('profile.changePassword')}</CardTitle>
-              <CardDescription>
-                {t('profile.changePasswordDescription')}
-              </CardDescription>
+              <CardDescription>{t('profile.changePasswordDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...passwordForm}>
-                <form
-                  onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
-                  className="space-y-4"
-                >
+                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
                   <FormField
                     control={passwordForm.control}
                     name="currentPassword"
@@ -310,7 +218,7 @@ function Profile() {
                       <FormItem>
                         <FormLabel>{t('profile.currentPassword')}</FormLabel>
                         <FormControl>
-                          <Input type="password" {...field} />
+                          <PasswordInput {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -324,7 +232,7 @@ function Profile() {
                       <FormItem>
                         <FormLabel>{t('profile.newPassword')}</FormLabel>
                         <FormControl>
-                          <Input type="password" {...field} />
+                          <PasswordInput {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -338,7 +246,7 @@ function Profile() {
                       <FormItem>
                         <FormLabel>{t('auth.fields.confirmPassword')}</FormLabel>
                         <FormControl>
-                          <Input type="password" {...field} />
+                          <PasswordInput {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -346,122 +254,18 @@ function Profile() {
                   />
 
                   <Button type="submit" disabled={changingPassword}>
-                    {changingPassword
-                      ? t('common.loading')
-                      : t('profile.changePasswordButton')}
+                    {changingPassword ? t('common.loading') : t('profile.changePasswordButton')}
                   </Button>
                 </form>
               </Form>
             </CardContent>
           </Card>
 
-          {/* Two-Factor Authentication */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('profile.twoFactor')}</CardTitle>
-              <CardDescription>
-                {t('profile.twoFactorDescription')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t('profile.twoFactorStatus')}:{' '}
-                  <span className="font-medium">
-                    {user?.isTwoFactorEnabled
-                      ? t('common.enabled')
-                      : t('common.disabled')}
-                  </span>
-                </p>
-              </div>
-
-              {!user?.isTwoFactorEnabled && !twoFactorSetup && (
-                <Button
-                  onClick={handleEnableTwoFactor}
-                  disabled={enablingTwoFactor}
-                >
-                  {enablingTwoFactor
-                    ? t('common.loading')
-                    : t('profile.enableTwoFactor')}
-                </Button>
-              )}
-
-              {twoFactorSetup && (
-                <div className="space-y-4">
-                  <div>
-                    <p className="mb-2 text-sm font-medium">
-                      {t('profile.scanQrCode')}
-                    </p>
-                    <img
-                      src={twoFactorSetup.qrCode}
-                      alt="QR Code"
-                      className="rounded-lg border"
-                    />
-                  </div>
-
-                  <div>
-                    <p className="mb-2 text-sm font-medium">
-                      {t('profile.manualEntry')}
-                    </p>
-                    <code className="block rounded-lg bg-muted p-2 text-sm">
-                      {twoFactorSetup.secret}
-                    </code>
-                  </div>
-
-                  <Form {...twoFactorForm}>
-                    <form
-                      onSubmit={twoFactorForm.handleSubmit(onTwoFactorConfirm)}
-                      className="space-y-4"
-                    >
-                      <FormField
-                        control={twoFactorForm.control}
-                        name="code"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {t('profile.enterVerificationCode')}
-                            </FormLabel>
-                            <FormControl>
-                              <Input maxLength={6} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <Button type="submit" disabled={confirmingTwoFactor}>
-                        {confirmingTwoFactor
-                          ? t('common.loading')
-                          : t('profile.confirmTwoFactor')}
-                      </Button>
-                    </form>
-                  </Form>
-                </div>
-              )}
-
-              {user?.isTwoFactorEnabled && (
-                <Button
-                  variant="destructive"
-                  onClick={handleDisableTwoFactor}
-                  disabled={disablingTwoFactor}
-                >
-                  {disablingTwoFactor
-                    ? t('common.loading')
-                    : t('profile.disableTwoFactor')}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Danger Zone */}
           <Card className="border-destructive">
             <CardHeader>
-              <CardTitle className="text-destructive">
-                {t('profile.dangerZone')}
-              </CardTitle>
-              <CardDescription>
-                {t('profile.dangerZoneDescription')}
-              </CardDescription>
+              <CardTitle className="text-destructive">{t('profile.dangerZone')}</CardTitle>
+              <CardDescription>{t('profile.dangerZoneDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -469,9 +273,7 @@ function Profile() {
                 onClick={handleDeleteAccount}
                 disabled={deletingAccount}
               >
-                {deletingAccount
-                  ? t('common.loading')
-                  : t('profile.deleteAccount')}
+                {deletingAccount ? t('common.loading') : t('profile.deleteAccount')}
               </Button>
             </CardContent>
           </Card>

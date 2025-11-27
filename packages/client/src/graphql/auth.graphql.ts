@@ -1,6 +1,6 @@
-import { graphql } from '../gql';
+import { graphql } from '@/gql';
 
-// Register mutation returns RegisterResponse with success and message only
+// Register mutation returns RegisterResponse with success and message
 export const REGISTER = graphql(`
   mutation Register($input: RegisterInput!) {
     register(input: $input) {
@@ -53,6 +53,28 @@ export const RESET_PASSWORD = graphql(`
   }
 `);
 
+// Set password with token mutation (for new users after admin approval)
+export const SET_PASSWORD_WITH_TOKEN = graphql(`
+  mutation SetPasswordWithToken($input: SetPasswordWithTokenInput!) {
+    setPasswordWithToken(input: $input) {
+      accessToken
+      refreshToken
+      user {
+        id
+        email
+        firstName
+        lastName
+        role
+        status
+        avatar
+        emailVerifiedAt
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`);
+
 // Current user query
 export const CURRENT_USER_QUERY = graphql(`
   query CurrentUser {
@@ -90,27 +112,6 @@ export const RESEND_VERIFICATION_EMAIL = graphql(`
     resendVerificationEmail {
       success
       message
-    }
-  }
-`);
-
-// Verify two-factor authentication
-export const VERIFY_TWO_FACTOR = graphql(`
-  mutation VerifyTwoFactor($input: VerifyTwoFactorInput!) {
-    verifyTwoFactor(input: $input) {
-      accessToken
-      refreshToken
-      user {
-        id
-        email
-        firstName
-        lastName
-        role
-        status
-        emailVerifiedAt
-        createdAt
-        updatedAt
-      }
     }
   }
 `);

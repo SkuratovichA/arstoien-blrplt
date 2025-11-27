@@ -11,10 +11,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -43,16 +40,14 @@ function ErrorFallback({ error }: { error: Error | null }) {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">{t('error.title')}</h1>
-        <p className="mb-4 text-muted-foreground">{t('error.description')}</p>
+        <h1 className="mb-4 text-4xl font-bold">{t('Something went wrong')}</h1>
+        <p className="text-muted-foreground mb-4">
+          {t('An unexpected error occurred. Please try again.')}
+        </p>
         {error && (
-          <pre className="mb-4 rounded-lg bg-muted p-4 text-left text-sm">
-            {error.message}
-          </pre>
+          <pre className="bg-muted mb-4 rounded-lg p-4 text-left text-sm">{error.message}</pre>
         )}
-        <Button onClick={() => window.location.reload()}>
-          {t('error.reload')}
-        </Button>
+        <Button onClick={() => window.location.reload()}>{t('Reload page')}</Button>
       </div>
     </div>
   );

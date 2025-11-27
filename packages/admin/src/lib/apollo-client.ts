@@ -1,11 +1,4 @@
-import {
-  ApolloClient,
-  ApolloLink,
-  InMemoryCache,
-  split,
-  gql,
-  Observable,
-} from '@apollo/client';
+import { ApolloClient, ApolloLink, InMemoryCache, split, gql, Observable } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { env } from './env';
@@ -38,7 +31,7 @@ let isRefreshing = false;
 let pendingRequests: (() => void)[] = [];
 
 const resolvePendingRequests = () => {
-  pendingRequests.map(callback => callback());
+  pendingRequests.map((callback) => callback());
   pendingRequests = [];
 };
 
@@ -63,7 +56,7 @@ const errorLink = onError((options) => {
               new UploadHttpLink({
                 uri: env.graphqlUrl,
                 credentials: 'include',
-              })
+              }),
             ]),
             cache: new InMemoryCache(),
           });
@@ -186,7 +179,7 @@ const cache = new InMemoryCache({
             }
             return {
               ...incoming,
-              nodes: [...(existing?.nodes || []), ...incoming.nodes],
+              nodes: [...(existing?.nodes ?? []), ...incoming.nodes],
             };
           },
         },

@@ -21,69 +21,49 @@ function Dashboard() {
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
         <h1 className="mb-8 text-4xl font-bold">
-          {t('dashboard.welcome', { name: user?.firstName || user?.email })}
+          {t('Welcome, {{name}}', { name: user?.firstName ?? user?.email })}
         </h1>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader>
-              <CardTitle>{t('dashboard.accountInfo')}</CardTitle>
+              <CardTitle>{t('Account information')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div>
-                <p className="text-sm text-muted-foreground">
-                  {t('dashboard.email')}
-                </p>
+                <p className="text-muted-foreground text-sm">{t('Email')}</p>
                 <p className="font-medium">{user?.email}</p>
               </div>
               {user?.firstName && (
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('dashboard.name')}
-                  </p>
+                  <p className="text-muted-foreground text-sm">{t('Name')}</p>
                   <p className="font-medium">
                     {user.firstName} {user.lastName}
                   </p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-muted-foreground">
-                  {t('dashboard.emailVerified')}
-                </p>
-                <p className="font-medium">
-                  {isEmailVerified(user) ? t('common.yes') : t('common.no')}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t('dashboard.twoFactor')}
-                </p>
-                <p className="font-medium">
-                  {user?.isTwoFactorEnabled ? t('common.yes') : t('common.no')}
-                </p>
+                <p className="text-muted-foreground text-sm">{t('Email verified')}</p>
+                <p className="font-medium">{isEmailVerified(user) ? t('Yes') : t('No')}</p>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>{t('dashboard.quickActions')}</CardTitle>
+              <CardTitle>{t('Quick actions')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {t('dashboard.quickActionsDescription')}
-              </p>
+              <p className="text-muted-foreground text-sm">{t('Quick actions will appear here')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>{t('dashboard.recentActivity')}</CardTitle>
+              <CardTitle>{t('Recent activity')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {t('dashboard.noActivity')}
-              </p>
+              <p className="text-muted-foreground text-sm">{t('No recent activity')}</p>
             </CardContent>
           </Card>
         </div>

@@ -35,9 +35,9 @@ export function AddUserModal({ onUserCreated }: AddUserModalProps) {
             email: data.email,
             firstName: data.firstName,
             lastName: data.lastName,
-            phone: data.phone || undefined,
+            phone: data.phone ?? undefined,
             role: data.role,
-            password: data.password || undefined,
+            password: data.password ?? undefined,
           },
         },
       });
@@ -49,7 +49,8 @@ export function AddUserModal({ onUserCreated }: AddUserModalProps) {
       }
     } catch (error) {
       console.error('Create user error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create user. Please try again.';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to create user. Please try again.';
       toast.error(t(errorMessage));
       throw error;
     }

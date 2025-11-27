@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "@apollo/client": "^4.0.9",
-    "@arstoien/former": "link:../../../former",
-    "@arstoien/shared-ui": "1.0.6",
+    "@arstoien/former": "file:../../../former",
+    "@arstoien/shared-ui": "1.0.7",
     "@hookform/resolvers": "^3.3.4",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",

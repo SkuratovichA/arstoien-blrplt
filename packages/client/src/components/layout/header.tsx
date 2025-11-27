@@ -1,14 +1,16 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { Button } from '@arstoien/shared-ui';
 import { useAuthStore } from '@lib/auth-store';
-import { useMutation } from '@apollo/client/react';
+import { useMutation, useApolloClient } from '@apollo/client/react';
 import { LOGOUT } from '@graphql/auth.graphql';
 import toast from 'react-hot-toast';
 import { env } from '@lib/env';
 
 export function Header() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const apolloClient = useApolloClient();
   const { user, logout } = useAuthStore();
   const [logoutMutation] = useMutation(LOGOUT);
 
@@ -16,9 +18,11 @@ export function Header() {
     try {
       await logoutMutation();
       logout();
-      toast.success(t('auth.logout.success'));
-    } catch (error) {
-      toast.error(t('auth.logout.error'));
+      await apolloClient.cache.reset();
+      navigate({ to: '/login' });
+      toast.success(t('Logged out successfully'));
+    } catch {
+      toast.error(t('Failed to log out'));
     }
   };
 
@@ -33,22 +37,22 @@ export function Header() {
           {user ? (
             <>
               <Link to="/dashboard">
-                <Button variant="ghost">{t('nav.dashboard')}</Button>
+                <Button variant="ghost">{t('Dashboard')}</Button>
               </Link>
               <Link to="/profile">
-                <Button variant="ghost">{t('nav.profile')}</Button>
+                <Button variant="ghost">{t('Profile')}</Button>
               </Link>
               <Button onClick={handleLogout} variant="outline">
-                {t('auth.logout.button')}
+                {t('Log out')}
               </Button>
             </>
           ) : (
             <>
               <Link to="/login">
-                <Button variant="ghost">{t('auth.login.title')}</Button>
+                <Button variant="ghost">{t('Login')}</Button>
               </Link>
               <Link to="/register">
-                <Button>{t('auth.register.title')}</Button>
+                <Button>{t('Register')}</Button>
               </Link>
             </>
           )}

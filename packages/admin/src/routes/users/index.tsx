@@ -34,14 +34,28 @@ function UsersPage() {
   const { data, loading, refetch } = useQuery(USERS_QUERY as Parameters<typeof useQuery>[0], {
     variables: {
       search: filters.search || undefined,
-      role: filters.role || undefined,
-      status: filters.status || undefined,
+      role: filters.role ?? undefined,
+      status: filters.status ?? undefined,
       ...pagination,
     },
   });
 
-  const responseData = data as { users: Array<{ id: string; email: string; firstName: string; lastName: string; phone?: string | null; role: string; status: string; createdAt: string; updatedAt: string }> } | undefined;
-  const users = (responseData?.users || []).map(user => ({
+  const responseData = data as
+    | {
+        users: Array<{
+          id: string;
+          email: string;
+          firstName: string;
+          lastName: string;
+          phone?: string | null;
+          role: string;
+          status: string;
+          createdAt: string;
+          updatedAt: string;
+        }>;
+      }
+    | undefined;
+  const users = (responseData?.users ?? []).map((user) => ({
     ...user,
     emailVerified: false, // TODO: Add emailVerifiedAt to query and compute this
   }));
@@ -55,7 +69,7 @@ function UsersPage() {
             <h1 className="text-3xl font-bold tracking-tight">{t('Users')}</h1>
             <p className="text-muted-foreground">{t('Manage all users in the system')}</p>
           </div>
-          <AddUserModal onUserCreated={refetch}/>
+          <AddUserModal onUserCreated={refetch} />
         </div>
 
         <UserFilters filters={filters} onFiltersChange={setFilters} />

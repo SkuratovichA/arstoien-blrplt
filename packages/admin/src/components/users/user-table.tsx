@@ -1,10 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from '@tanstack/react-router';
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import {
   Avatar,
   AvatarFallback,
@@ -43,12 +39,7 @@ interface UserTableProps {
 
 const columnHelper = createColumnHelper<User>();
 
-export function UserTable({
-  users,
-  totalCount,
-  pagination,
-  onPaginationChange,
-}: UserTableProps) {
+export function UserTable({ users, totalCount, pagination, onPaginationChange }: UserTableProps) {
   const { t } = useTranslation();
 
   const columns = [
@@ -59,7 +50,7 @@ export function UserTable({
         return (
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarImage src={user.avatar || undefined} />
+              <AvatarImage src={user.avatar ?? undefined} />
               <AvatarFallback>
                 {user.firstName?.[0]}
                 {user.lastName?.[0]}
@@ -69,7 +60,7 @@ export function UserTable({
               <p className="font-medium">
                 {user.firstName} {user.lastName}
               </p>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
+              <p className="text-muted-foreground text-sm">{user.email}</p>
             </div>
           </div>
         );
@@ -80,11 +71,7 @@ export function UserTable({
       cell: (info) => {
         const role = info.getValue();
         const variant =
-          role === 'ADMIN'
-            ? 'destructive'
-            : role === 'MODERATOR'
-              ? 'default'
-              : 'secondary';
+          role === 'ADMIN' ? 'destructive' : role === 'MODERATOR' ? 'default' : 'secondary';
         return <Badge variant={variant}>{role}</Badge>;
       },
     }),
@@ -93,11 +80,7 @@ export function UserTable({
       cell: (info) => {
         const status = info.getValue();
         const variant =
-          status === 'ACTIVE'
-            ? 'default'
-            : status === 'PENDING'
-              ? 'secondary'
-              : 'destructive';
+          status === 'ACTIVE' ? 'default' : status === 'PENDING' ? 'secondary' : 'destructive';
         return <Badge variant={variant}>{status}</Badge>;
       },
     }),
@@ -120,9 +103,7 @@ export function UserTable({
       cell: (info) => {
         const date = info.getValue();
         return (
-          <span className="text-sm">
-            {date ? new Date(date).toLocaleDateString() : t('Never')}
-          </span>
+          <span className="text-sm">{date ? new Date(date).toLocaleDateString() : t('Never')}</span>
         );
       },
     }),
@@ -152,8 +133,9 @@ export function UserTable({
       <CardContent className="p-0">
         <DataTable table={table} />
         <div className="flex items-center justify-between border-t p-4">
-          <div className="text-sm text-muted-foreground">
-            {t('Showing')} {pagination.skip + 1} - {Math.min(pagination.skip + pagination.take, totalCount)} {t('of')} {totalCount}
+          <div className="text-muted-foreground text-sm">
+            {t('Showing')} {pagination.skip + 1} -{' '}
+            {Math.min(pagination.skip + pagination.take, totalCount)} {t('of')} {totalCount}
           </div>
           <div className="flex gap-2">
             <Button

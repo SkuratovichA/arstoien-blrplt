@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>[Admin] Nový uživatel čeká na schválení</title>
+  <title>[Admin] New User Pending Approval</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -61,44 +61,39 @@
 </head>
 <body>
   <div class="header">
-    <h1>[ADMIN] Nový uživatel k schválení</h1>
+    <h1>[ADMIN] New User Pending Approval</h1>
   </div>
 
   <div class="content">
-    <p>Dobrý den administrátore,</p>
+    <p>Hello Administrator,</p>
 
-    <p>Nový uživatel se zaregistroval a čeká na schválení.</p>
+    <p>A new user has registered and is waiting for approval.</p>
 
     <div class="highlight">
-      <p><strong>⚠️ Akce požadována:</strong> Zkontrolujte prosím údaje uživatele a schvalte nebo zamítněte registraci.</p>
+      <p><strong>⚠️ Action Required:</strong> Please review the user details and approve or reject the registration.</p>
     </div>
 
     <div class="user-details">
-      <p><strong>Uživatelské údaje:</strong></p>
+      <p><strong>User Details:</strong></p>
       <ul>
-        <li><strong>Jméno:</strong> {{firstName}} {{lastName}}</li>
-        <li><strong>E-mail:</strong> {{email}}</li>
-        {{#if companyName}}
-        <li><strong>Společnost:</strong> {{companyName}}</li>
-        <li><strong>IČO:</strong> {{ico}}</li>
-        {{/if}}
-        <li><strong>Datum registrace:</strong> {{registrationDate}}</li>
+        <li><strong>Name:</strong> {{firstName}} {{lastName}}</li>
+        <li><strong>Email:</strong> {{email}}</li>
+        <li><strong>Registration Date:</strong> {{registrationDate}}</li>
       </ul>
     </div>
 
-    <p>Přejděte do administračního panelu pro kontrolu a schválení.</p>
+    <p>Go to the admin panel to review and approve.</p>
 
-<!--    FIXME: add an adminURL so it redirects to the admin panel. Either on the dev. env or in production. -->
-    <a href="{{adminUrl}}" class="button">Otevřít administraci</a>
+    <a href="{{adminUrl}}" class="button">Open Admin Panel</a>
 
     <p style="margin-top: 30px;">
-      <strong>Admin Panel - Aukce Autobusů</strong>
+      <strong>Admin Panel - Boilerplate</strong>
     </p>
   </div>
 
   <div class="footer">
-    <p>Tento e-mail byl odeslán automaticky systémem.</p>
-    <p>&copy; 2025 Aukce Autobusů. Všechna práva vyhrazena.</p>
+    <p>This email was sent automatically by the system.</p>
+    <p>&copy; 2025 Boilerplate. All rights reserved.</p>
   </div>
 </body>
 </html>

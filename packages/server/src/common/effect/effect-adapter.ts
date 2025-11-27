@@ -28,7 +28,7 @@ export function mapEffectErrorToHttp(error: unknown): never {
     // If there are specific field errors, use the first one's message for GraphQL error
     // (GraphQL will show this as the main error message)
     const errorMessage =
-      error.errors && error.errors.length > 0 ? error.errors[0]!.message : error.message;
+      error.errors && error.errors.length > 0 ? error?.errors[0].message : error.message;
 
     throw new BadRequestException(errorMessage);
   }
