@@ -1,25 +1,30 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useMutation } from '@apollo/client/react';
+import { Former } from '@arstoien/former';
 import { MainLayout } from '../components/layout/main-layout';
-import { Button } from '@arstoien/shared-ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
 } from '@arstoien/shared-ui';
-import { Input, PasswordInput } from '@arstoien/shared-ui';
-import { UPDATE_PROFILE, CHANGE_PASSWORD, DELETE_ACCOUNT } from '../graphql/user.graphql';
+import { CHANGE_PASSWORD, DELETE_ACCOUNT, UPDATE_PROFILE } from '../graphql/user.graphql';
 import { useAuthStore } from '../lib/auth-store';
 import toast from 'react-hot-toast';
-import { requireAuth, requireEmailVerified, type AuthGuardContext } from '../lib/auth-guard';
+import { type AuthGuardContext, requireAuth, requireEmailVerified } from '../lib/auth-guard';
+import { createFormComponentOverrides } from '../components/forms/form-component-overrides';
+import {
+  createProfileUpdateFormConfig,
+  type ProfileUpdateFormData,
+} from '../components/forms/profile-form-config';
+import {
+  createPasswordChangeFormConfig,
+  type PasswordChangeFormData,
+} from '../components/forms/password-form-config';
 
 export const Route = createFileRoute('/profile')({
   beforeLoad: ({ context }) => {
@@ -29,53 +34,15 @@ export const Route = createFileRoute('/profile')({
   component: Profile,
 });
 
-const profileSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-});
-
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(8),
-    newPassword: z.string().min(8),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
-
-type ProfileFormData = z.infer<typeof profileSchema>;
-type PasswordFormData = z.infer<typeof passwordSchema>;
-
 function Profile() {
   const { t } = useTranslation();
   const { user, setUser, logout } = useAuthStore();
 
-  const [updateProfile, { loading: updatingProfile }] = useMutation(
-    UPDATE_PROFILE as Parameters<typeof useMutation>[0]
-  );
-  const [changePassword, { loading: changingPassword }] = useMutation(CHANGE_PASSWORD);
+  const [updateProfile] = useMutation(UPDATE_PROFILE as Parameters<typeof useMutation>[0]);
+  const [changePassword] = useMutation(CHANGE_PASSWORD);
   const [deleteAccount, { loading: deletingAccount }] = useMutation(DELETE_ACCOUNT);
 
-  const profileForm = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      firstName: user?.firstName ?? '',
-      lastName: user?.lastName ?? '',
-    },
-  });
-
-  const passwordForm = useForm<PasswordFormData>({
-    resolver: zodResolver(passwordSchema),
-    defaultValues: {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    },
-  });
-
-  const onProfileSubmit = async (data: ProfileFormData) => {
+  const onProfileSubmit = async (data: ProfileUpdateFormData) => {
     try {
       const result = await updateProfile({
         variables: { input: data },
@@ -101,14 +68,14 @@ function Profile() {
           phone: updated.phone ?? undefined,
           emailVerifiedAt: updated.emailVerifiedAt,
         });
-        toast.success(t('profile.updateSuccess'));
+        toast.success(t('Profile updated successfully'));
       }
     } catch {
-      toast.error(t('profile.updateError'));
+      toast.error(t('Failed to update profile'));
     }
   };
 
-  const onPasswordSubmit = async (data: PasswordFormData) => {
+  const onPasswordSubmit = async (data: PasswordChangeFormData) => {
     try {
       await changePassword({
         variables: {
@@ -119,18 +86,18 @@ function Profile() {
         },
       });
 
-      passwordForm.reset();
-      toast.success(t('profile.passwordChangeSuccess'));
+      toast.success(t('Password changed successfully'));
     } catch {
-      toast.error(t('profile.passwordChangeError'));
+      toast.error(t('Failed to change password'));
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm(t('profile.deleteAccountConfirm'))) return;
+    if (!confirm(t('Are you sure you want to delete your account? This action cannot be undone.')))
+      return;
 
     try {
-      const password = prompt(t('profile.enterPassword'));
+      const password = prompt(t('Please enter your password to confirm'));
       if (!password) return;
 
       await deleteAccount({
@@ -138,134 +105,84 @@ function Profile() {
       });
 
       logout();
-      toast.success(t('profile.deleteAccountSuccess'));
+      toast.success(t('Account deleted successfully'));
     } catch {
-      toast.error(t('profile.deleteAccountError'));
+      toast.error(t('Failed to delete account'));
     }
   };
+
+  // Create form configurations
+  const profileFormConfig = createProfileUpdateFormConfig({
+    t,
+    onSubmit: onProfileSubmit,
+    initialValues: {
+      firstName: user?.firstName ?? '',
+      lastName: user?.lastName ?? '',
+    },
+  });
+
+  const passwordFormConfig = createPasswordChangeFormConfig({
+    t,
+    onSubmit: onPasswordSubmit,
+  });
+
+  // Create component overrides for each form
+  const profileOverrides = createFormComponentOverrides<ProfileUpdateFormData>(t);
+  const passwordOverrides = createFormComponentOverrides<PasswordChangeFormData>(t);
 
   return (
     <MainLayout>
       <div className="container mx-auto max-w-4xl px-4 py-8">
-        <h1 className="mb-8 text-4xl font-bold">{t('profile.title')}</h1>
+        <h1 className="mb-8 text-4xl font-bold">{t('Profile')}</h1>
 
         <div className="space-y-6">
           {/* Profile Information */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('profile.personalInfo')}</CardTitle>
-              <CardDescription>{t('profile.personalInfoDescription')}</CardDescription>
+              <CardTitle>{t('Personal Information')}</CardTitle>
+              <CardDescription>
+                {t('Update your personal details')}
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Form {...profileForm}>
-                <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={profileForm.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('auth.fields.firstName')}</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
 
-                    <FormField
-                      control={profileForm.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('auth.fields.lastName')}</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  {t('Email')}
+                </label>
+                <Input value={user?.email} disabled className="mt-2" />
+              </div>
 
-                  <div>
-                    <FormLabel>{t('auth.fields.email')}</FormLabel>
-                    <Input value={user?.email} disabled />
-                  </div>
-
-                  <Button type="submit" disabled={updatingProfile}>
-                    {updatingProfile ? t('common.loading') : t('profile.updateButton')}
-                  </Button>
-                </form>
-              </Form>
+              <Former<ProfileUpdateFormData>
+                config={profileFormConfig}
+                componentOverrides={profileOverrides}
+              />
             </CardContent>
           </Card>
 
           {/* Change Password */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('profile.changePassword')}</CardTitle>
-              <CardDescription>{t('profile.changePasswordDescription')}</CardDescription>
+              <CardTitle>{t('Change Password')}</CardTitle>
+              <CardDescription>
+                {t('Update your password to keep your account secure')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Form {...passwordForm}>
-                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
-                  <FormField
-                    control={passwordForm.control}
-                    name="currentPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('profile.currentPassword')}</FormLabel>
-                        <FormControl>
-                          <PasswordInput {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={passwordForm.control}
-                    name="newPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('profile.newPassword')}</FormLabel>
-                        <FormControl>
-                          <PasswordInput {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={passwordForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('auth.fields.confirmPassword')}</FormLabel>
-                        <FormControl>
-                          <PasswordInput {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button type="submit" disabled={changingPassword}>
-                    {changingPassword ? t('common.loading') : t('profile.changePasswordButton')}
-                  </Button>
-                </form>
-              </Form>
+              <Former<PasswordChangeFormData>
+                config={passwordFormConfig}
+                componentOverrides={passwordOverrides}
+              />
             </CardContent>
           </Card>
 
           {/* Danger Zone */}
           <Card className="border-destructive">
             <CardHeader>
-              <CardTitle className="text-destructive">{t('profile.dangerZone')}</CardTitle>
-              <CardDescription>{t('profile.dangerZoneDescription')}</CardDescription>
+              <CardTitle className="text-destructive">{t('Danger Zone')}</CardTitle>
+              <CardDescription>
+                {t('Permanently delete your account and all associated data')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -273,7 +190,7 @@ function Profile() {
                 onClick={handleDeleteAccount}
                 disabled={deletingAccount}
               >
-                {deletingAccount ? t('common.loading') : t('profile.deleteAccount')}
+                {deletingAccount ? t('Loading...') : t('Delete Account')}
               </Button>
             </CardContent>
           </Card>

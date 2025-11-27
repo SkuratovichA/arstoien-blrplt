@@ -34,6 +34,7 @@ export const USER_QUERY = graphql(`
       emailVerifiedAt
       preferredLocale
       preferredCurrency
+      otpAuthEnabled
       avatar
       bio
       lastLoginAt
@@ -99,6 +100,7 @@ export const UPDATE_USER_MUTATION = graphql(`
       firstName
       lastName
       phone
+      otpAuthEnabled
       updatedAt
     }
   }

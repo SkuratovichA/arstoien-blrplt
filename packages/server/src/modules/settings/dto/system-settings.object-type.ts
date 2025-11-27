@@ -8,6 +8,9 @@ export class SystemSettingsObjectType {
   @Field(() => String)
   supportEmail!: string;
 
+  @Field(() => Boolean)
+  otpAuthEnabled!: boolean;
+
   @Field(() => Date)
   updatedAt!: Date;
 

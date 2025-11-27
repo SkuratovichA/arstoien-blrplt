@@ -548,6 +548,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@arstoien/former@file:../../../former::locator=%40blrplt%2Fclient%40workspace%3Apackages%2Fclient":
+  version: 0.4.4
+  resolution: "@arstoien/former@file:../../../former#../../../former::hash=56ada2&locator=%40blrplt%2Fclient%40workspace%3Apackages%2Fclient"
+  peerDependencies:
+    react: ^19.0.0
+    react-dom: ^19.0.0
+    react-hook-form: ^7.0.0
+    zod: ^3.22.0 || ^4.0.0
+  checksum: 80bd543389ba5c56998776d96aba0340cf27e8612a69fd689730ec2f7ca4695fd298eae40ae6eaeab658adb920b73b9781e6b37e3b4223db6f4a9b6f67668917
+  languageName: node
+  linkType: hard
+
 "@arstoien/shared-ui@npm:1.0.7":
   version: 1.0.7
   resolution: "@arstoien/shared-ui@npm:1.0.7"
@@ -2207,6 +2219,7 @@ __metadata:
   dependencies:
     "@apollo/client": "npm:^4.0.9"
     "@arstoien/devtools": "npm:^1.0.1"
+    "@arstoien/former": "file:../../../former"
     "@arstoien/shared-ui": "npm:1.0.7"
     "@graphql-codegen/cli": "npm:^5.0.0"
     "@graphql-codegen/client-preset": "npm:^4.1.0"

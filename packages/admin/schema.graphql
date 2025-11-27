@@ -48,10 +48,6 @@ input ChangePasswordInputType {
   newPassword: String!
 }
 
-input ConfirmTwoFactorInputType {
-  code: String!
-}
-
 input CreateUserInput {
   email: String!
   firstName: String!
@@ -81,10 +77,6 @@ input DeleteUserInput {
   userId: String!
 }
 
-input DisableTwoFactorInputType {
-  password: String!
-}
-
 input ForgotPasswordInput {
   email: String!
 }
@@ -99,9 +91,6 @@ type Mutation {
 
   """Change user password"""
   changePassword(input: ChangePasswordInputType!): BasicResponse!
-
-  """Confirm and activate two-factor authentication"""
-  confirmTwoFactor(input: ConfirmTwoFactorInputType!): BasicResponse!
   createUser(input: CreateUserInput!): UserObjectType!
 
   """Delete user account"""
@@ -110,12 +99,6 @@ type Mutation {
   """Delete notification"""
   deleteNotification(notificationId: ID!): Notification!
   deleteUser(input: DeleteUserInput!): UserObjectType!
-
-  """Disable two-factor authentication"""
-  disableTwoFactor(input: DisableTwoFactorInputType!): BasicResponse!
-
-  """Enable two-factor authentication"""
-  enableTwoFactor: TwoFactorResponse!
 
   """
   Request password reset email. Returns true even if email does not exist (security).
@@ -146,6 +129,9 @@ type Mutation {
   registerWithPassword(input: RegisterWithPasswordInput!): AuthResponse!
   rejectUser(input: RejectUserInput!): UserObjectType!
 
+  """Request OTP code for passwordless login"""
+  requestOtpLogin(email: String!): BasicResponse!
+
   """Resend email verification link to user"""
   resendVerificationEmail: BasicResponse!
 
@@ -175,8 +161,8 @@ type Mutation {
   """Verify email address using token from verification email"""
   verifyEmail(token: String!): BasicResponse!
 
-  """Verify two-factor authentication code during login"""
-  verifyTwoFactor(input: VerifyTwoFactorInput!): AuthResponse!
+  """Verify OTP code and complete login"""
+  verifyOtpLogin(code: String!, email: String!): AuthResponse!
 }
 
 type Notification {
@@ -222,6 +208,9 @@ type Query {
 
   """Get the currently authenticated user"""
   currentUser: UserObjectType
+
+  """Check if OTP authentication is enabled for an email"""
+  isOtpEnabled(email: String!): Boolean!
 
   """Get current user's notifications"""
   myNotifications(filters: NotificationFiltersInputType): [Notification!]!
@@ -302,14 +291,9 @@ type Subscription {
 type SystemSettingsObjectType {
   createdAt: Date!
   id: ID!
+  otpAuthEnabled: Boolean!
   supportEmail: String!
   updatedAt: Date!
-}
-
-type TwoFactorResponse {
-  backupCodes: [String!]!
-  qrCode: String!
-  secret: String!
 }
 
 input UpdateProfileInputType {
@@ -317,19 +301,22 @@ input UpdateProfileInputType {
   bio: String
   firstName: String
   lastName: String
+  otpAuthEnabled: Boolean
   phone: String
   preferredCurrency: String
   preferredLocale: String
 }
 
 input UpdateSystemSettingsInputType {
-  supportEmail: String!
+  otpAuthEnabled: Boolean
+  supportEmail: String
 }
 
 input UpdateUserInput {
   email: String
   firstName: String
   lastName: String
+  otpAuthEnabled: Boolean
   phone: String
   role: String
   status: String
@@ -370,6 +357,7 @@ type UserObjectType {
   id: ID!
   lastLoginAt: Date
   lastName: String!
+  otpAuthEnabled: Boolean!
   phone: String
   preferredCurrency: String
   preferredLocale: String
@@ -412,9 +400,4 @@ enum UserStatus {
   PENDING_APPROVAL
   REJECTED
   SUSPENDED
-}
-
-input VerifyTwoFactorInput {
-  code: String!
-  email: String!
 }

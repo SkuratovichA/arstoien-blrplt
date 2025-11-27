@@ -9,6 +9,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../notification/email.service';
 import { RefreshTokenService } from '../refresh-token/refresh-token.service';
+import { OtpService } from './otp.service';
 import { AuthProvider, User, UserStatus } from '@prisma/client';
 import { ConflictError, DatabaseError, promiseToEffect, runEffect, UnauthorizedError, ValidationError, } from '@/common/effect';
 import { PubSubService } from '@common/pubsub/pubsub.service';
@@ -36,6 +37,7 @@ export class AuthService {
     private configService: ConfigService,
     private emailService: EmailService,
     private refreshTokenService: RefreshTokenService,
+    private otpService: OtpService,
     private pubSubService: PubSubService,
     @Optional()
     @Inject(forwardRef(() => AdminService))
@@ -884,5 +886,195 @@ export class AuthService {
       // For now, skip this call since the method is private in AdminService
       this.logger.debug('Skipping pending counts update - method is private');
     }
+  }
+
+  /**
+   * Check if OTP authentication is enabled for a user
+   * Returns true only if:
+   * 1. System-wide OTP is enabled
+   * 2. User has OTP enabled (or hasn't disabled it)
+   */
+  async isOtpEnabledForUser(email: string): Promise<boolean> {
+    try {
+      // Check system settings
+      const systemSettings = await this.prisma.systemSettings.findFirst();
+
+      if (!systemSettings?.otpAuthEnabled) {
+        return false; // OTP disabled system-wide
+      }
+
+      // Check user settings
+      const user = await Effect.runPromise(this.userService.findByEmail(email));
+
+      if (!user) {
+        return false; // User not found
+      }
+
+      // Return user's OTP preference (defaults to false if not set)
+      return user.otpAuthEnabled;
+    } catch (error) {
+      this.logger.error('Error checking OTP status:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Request OTP login - sends OTP code to user's email
+   */
+  requestOtpLogin(email: string): Effect.Effect<
+    { success: boolean; message: string },
+    ValidationError | UnauthorizedError | DatabaseError,
+    never
+  > {
+    const self = this;
+
+    return Effect.gen(function* () {
+      self.logger.log(`OTP login requested for email: ${email}`);
+
+      // Check if OTP is enabled
+      const otpEnabled = yield* promiseToEffect(() => self.isOtpEnabledForUser(email));
+
+      if (!otpEnabled) {
+        self.logger.warn(`OTP login attempted but not enabled for: ${email}`);
+        return yield* Effect.fail(
+          new UnauthorizedError({ message: 'OTP authentication is not enabled' })
+        );
+      }
+
+      // Find user
+      const user = yield* Effect.match(self.userService.findByEmail(email), {
+        onFailure: () => null,
+        onSuccess: (user) => user,
+      });
+
+      if (!user) {
+        self.logger.warn(`OTP login failed: user not found with email: ${email}`);
+        // Return success to avoid email enumeration
+        return {
+          success: true,
+          message: 'If an account exists with this email, an OTP code has been sent',
+        };
+      }
+
+      // Check user status
+      if (user.status === UserStatus.BLOCKED || user.status === UserStatus.SUSPENDED) {
+        self.logger.warn(`OTP login failed: account not active for user: ${user.id}`);
+        // Return success to avoid revealing account status
+        return {
+          success: true,
+          message: 'If an account exists with this email, an OTP code has been sent',
+        };
+      }
+
+      // Generate OTP
+      const otpResult = yield* promiseToEffect(() =>
+        Effect.runPromise(self.otpService.generateOtp(user.id, user.email))
+      );
+
+      // Send OTP email
+      yield* promiseToEffect(() =>
+        self.emailService.sendOtpEmail(user.email, otpResult.code)
+      );
+
+      self.logger.log(`OTP sent to: ${email}`);
+
+      return {
+        success: true,
+        message: 'OTP code has been sent to your email',
+      };
+    });
+  }
+
+  async requestOtpLoginAsync(email: string): Promise<{ success: boolean; message: string }> {
+    return runEffect(this.requestOtpLogin(email));
+  }
+
+  /**
+   * Verify OTP login and return authentication tokens
+   */
+  verifyOtpLogin(
+    email: string,
+    code: string
+  ): Effect.Effect<AuthResponse, ValidationError | UnauthorizedError | DatabaseError, never> {
+    const self = this;
+
+    return Effect.gen(function* () {
+      self.logger.log(`OTP verification attempt for email: ${email}`);
+
+      // Find user
+      const user = yield* Effect.match(self.userService.findByEmail(email), {
+        onFailure: () => null,
+        onSuccess: (user) => user,
+      });
+
+      if (!user) {
+        self.logger.warn(`OTP verification failed: user not found with email: ${email}`);
+        return yield* Effect.fail(new UnauthorizedError({ message: 'Invalid OTP code' }));
+      }
+
+      // Validate OTP
+      const isValid = yield* promiseToEffect(() =>
+        Effect.runPromise(self.otpService.validateOtp(user.id, code))
+      );
+
+      if (!isValid) {
+        self.logger.warn(`OTP verification failed: invalid code for user: ${user.id}`);
+        return yield* Effect.fail(new UnauthorizedError({ message: 'Invalid or expired OTP code' }));
+      }
+
+      // Check user status
+      if (user.status === UserStatus.BLOCKED) {
+        self.logger.warn(`OTP login failed: account blocked for user: ${user.id}`);
+        return yield* Effect.fail(new UnauthorizedError({ message: 'Account is blocked' }));
+      }
+
+      if (user.status === UserStatus.SUSPENDED) {
+        self.logger.warn(`OTP login failed: account suspended for user: ${user.id}`);
+        return yield* Effect.fail(new UnauthorizedError({ message: 'Account is suspended' }));
+      }
+
+      // Mark email as verified if not already
+      if (!user.emailVerifiedAt) {
+        yield* promiseToEffect(() =>
+          self.prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerifiedAt: new Date() },
+          })
+        );
+      }
+
+      // Update last login
+      yield* self.userService.updateLastLogin(user.id);
+
+      // Generate tokens
+      const tokens = yield* promiseToEffect(() => self.generateTokens(user));
+
+      // Create audit log
+      yield* promiseToEffect(() =>
+        self.prisma.auditLog.create({
+          data: {
+            userId: user.id,
+            action: 'OTP_LOGIN_SUCCESS',
+            entityType: 'User',
+            entityId: user.id,
+            metadata: {
+              email: user.email,
+              loginMethod: 'OTP',
+            },
+          },
+        })
+      );
+
+      self.logger.log(`OTP login successful for user: ${user.id}`);
+
+      return {
+        user,
+        ...tokens,
+      };
+    });
+  }
+
+  async verifyOtpLoginAsync(email: string, code: string): Promise<AuthResponse> {
+    return runEffect(this.verifyOtpLogin(email, code));
   }
 }

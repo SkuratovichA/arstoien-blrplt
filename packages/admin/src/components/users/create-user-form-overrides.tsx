@@ -1,3 +1,4 @@
+import React, { forwardRef } from 'react';
 import type { ComponentPaletteOverrides } from '@arstoien/former';
 import type {
   TextInputProps,
@@ -26,83 +27,76 @@ import { type CreateUserFormData, createUserSchema } from './create-user-form-sc
 export const createUserFormOverrides = (
   t: (key: string) => string
 ): ComponentPaletteOverrides<CreateUserFormData> => ({
-  TextInput: ({
-    id,
-    placeholder,
-    disabled,
-    required,
-    value,
-    onChange,
-    onBlur,
-    name,
-  }: TextInputProps<CreateUserFormData>) => (
-    <Input
-      id={id}
-      name={name}
-      type={id === 'email' ? 'email' : 'text'}
-      placeholder={placeholder}
-      disabled={disabled}
-      required={required}
-      value={(value as string) ?? ''}
-      onChange={onChange}
-      onBlur={onBlur}
-    />
+  TextInput: forwardRef<HTMLInputElement, TextInputProps<CreateUserFormData>>((props, ref) => {
+    const { id, placeholder, disabled, required, value, onChange, onBlur, name, ...rest } = props;
+    return (
+      <Input
+        ref={ref}
+        id={id}
+        name={name || id}
+        type={id === 'email' ? 'email' : 'text'}
+        placeholder={placeholder}
+        disabled={disabled}
+        required={required}
+        value={value ?? ''}
+        onChange={onChange}
+        onBlur={onBlur}
+        {...rest}
+      />
+    );
+  }),
+  PasswordInput: forwardRef<HTMLInputElement, PasswordInputProps<CreateUserFormData>>(
+    (props, ref) => {
+      const { id, placeholder, disabled, required, value, onChange, onBlur, name, ...rest } =
+        props;
+      return (
+        <Input
+          ref={ref}
+          id={id}
+          name={name || id}
+          type="password"
+          placeholder={placeholder}
+          disabled={disabled}
+          required={required}
+          value={value ?? ''}
+          onChange={onChange}
+          onBlur={onBlur}
+          {...rest}
+        />
+      );
+    }
   ),
-  PasswordInput: ({
-    id,
-    placeholder,
-    disabled,
-    required,
-    value,
-    onChange,
-    onBlur,
-    name,
-  }: PasswordInputProps<CreateUserFormData>) => (
-    <Input
-      id={id}
-      name={name}
-      type="password"
-      placeholder={placeholder}
-      disabled={disabled}
-      required={required}
-      value={(value as string) ?? ''}
-      onChange={onChange}
-      onBlur={onBlur}
-    />
-  ),
-  Select: ({
-    id,
-    options,
-    disabled,
-    value,
-    onChange,
-    placeholder,
-    name,
-  }: SelectProps<CreateUserFormData>) => (
-    <Select
-      value={value as string}
-      onValueChange={(newValue) => {
-        onChange({
-          target: {
-            name: name || id,
-            value: newValue,
-          },
-        } as React.ChangeEvent<HTMLSelectElement>);
-      }}
-      disabled={disabled}
-    >
-      <SelectTrigger id={id}>
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {options?.map((option: { value: string; label: string }) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  ),
+  Select: forwardRef<HTMLButtonElement, SelectProps<CreateUserFormData>>((props, ref) => {
+    const { id, options, disabled, value, onChange, placeholder, name } = props;
+    return (
+      <Select
+        value={value as string}
+        onValueChange={(newValue) => {
+          // Create a synthetic event that matches what react-hook-form expects
+          const syntheticEvent = {
+            target: {
+              name: name || id,
+              value: newValue,
+            },
+            type: 'change',
+          } as React.ChangeEvent<HTMLSelectElement>;
+          onChange(syntheticEvent);
+        }}
+        disabled={disabled}
+      >
+        <SelectTrigger ref={ref} id={id}>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options?.map((option: { value: string; label: string }) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }),
   FieldLabel: ({ htmlFor, label }: FieldLabelProps) => {
     const fieldId = htmlFor;
     const isRequired =

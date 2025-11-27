@@ -190,6 +190,41 @@ export class EmailService {
   }
 
   /**
+   * Send OTP code for passwordless login
+   */
+  async sendOtpEmail(email: string, otpCode: string): Promise<void> {
+    try {
+      // In development mode or when email is not configured, just log the OTP code
+      if (!this.transporter) {
+        this.logger.warn(`Email transporter not configured. OTP code for ${email}: ${otpCode}`);
+        return;
+      }
+
+      const effect = this.sendTemplatedEmail(
+        email,
+        'Your Login Code - Boilerplate',
+        'otp-login',
+        {
+          otpCode,
+          expiryMinutes: 5,
+        }
+      );
+
+      // Execute the effect and convert to Promise
+      await Effect.runPromise(effect);
+      this.logger.log(`OTP email sent to ${email}`);
+    } catch (error) {
+      // In development, log the code even if email fails
+      if (process.env.NODE_ENV !== 'production') {
+        this.logger.warn(`Email sending failed in development. OTP code for ${email}: ${otpCode}`);
+        return;
+      }
+      this.logger.error(`Failed to send OTP email to ${email}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Send password reset link
    */
   async sendPasswordResetEmail(email: string, resetLink: string): Promise<void> {

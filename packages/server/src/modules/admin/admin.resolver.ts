@@ -506,6 +506,11 @@ export class AdminResolver {
         changedFields.status = { from: currentUserData.status, to: input.status };
       }
 
+      if (input.otpAuthEnabled !== undefined && input.otpAuthEnabled !== currentUserData.otpAuthEnabled) {
+        updateData.otpAuthEnabled = input.otpAuthEnabled;
+        changedFields.otpAuthEnabled = { from: currentUserData.otpAuthEnabled, to: input.otpAuthEnabled };
+      }
+
       // Only update if there are changes
       if (Object.keys(updateData).length === 0) {
         this.logger.log(`No changes for user: ${input.userId}`);

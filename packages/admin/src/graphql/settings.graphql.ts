@@ -1,11 +1,12 @@
 import { graphql } from '../gql';
 
-// System settings (minimal - only has supportEmail based on the DTO)
+// System settings (includes OTP authentication toggle)
 export const SYSTEM_SETTINGS_QUERY = graphql(`
   query SystemSettings {
     systemSettings {
       id
       supportEmail
+      otpAuthEnabled
       createdAt
       updatedAt
     }
@@ -17,6 +18,7 @@ export const UPDATE_SYSTEM_SETTINGS_MUTATION = graphql(`
     updateSystemSettings(input: $input) {
       id
       supportEmail
+      otpAuthEnabled
       updatedAt
     }
   }

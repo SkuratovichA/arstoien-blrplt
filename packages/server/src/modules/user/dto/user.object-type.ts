@@ -60,6 +60,9 @@ export class UserObjectType {
   @Field(() => String, { nullable: true })
   preferredCurrency?: string | null;
 
+  @Field(() => Boolean)
+  otpAuthEnabled!: boolean;
+
   @Field()
   createdAt!: Date;
 

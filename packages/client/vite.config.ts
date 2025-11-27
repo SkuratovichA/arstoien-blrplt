@@ -9,7 +9,7 @@ export default defineConfig({
     TanStackRouterVite({
       routesDirectory: './src/routes',
       generatedRouteTree: './src/routeTree.gen.ts',
-      ignore: ['**/components/**'],
+      routeFileIgnorePattern: 'components',
     }),
   ],
   resolve: {

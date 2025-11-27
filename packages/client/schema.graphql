@@ -129,6 +129,9 @@ type Mutation {
   registerWithPassword(input: RegisterWithPasswordInput!): AuthResponse!
   rejectUser(input: RejectUserInput!): UserObjectType!
 
+  """Request OTP code for passwordless login"""
+  requestOtpLogin(email: String!): BasicResponse!
+
   """Resend email verification link to user"""
   resendVerificationEmail: BasicResponse!
 
@@ -157,6 +160,9 @@ type Mutation {
 
   """Verify email address using token from verification email"""
   verifyEmail(token: String!): BasicResponse!
+
+  """Verify OTP code and complete login"""
+  verifyOtpLogin(code: String!, email: String!): AuthResponse!
 }
 
 type Notification {
@@ -202,6 +208,9 @@ type Query {
 
   """Get the currently authenticated user"""
   currentUser: UserObjectType
+
+  """Check if OTP authentication is enabled for an email"""
+  isOtpEnabled(email: String!): Boolean!
 
   """Get current user's notifications"""
   myNotifications(filters: NotificationFiltersInputType): [Notification!]!
@@ -282,6 +291,7 @@ type Subscription {
 type SystemSettingsObjectType {
   createdAt: Date!
   id: ID!
+  otpAuthEnabled: Boolean!
   supportEmail: String!
   updatedAt: Date!
 }
@@ -291,19 +301,22 @@ input UpdateProfileInputType {
   bio: String
   firstName: String
   lastName: String
+  otpAuthEnabled: Boolean
   phone: String
   preferredCurrency: String
   preferredLocale: String
 }
 
 input UpdateSystemSettingsInputType {
-  supportEmail: String!
+  otpAuthEnabled: Boolean
+  supportEmail: String
 }
 
 input UpdateUserInput {
   email: String
   firstName: String
   lastName: String
+  otpAuthEnabled: Boolean
   phone: String
   role: String
   status: String
@@ -344,6 +357,7 @@ type UserObjectType {
   id: ID!
   lastLoginAt: Date
   lastName: String!
+  otpAuthEnabled: Boolean!
   phone: String
   preferredCurrency: String
   preferredLocale: String

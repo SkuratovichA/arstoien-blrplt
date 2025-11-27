@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation } from '@apollo/client/react';
+import { useMutation, useLazyQuery } from '@apollo/client/react';
 import { AuthLayout } from '../components/layout/auth-layout';
 import { Button } from '@arstoien/shared-ui';
 import {
@@ -23,11 +23,12 @@ import {
   FormMessage,
 } from '@arstoien/shared-ui';
 import { Input, PasswordInput } from '@arstoien/shared-ui';
-import { LOGIN } from '../graphql/auth.graphql.ts';
+import { LOGIN, CHECK_OTP_ENABLED, REQUEST_OTP_LOGIN } from '../graphql/auth.graphql.ts';
 import { useAuthStore } from '../lib/auth-store';
 import toast from 'react-hot-toast';
 import { Link } from '@tanstack/react-router';
 import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
+import { useState } from 'react';
 
 export const Route = createFileRoute('/login')({
   beforeLoad: ({ context }) => {
@@ -38,7 +39,7 @@ export const Route = createFileRoute('/login')({
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().optional(),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -47,7 +48,12 @@ function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailEntered, setEmailEntered] = useState(false);
+
   const [login, { loading }] = useMutation(LOGIN);
+  const [checkOtpEnabled, { loading: checkingOtp }] = useLazyQuery(CHECK_OTP_ENABLED);
+  const [requestOtpLogin, { loading: requestingOtp }] = useMutation(REQUEST_OTP_LOGIN);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -57,11 +63,63 @@ function Login() {
     },
   });
 
+  const handleEmailSubmit = async () => {
+    const email = form.getValues('email');
+    if (!email) return;
+
+    try {
+      // Check if OTP is enabled for this email
+      const result = await checkOtpEnabled({ variables: { email } });
+
+      if (result.data?.isOtpEnabled) {
+        // OTP is enabled, request OTP code
+        const otpResult = await requestOtpLogin({
+          variables: { email },
+        });
+
+        if (otpResult.data?.requestOtpLogin?.success) {
+          toast.success(t('OTP code sent to your email'));
+          // Navigate to OTP verification page
+          navigate({
+            to: '/verify-otp',
+            search: { email }
+          });
+        } else {
+          throw new Error(otpResult.data?.requestOtpLogin?.message ?? t('Failed to send OTP'));
+        }
+      } else {
+        // OTP is not enabled, show password field
+        setShowPassword(true);
+        setEmailEntered(true);
+      }
+    } catch (error) {
+      console.error('Email check error:', error);
+      // On error, default to password login
+      setShowPassword(true);
+      setEmailEntered(true);
+    }
+  };
+
   const onSubmit = async (data: LoginFormData) => {
+    if (!emailEntered) {
+      // First step: check email for OTP
+      await handleEmailSubmit();
+      return;
+    }
+
+    // Traditional password login - validate password is provided
+    if (!data.password) {
+      form.setError('password', { message: t('Password is required') });
+      return;
+    }
+
     try {
       const result = await login({
         variables: {
-          input: data,
+          input: {
+            email: data.email,
+            password: data.password,
+          },
         },
       });
 
@@ -120,31 +178,44 @@ function Login() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('Password')}</FormLabel>
-                    <FormControl>
-                      <PasswordInput placeholder={t('Enter your password')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {showPassword && (
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Password')}</FormLabel>
+                      <FormControl>
+                        <PasswordInput placeholder={t('Enter your password')} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-              <div className="text-right">
-                <Link
-                  to="/forgot-password"
-                  className="text-muted-foreground hover:text-foreground text-sm"
-                >
-                  {t('Forgot password?')}
-                </Link>
-              </div>
+              {showPassword && (
+                <div className="text-right">
+                  <Link
+                    to="/forgot-password"
+                    className="text-muted-foreground hover:text-foreground text-sm"
+                  >
+                    {t('Forgot password?')}
+                  </Link>
+                </div>
+              )}
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('Loading...') : t('Sign in')}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || checkingOtp || requestingOtp}
+              >
+                {loading || checkingOtp || requestingOtp
+                  ? t('Loading...')
+                  : showPassword
+                    ? t('Sign in')
+                    : t('Continue')
+                }
               </Button>
             </form>
           </Form>

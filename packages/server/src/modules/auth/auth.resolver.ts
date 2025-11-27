@@ -1,4 +1,4 @@
-import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Inject, Logger, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
@@ -261,6 +261,60 @@ export class AuthResolver {
         message: 'Email verification failed',
       };
     }
+  }
+
+  @Mutation(() => BasicResponse, {
+    description: 'Request OTP code for passwordless login',
+  })
+  async requestOtpLogin(@Args('email') email: string): Promise<BasicResponse> {
+    this.logger.log(`OTP login requested for email: ${email}`);
+
+    try {
+      const result = await this.authService.requestOtpLoginAsync(email);
+      return {
+        success: result.success,
+        message: result.message,
+      };
+    } catch (error) {
+      this.logger.error('Failed to request OTP login:', error);
+      return {
+        success: false,
+        message: 'Failed to send OTP code',
+      };
+    }
+  }
+
+  @Mutation(() => AuthResponse, {
+    description: 'Verify OTP code and complete login',
+  })
+  async verifyOtpLogin(
+    @Args('email') email: string,
+    @Args('code') code: string,
+    @Context('req') req: Request
+  ): Promise<AuthResponse> {
+    this.logger.log(`OTP verification attempt for email: ${email}`);
+
+    const authResponse = await this.authService.verifyOtpLoginAsync(email, code);
+
+    // Set tokens in httpOnly cookies
+    if (req.res) {
+      req.res.cookie('accessToken', authResponse.accessToken, this.appConfiguration.cookieOptions);
+      req.res.cookie(
+        'refreshToken',
+        authResponse.refreshToken,
+        this.appConfiguration.cookieOptions
+      );
+    }
+
+    this.logger.log(`OTP login successful for user: ${authResponse.user.id}`);
+    return authResponse;
+  }
+
+  @Query(() => Boolean, {
+    description: 'Check if OTP authentication is enabled for an email',
+  })
+  async isOtpEnabled(@Args('email') email: string): Promise<boolean> {
+    return this.authService.isOtpEnabledForUser(email);
   }
 
   @Mutation(() => BasicResponse, {

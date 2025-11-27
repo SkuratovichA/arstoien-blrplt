@@ -1,5 +1,7 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { useMutation } from '@apollo/client/react';
+import { useApolloClient } from '@apollo/client/react';
 import { useAuthStore } from '@/lib/auth-store';
 import {
   Avatar,
@@ -14,14 +16,36 @@ import {
   DropdownMenuTrigger,
 } from '@arstoien/shared-ui';
 import { LogOut, Settings, User } from 'lucide-react';
+import { LOGOUT_MUTATION } from '@/graphql/admin.graphql';
+import toast from 'react-hot-toast';
 
 export function AdminHeader() {
   const { t, i18n } = useTranslation();
   const { user, clearAuth } = useAuthStore();
+  const navigate = useNavigate();
+  const apolloClient = useApolloClient();
+  const [logout] = useMutation(LOGOUT_MUTATION);
 
-  const handleLogout = () => {
-    clearAuth();
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    try {
+      // Call server logout mutation
+      await logout();
+
+      // Clear client-side auth state
+      clearAuth();
+
+      // Clear Apollo cache without refetching
+      apolloClient.cache.reset();
+
+      // Navigate to login page
+      navigate({ to: '/login' });
+
+      // Show success message
+      toast.success(t('Logged out successfully'));
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error(t('Failed to logout'));
+    }
   };
 
   const changeLanguage = (lng: string) => {

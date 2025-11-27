@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthResolver } from './auth.resolver';
 import { AuthController } from './auth.controller';
+import { OtpService } from './otp.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
@@ -41,6 +42,7 @@ import { PrismaModule } from '@prisma/prisma.module';
   providers: [
     AuthService,
     AuthResolver,
+    OtpService,
     JwtStrategy,
     JwtRefreshStrategy,
     LocalStrategy,

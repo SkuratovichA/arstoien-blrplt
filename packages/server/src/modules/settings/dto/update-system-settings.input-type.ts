@@ -1,10 +1,16 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsEmail, IsString } from 'class-validator';
+import { IsEmail, IsString, IsBoolean, IsOptional } from 'class-validator';
 
 @InputType()
 export class UpdateSystemSettingsInputType {
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   @IsEmail()
   @IsString()
-  supportEmail!: string;
+  @IsOptional()
+  supportEmail?: string;
+
+  @Field(() => Boolean, { nullable: true })
+  @IsBoolean()
+  @IsOptional()
+  otpAuthEnabled?: boolean;
 }

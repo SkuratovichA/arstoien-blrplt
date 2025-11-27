@@ -28,6 +28,7 @@ import {
   CardTitle,
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,6 +39,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Switch,
   Tabs,
   TabsContent,
   TabsList,
@@ -52,6 +54,7 @@ const userSchema = z.object({
   role: z.enum(['USER', 'MODERATOR', 'ADMIN']),
   status: z.enum(['ACTIVE', 'PENDING', 'SUSPENDED', 'BANNED']),
   phoneNumber: z.string().optional(),
+  otpAuthEnabled: z.boolean().optional(),
 });
 
 type UserFormValues = z.infer<typeof userSchema>;
@@ -90,6 +93,7 @@ function UserDetailPage() {
           role: user.role as 'USER' | 'MODERATOR' | 'ADMIN',
           status: user.status as 'ACTIVE' | 'PENDING' | 'SUSPENDED' | 'BANNED',
           phoneNumber: user.phone ?? '',
+          otpAuthEnabled: user.otpAuthEnabled ?? false,
         }
       : undefined,
   });
@@ -100,8 +104,13 @@ function UserDetailPage() {
         variables: {
           input: {
             userId: id,
-            ...values,
+            firstName: values.firstName,
+            lastName: values.lastName,
+            email: values.email,
+            role: values.role,
+            status: values.status,
             phone: values.phoneNumber,
+            otpAuthEnabled: values.otpAuthEnabled,
           },
         },
       });
@@ -295,6 +304,30 @@ function UserDetailPage() {
                         )}
                       />
                     </div>
+
+                    <FormField
+                      control={form.control}
+                      name="otpAuthEnabled"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 md:col-span-2">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">
+                              {t('OTP Authentication')}
+                            </FormLabel>
+                            <FormDescription>
+                              {t('Allow this user to sign in using OTP codes sent to their email')}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
                     <Button type="submit" disabled={updating}>
                       {updating ? t('Saving...') : t('Save Changes')}
                     </Button>

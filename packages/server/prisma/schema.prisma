@@ -62,6 +62,7 @@ model User {
 
   // User preferences
   preferredLocale String? @db.VarChar(10) @default("cs")
+  otpAuthEnabled  Boolean @default(false) // Per-user OTP authentication preference
 
   // Auth tokens and security
   refreshTokens      RefreshToken[]
@@ -168,9 +169,10 @@ model AuditLog {
 }
 
 model SystemSettings {
-  id           String   @id @default(uuid())
-  supportEmail String   @db.VarChar(255)
-  updatedAt    DateTime @updatedAt
-  updatedBy    String?  // User ID who last updated
-  createdAt    DateTime @default(now())
+  id             String   @id @default(uuid())
+  supportEmail   String   @db.VarChar(255)
+  otpAuthEnabled Boolean  @default(false) // Global OTP authentication toggle
+  updatedAt      DateTime @updatedAt
+  updatedBy      String?  // User ID who last updated
+  createdAt      DateTime @default(now())
 }

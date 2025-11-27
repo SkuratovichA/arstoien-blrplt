@@ -21,6 +21,7 @@ import {
   FormItem,
   FormLabel,
   Input,
+  Switch,
 } from '@arstoien/shared-ui';
 
 export const Route = createFileRoute('/settings')({
@@ -35,19 +36,21 @@ function SettingsPage() {
 
   const settings = data?.systemSettings;
 
-  // Since systemSettings only has supportEmail, we'll create a simple form for that
+  // Form with system settings including OTP toggle
   const form = useForm({
     defaultValues: {
       supportEmail: settings?.supportEmail ?? '',
+      otpAuthEnabled: settings?.otpAuthEnabled ?? false,
     },
   });
 
-  const onSubmit = async (values: Record<string, string>) => {
+  const onSubmit = async (values: { supportEmail: string; otpAuthEnabled: boolean }) => {
     try {
       await updateSettings({
         variables: {
           input: {
             supportEmail: values.supportEmail,
+            otpAuthEnabled: values.otpAuthEnabled,
           },
         },
       });
@@ -94,6 +97,40 @@ function SettingsPage() {
                         <Input {...field} type="email" placeholder="support@example.com" />
                       </FormControl>
                       <FormDescription>{t('Email address for support inquiries')}</FormDescription>
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('Authentication Settings')}</CardTitle>
+                <CardDescription>{t('Configure authentication methods')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="otpAuthEnabled"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">
+                          {t('OTP Passwordless Authentication')}
+                        </FormLabel>
+                        <FormDescription>
+                          {t(
+                            'Enable passwordless login using OTP codes sent to email. When enabled, users can sign in without passwords.'
+                          )}
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          aria-label={t('Toggle OTP authentication')}
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />

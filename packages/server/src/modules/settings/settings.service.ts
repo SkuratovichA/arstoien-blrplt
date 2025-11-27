@@ -33,6 +33,7 @@ export class SettingsService {
         self.prisma.systemSettings.create({
           data: {
             supportEmail: self.DEFAULT_SUPPORT_EMAIL,
+            otpAuthEnabled: false, // Default OTP disabled
           },
         })
       );
@@ -61,14 +62,24 @@ export class SettingsService {
       // Get current settings
       const current = yield* self.getSystemSettings();
 
+      // Build update data - only update fields that are provided
+      const updateData: Record<string, string | boolean | undefined> = {
+        updatedBy: userId,
+      };
+
+      if (input.supportEmail !== undefined) {
+        updateData.supportEmail = input.supportEmail;
+      }
+
+      if (input.otpAuthEnabled !== undefined) {
+        updateData.otpAuthEnabled = input.otpAuthEnabled;
+      }
+
       // Update settings
       const updated = yield* promiseToEffect(() =>
         self.prisma.systemSettings.update({
           where: { id: current.id },
-          data: {
-            supportEmail: input.supportEmail,
-            updatedBy: userId,
-          },
+          data: updateData,
         })
       );
 

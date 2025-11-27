@@ -115,3 +115,42 @@ export const RESEND_VERIFICATION_EMAIL = graphql(`
     }
   }
 `);
+
+// Check if OTP is enabled for an email
+export const CHECK_OTP_ENABLED = graphql(`
+  query IsOtpEnabled($email: String!) {
+    isOtpEnabled(email: $email)
+  }
+`);
+
+// Request OTP login code
+export const REQUEST_OTP_LOGIN = graphql(`
+  mutation RequestOtpLogin($email: String!) {
+    requestOtpLogin(email: $email) {
+      success
+      message
+    }
+  }
+`);
+
+// Verify OTP login code
+export const VERIFY_OTP_LOGIN = graphql(`
+  mutation VerifyOtpLogin($email: String!, $code: String!) {
+    verifyOtpLogin(email: $email, code: $code) {
+      accessToken
+      refreshToken
+      user {
+        id
+        email
+        firstName
+        lastName
+        role
+        status
+        avatar
+        emailVerifiedAt
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`);
