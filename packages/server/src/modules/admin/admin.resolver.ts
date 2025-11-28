@@ -5,7 +5,7 @@ import { AdminService } from './admin.service';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { AuditLog, Prisma, User } from '@prisma/client';
-import { AdminPendingCountsType, AdminStatsType, ApproveUserInput, AuditLogObjectType, CreateUserInput, DeleteUserInput, RecentActivityType, RejectUserInput, UpdateUserInput, UpdateUserStatusInput, UserGrowthDataPoint, UserGrowthStatsType, } from '@modules/admin/dto';
+import { AdminPendingCountsType, AdminStatsType, ApproveUserInput, AuditLogObjectType, BulkUpdateOtpInput, BulkUpdateResultType, CreateUserInput, DeleteUserInput, RecentActivityType, RejectUserInput, UpdateUserInput, UpdateUserStatusInput, UserGrowthDataPoint, UserGrowthStatsType, } from '@modules/admin/dto';
 import { UserObjectType } from '@modules/user/dto/user.object-type';
 import { Effect } from 'effect';
 import { PubSubEvents, PubSubService } from '@common/pubsub/pubsub.service';
@@ -638,6 +638,60 @@ export class AdminResolver {
     } catch (error) {
       this.logger.error(`Failed to delete user: ${input.userId}`, error);
       throw error;
+    }
+  }
+
+  @Mutation(() => BulkUpdateResultType, { name: 'bulkUpdateOtp' })
+  @UseGuards(GqlAuthGuard, PermissionsGuard)
+  @Permissions({ resource: Resource.USER, action: Action.UPDATE })
+  async bulkUpdateOtp(
+    @Args('input') input: BulkUpdateOtpInput,
+    @CurrentUser() currentUser: User
+  ): Promise<BulkUpdateResultType> {
+    try {
+      const whereClause: Prisma.UserWhereInput = {};
+
+      // If specific userIds provided, update only those users
+      if (input.userIds && input.userIds.length > 0) {
+        whereClause.id = { in: input.userIds };
+      }
+      // Otherwise, update all users (can add filters like excluding admins if needed)
+
+      const result = await this.prisma.user.updateMany({
+        where: whereClause,
+        data: {
+          otpAuthEnabled: input.enabled,
+        },
+      });
+
+      // Log audit entry
+      await this.prisma.auditLog.create({
+        data: {
+          userId: currentUser.id,
+          action: `BULK_UPDATE_OTP_${input.enabled ? 'ENABLED' : 'DISABLED'}`,
+          entityType: 'USER',
+          metadata: {
+            enabled: input.enabled,
+            affectedUsers: input.userIds || 'all',
+            updatedCount: result.count,
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      this.logger.log(`Bulk OTP update: ${result.count} users updated to otpAuthEnabled=${input.enabled} by ${currentUser.email}`);
+
+      return {
+        updated: result.count,
+        success: true,
+        message: `Successfully ${input.enabled ? 'enabled' : 'disabled'} OTP for ${result.count} user(s)`,
+      };
+    } catch (error) {
+      this.logger.error('Failed to bulk update OTP settings', error);
+      return {
+        updated: 0,
+        success: false,
+        message: 'Failed to update OTP settings',
+      };
     }
   }
 

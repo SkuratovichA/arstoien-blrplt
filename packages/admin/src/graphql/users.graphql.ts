@@ -142,3 +142,14 @@ export const CREATE_USER_MUTATION = graphql(`
     }
   }
 `);
+
+// Bulk update OTP settings
+export const BULK_UPDATE_OTP_MUTATION = graphql(`
+  mutation BulkUpdateOtp($input: BulkUpdateOtpInput!) {
+    bulkUpdateOtp(input: $input) {
+      updated
+      success
+      message
+    }
+  }
+`);

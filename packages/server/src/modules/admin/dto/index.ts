@@ -11,3 +11,5 @@ export * from './delete-user.input-type';
 export * from './recent-activity.object-type';
 export * from './create-user.input-type';
 export * from './user-growth-stats.object-type';
+export * from './bulk-update-otp.input-type';
+export * from './bulk-update-result.object-type';

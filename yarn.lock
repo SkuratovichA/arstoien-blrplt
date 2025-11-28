@@ -537,26 +537,26 @@ __metadata:
   linkType: hard
 
 "@arstoien/former@file:../../../former::locator=%40blrplt%2Fadmin%40workspace%3Apackages%2Fadmin":
-  version: 0.4.4
-  resolution: "@arstoien/former@file:../../../former#../../../former::hash=56ada2&locator=%40blrplt%2Fadmin%40workspace%3Apackages%2Fadmin"
+  version: 0.4.5
+  resolution: "@arstoien/former@file:../../../former#../../../former::hash=d8e010&locator=%40blrplt%2Fadmin%40workspace%3Apackages%2Fadmin"
   peerDependencies:
     react: ^19.0.0
     react-dom: ^19.0.0
     react-hook-form: ^7.0.0
     zod: ^3.22.0 || ^4.0.0
-  checksum: 80bd543389ba5c56998776d96aba0340cf27e8612a69fd689730ec2f7ca4695fd298eae40ae6eaeab658adb920b73b9781e6b37e3b4223db6f4a9b6f67668917
+  checksum: 6e225a238fe494d79ebe1290fdcfe72204563d6e640dc920f27f3dcbd5f99656464108f142a58df3caddc350f6d8e008e69f82966e6272e11cb2c238c711ab28
   languageName: node
   linkType: hard
 
 "@arstoien/former@file:../../../former::locator=%40blrplt%2Fclient%40workspace%3Apackages%2Fclient":
-  version: 0.4.4
-  resolution: "@arstoien/former@file:../../../former#../../../former::hash=56ada2&locator=%40blrplt%2Fclient%40workspace%3Apackages%2Fclient"
+  version: 0.4.5
+  resolution: "@arstoien/former@file:../../../former#../../../former::hash=d8e010&locator=%40blrplt%2Fclient%40workspace%3Apackages%2Fclient"
   peerDependencies:
     react: ^19.0.0
     react-dom: ^19.0.0
     react-hook-form: ^7.0.0
     zod: ^3.22.0 || ^4.0.0
-  checksum: 80bd543389ba5c56998776d96aba0340cf27e8612a69fd689730ec2f7ca4695fd298eae40ae6eaeab658adb920b73b9781e6b37e3b4223db6f4a9b6f67668917
+  checksum: 6e225a238fe494d79ebe1290fdcfe72204563d6e640dc920f27f3dcbd5f99656464108f142a58df3caddc350f6d8e008e69f82966e6272e11cb2c238c711ab28
   languageName: node
   linkType: hard
 
