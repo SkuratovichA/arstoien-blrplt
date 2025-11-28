@@ -1,34 +1,37 @@
 # Arstoien Boilerplate
 
-Production-ready full-stack boilerplate with authentication, user management, and 2FA support.
+Production-ready full-stack boilerplate with authentication, user management, and OTP support.
 
 ## Features
 
 ### Authentication & Security
-- 🔐 Email/password authentication
-- 🌐 Google OAuth 2.0
-- 🔑 Two-factor authentication (2FA) with TOTP
-- 🔄 JWT with refresh token rotation
-- 📧 Email verification
-- 🔒 Password reset flow
-- 👤 Role-based access control (USER, ADMIN, MODERATOR)
+- Email/password authentication
+- OTP (One-Time Password) email-based authentication
+- JWT with refresh token rotation
+- Email verification
+- Password reset flow
+- Role-based access control (USER, ADMIN, MODERATOR, SUPER_ADMIN, MANAGER, SUPPORT)
+- Permission-based access control
 
 ### User Management
-- 📝 User registration with approval workflow
-- 👥 User profile management
-- 🏢 Company associations
-- 📊 Admin dashboard for user management
-- 📋 Audit logging
+- User registration with admin approval workflow
+- User profile management (name, email, phone)
+- Admin dashboard with statistics and analytics
+- Audit logging system
+- User status management (PENDING_APPROVAL, FRESHLY_CREATED_REQUIRES_PASSWORD, ACTIVE, SUSPENDED, BLOCKED, REJECTED, DELETED)
+- Bulk operations (OTP enable/disable)
+- User growth analytics with charts
 
 ### Technical Features
-- 🎨 Modern UI with Radix UI components
-- 🌍 Internationalization (i18n) - CS, EN, SK
-- 💱 Currency selection support
-- 📱 Responsive design
-- 🚀 GraphQL API with subscriptions
-- 📤 File uploads to S3/MinIO
-- 📨 Email notifications with templates
-- 🔄 Real-time updates via WebSocket
+- Radix UI components via @arstoien/shared-ui
+- Internationalization (Czech, English, Slovak)
+- Currency selection (backend only)
+- Responsive design
+- GraphQL API with subscriptions
+- File uploads to S3/MinIO
+- Email notifications with Handlebars templates
+- Real-time admin notifications
+- Effect-TS for functional error handling
 
 ## Tech Stack
 
@@ -44,12 +47,16 @@ Production-ready full-stack boilerplate with authentication, user management, an
 ### Frontend
 - **React 19** - UI framework
 - **Vite** - Build tool
-- **TanStack Router** - Routing
+- **TanStack Router** - File-based routing
 - **Apollo Client** - GraphQL client
 - **Tailwind CSS** - Styling
 - **@arstoien/shared-ui** - Component library
+- **@arstoien/former** - Form library
 - **React Hook Form** - Form handling
+- **Zustand** - State management
 - **i18next** - Internationalization
+- **react-hot-toast** - Notifications
+- **Recharts** - Charts
 
 ### Infrastructure
 - **PostgreSQL 15** - Primary database
@@ -152,17 +159,14 @@ REDIS_URL="redis://localhost:6379"
 JWT_SECRET="your-jwt-secret"
 JWT_REFRESH_SECRET="your-refresh-secret"
 JWT_EXPIRES_IN="15m"
-JWT_REFRESH_EXPIRES_IN="7d"
+JWT_REFRESH_EXPIRES_IN="90d"
 
-# OAuth (Optional)
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-GOOGLE_CALLBACK_URL="http://localhost:4000/auth/google/callback"
-
-# Email
+# Email (Nodemailer)
 SMTP_HOST="localhost"
 SMTP_PORT="1025"
 SMTP_SECURE="false"
+SMTP_USER="" # Optional
+SMTP_PASS="" # Optional
 EMAIL_FROM="noreply@boilerplate.local"
 
 # S3/MinIO (Optional)
@@ -172,9 +176,15 @@ S3_SECRET_KEY="minioadmin"
 S3_BUCKET="uploads"
 S3_REGION="us-east-1"
 
-# Admin
+# Admin Seed Data
 ADMIN_EMAIL="admin@boilerplate.local"
 ADMIN_PASSWORD="Admin123!"
+ADMIN_FIRST_NAME="Admin"
+ADMIN_LAST_NAME="User"
+
+# System Settings
+SUPPORT_EMAIL="support@boilerplate.local"
+OTP_AUTH_ENABLED="true"
 ```
 
 ### Client/Admin (.env)
@@ -217,25 +227,39 @@ VITE_WS_URL=ws://localhost:4000/graphql
 
 ## Authentication Flow
 
-### Email/Password
-1. User registers with email/password
-2. Email verification sent
-3. User verifies email
-4. Admin approves user (optional)
-5. User can login
+### Registration & Approval
+1. User registers with email + personal info (no password yet)
+2. User status: `PENDING_APPROVAL`
+3. Admin receives notification
+4. Admin approves/rejects user
+5. On approval:
+   - User status → `FRESHLY_CREATED_REQUIRES_PASSWORD`
+   - Verification email sent with password setup link
+6. User sets password via email link
+7. User status → `ACTIVE`
+8. User can now login
 
-### OAuth (Google)
-1. User clicks "Login with Google"
-2. Redirected to Google consent
-3. Callback creates/updates user
-4. Session created
-5. User logged in
+### Email/Password Login
+1. User enters email
+2. System checks if OTP enabled for user
+3. If OTP disabled: password field shown → traditional login
+4. If OTP enabled: redirected to OTP flow
 
-### 2FA Setup
-1. User enables 2FA in settings
-2. QR code displayed for TOTP app
-3. User enters verification code
-4. 2FA enabled for account
+### OTP (One-Time Password) Login
+1. User enters email
+2. System checks if OTP enabled (system-wide + per-user)
+3. 6-digit code sent via email (5-minute expiry)
+4. User enters OTP code
+5. Code verified → user logged in
+6. Email automatically verified on successful OTP login
+7. Rate limited: 3 attempts per 15 minutes
+
+### Password Reset
+1. User clicks "Forgot Password"
+2. Enters email → reset link sent
+3. Token valid for 30 minutes
+4. User sets new password via link
+5. Can login with new password
 
 ## Deployment
 
@@ -272,7 +296,7 @@ npx serve -s dist
 
 GraphQL Playground available at: `http://localhost:4000/graphql`
 
-### Main Queries
+### Authentication Queries
 ```graphql
 query CurrentUser {
   currentUser {
@@ -281,23 +305,54 @@ query CurrentUser {
     firstName
     lastName
     role
+    status
+    emailVerifiedAt
+    otpAuthEnabled
   }
 }
 
-query GetUsers {
-  users {
-    id
-    email
-    status
-    role
-  }
+query IsOtpEnabled($email: String!) {
+  isOtpEnabled(email: $email)
 }
 ```
 
-### Main Mutations
+### Authentication Mutations
 ```graphql
-mutation Login($email: String!, $password: String!) {
-  login(loginInput: { email: $email, password: $password }) {
+# Traditional Login
+mutation Login($input: LoginInput!) {
+  login(loginInput: $input) {
+    accessToken
+    refreshToken
+    user {
+      id
+      email
+      firstName
+      lastName
+    }
+  }
+}
+
+# Register (No Password)
+mutation Register($input: RegisterInput!) {
+  register(registerInput: $input) {
+    user {
+      id
+      email
+      status
+    }
+  }
+}
+
+# OTP Flow
+mutation RequestOtpLogin($email: String!) {
+  requestOtpLogin(email: $email) {
+    success
+    message
+  }
+}
+
+mutation VerifyOtpLogin($input: VerifyOtpInput!) {
+  verifyOtpLogin(input: $input) {
     accessToken
     refreshToken
     user {
@@ -307,26 +362,145 @@ mutation Login($email: String!, $password: String!) {
   }
 }
 
-mutation Register($input: RegisterInput!) {
-  register(registerInput: $input) {
-    user {
+# Password Management
+mutation SetPasswordWithToken($input: SetPasswordWithTokenInput!) {
+  setPasswordWithToken(input: $input) {
+    success
+    message
+  }
+}
+
+mutation ForgotPassword($email: String!) {
+  forgotPassword(email: $email) {
+    success
+    message
+  }
+}
+
+mutation ResetPassword($input: ResetPasswordInput!) {
+  resetPassword(input: $input) {
+    success
+    message
+  }
+}
+```
+
+### Admin Queries
+```graphql
+query PendingUsers {
+  pendingUsers {
+    id
+    email
+    firstName
+    lastName
+    createdAt
+  }
+}
+
+query Users($filters: UserFiltersInput, $pagination: PaginationInput) {
+  users(filters: $filters, pagination: $pagination) {
+    users {
       id
       email
+      role
+      status
     }
+    total
+    page
+    limit
+  }
+}
+
+query AdminStatistics {
+  adminStatistics {
+    pendingUsersCount
+    todayRegistrationsCount
+    totalUsersCount
+  }
+}
+
+query UserGrowthStats($months: Int) {
+  userGrowthStats(months: $months) {
+    period
+    totalUsers
+    activeUsers
+    newUsers
+    pendingUsers
+  }
+}
+
+query AuditLogs($pagination: PaginationInput) {
+  auditLogs(pagination: $pagination) {
+    logs {
+      id
+      action
+      entityType
+      userId
+      ipAddress
+      createdAt
+    }
+    total
+  }
+}
+```
+
+### Admin Mutations
+```graphql
+mutation ApproveUser($id: String!) {
+  approveUser(id: $id) {
+    id
+    status
+  }
+}
+
+mutation RejectUser($id: String!, $reason: String!) {
+  rejectUser(id: $id, reason: $reason) {
+    id
+    status
+  }
+}
+
+mutation UpdateUser($id: String!, $input: UpdateUserInput!) {
+  updateUser(id: $id, input: $input) {
+    id
+    email
+    role
+    status
+  }
+}
+
+mutation BulkUpdateOtp($input: BulkUpdateOtpInput!) {
+  bulkUpdateOtp(input: $input) {
+    updated
+    success
+    message
+  }
+}
+
+mutation DeleteUser($id: String!, $permanent: Boolean) {
+  deleteUser(id: $id, permanent: $permanent) {
+    success
+    message
+  }
+}
+```
+
+### Subscriptions
+```graphql
+subscription AdminPendingCountsChanged {
+  adminPendingCountsChanged {
+    pendingUsersCount
+    pendingApprovalsCount
   }
 }
 ```
 
 ## Project Dependencies
 
-### NPM Packages Published
+### NPM Packages
 - **@arstoien/devtools** - ESLint and Prettier configurations
-- **@arstoien/shared-ui** - Shared UI components library
-
-### Repositories
-- **arstoien-devtools** - https://github.com/arstoien/arstoien-devtools
-- **arstoien-shared-ui** - https://github.com/arstoien/arstoien-shared-ui
-- **arstoien-blrplt** - https://github.com/arstoien/arstoien-blrplt
+- **@arstoien/shared-ui** - Component library (Radix UI + Tailwind)
+- **@arstoien/former** - Form library with dynamic forms
 
 ## Contributing
 

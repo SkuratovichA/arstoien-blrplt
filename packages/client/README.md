@@ -1,28 +1,33 @@
 # Client Application
 
-The main user-facing client application for the boilerplate.
+Main user-facing application.
 
 ## Features
 
-- User authentication (email/password, Google OAuth)
-- User registration and profile management
-- Password reset flow
+- Email/password authentication
+- OTP (One-Time Password) email-based authentication
+- User registration (admin approval workflow)
 - Email verification
-- 2FA support (TOTP)
-- Multi-language support (i18n)
-- Currency selection
+- Password reset flow
+- Password setup (for approved users)
+- Profile management (name, email, phone)
+- Account deletion
+- Multi-language support (Czech, English, Slovak)
 - Responsive design
 
 ## Tech Stack
 
 - React 19
 - Vite
-- TanStack Router
+- TanStack Router (file-based routing)
 - Apollo GraphQL Client
 - Tailwind CSS
-- Radix UI (via @arstoien/shared-ui)
+- @arstoien/shared-ui (component library)
+- @arstoien/former (form library)
 - React Hook Form
-- i18next
+- Zustand (state management)
+- i18next (internationalization)
+- react-hot-toast (notifications)
 
 ## Getting Started
 
@@ -40,6 +45,19 @@ cp .env.example .env
 ```bash
 yarn dev
 ```
+
+## Available Routes
+
+- `/` - Landing page
+- `/login` - Login (email/password or OTP)
+- `/register` - User registration
+- `/verify-otp` - OTP code verification
+- `/verify-email` - Email verification
+- `/forgot-password` - Request password reset
+- `/reset-password` - Reset password with token
+- `/auth/set-password` - First-time password setup
+- `/dashboard` - User dashboard (requires auth + verified email)
+- `/profile` - Profile management (requires auth + verified email)
 
 ## Available Scripts
 
