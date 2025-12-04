@@ -1,0 +1,285 @@
+# =============================================================================
+# Production Deployment Workflow
+# =============================================================================
+# Deploys to production when pushing to main branch
+# Only runs after CI passes
+
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip_ci:
+        description: 'Skip CI checks (use with caution)'
+        required: false
+        default: 'false'
+        type: boolean
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '22'
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: blrplt-production-server
+  ECS_CLUSTER: blrplt-production-cluster
+  ECS_SERVICE: blrplt-production-server
+
+jobs:
+  # ===========================================================================
+  # Wait for CI to pass
+  # ===========================================================================
+  wait-for-ci:
+    name: Wait for CI
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.skip_ci != 'true' }}
+    steps:
+      - name: Wait for CI workflow
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.sha }}
+          check-name: 'CI Success'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+          allowed-conclusions: success
+
+  # ===========================================================================
+  # Build and Push Docker Images
+  # ===========================================================================
+  build-server:
+    name: Build Server Image
+    runs-on: ubuntu-latest
+    needs: wait-for-ci
+    if: always() && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push server image
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: packages/server/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Output image URL
+        run: echo "image=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+  # ===========================================================================
+  # Build and Deploy Client
+  # ===========================================================================
+  deploy-client:
+    name: Deploy Client
+    runs-on: ubuntu-latest
+    needs: wait-for-ci
+    if: always() && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build client
+        run: yarn workspace @blrplt/client build
+        env:
+          VITE_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+          VITE_WS_URL: ${{ secrets.PRODUCTION_WS_URL }}
+          VITE_APP_NAME: ${{ vars.APP_NAME || 'Blrplt' }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync packages/client/dist s3://${{ secrets.CLIENT_S3_BUCKET }} \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "index.html"
+
+          # Upload index.html with no-cache
+          aws s3 cp packages/client/dist/index.html s3://${{ secrets.CLIENT_S3_BUCKET }}/index.html \
+            --cache-control "no-cache, no-store, must-revalidate"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLIENT_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+
+  # ===========================================================================
+  # Build and Deploy Admin
+  # ===========================================================================
+  deploy-admin:
+    name: Deploy Admin
+    runs-on: ubuntu-latest
+    needs: wait-for-ci
+    if: always() && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build admin
+        run: yarn workspace @blrplt/admin build
+        env:
+          VITE_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+          VITE_GRAPHQL_URL: ${{ secrets.PRODUCTION_GRAPHQL_URL }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync packages/admin/dist s3://${{ secrets.ADMIN_S3_BUCKET }} \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "index.html"
+
+          aws s3 cp packages/admin/dist/index.html s3://${{ secrets.ADMIN_S3_BUCKET }}/index.html \
+            --cache-control "no-cache, no-store, must-revalidate"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.ADMIN_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+
+  # ===========================================================================
+  # Deploy Server to ECS
+  # ===========================================================================
+  deploy-server:
+    name: Deploy Server
+    runs-on: ubuntu-latest
+    needs: build-server
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Update ECS service
+        run: |
+          # Force new deployment with the latest image
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --force-new-deployment
+
+      - name: Wait for deployment to stabilize
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+
+  # ===========================================================================
+  # Run Database Migrations
+  # ===========================================================================
+  migrate-database:
+    name: Database Migration
+    runs-on: ubuntu-latest
+    needs: [build-server, deploy-server]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate Prisma Client
+        run: yarn workspace @blrplt/server db:generate
+
+      - name: Run migrations
+        run: yarn workspace @blrplt/server db:migrate:prod
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+  # ===========================================================================
+  # Notify on completion
+  # ===========================================================================
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-client, deploy-admin, deploy-server, migrate-database]
+    if: always()
+    steps:
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Client | ${{ needs.deploy-client.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Admin | ${{ needs.deploy-admin.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Server | ${{ needs.deploy-server.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Migrations | ${{ needs.migrate-database.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
