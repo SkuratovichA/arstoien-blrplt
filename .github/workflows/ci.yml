@@ -18,6 +18,7 @@ concurrency:
 
 env:
   NODE_VERSION: '22'
+  PNPM_VERSION: '9.14.2'
 
 jobs:
   # ===========================================================================
@@ -30,30 +31,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
-
-      - name: Cache yarn dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ steps.yarn-cache-dir-path.outputs.dir }}
-            **/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: pnpm install --frozen-lockfile
 
       - name: Upload node_modules artifact
         uses: actions/upload-artifact@v4
@@ -75,13 +65,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Download node_modules
         uses: actions/download-artifact@v4
@@ -90,7 +82,7 @@ jobs:
           path: .
 
       - name: Run ESLint
-        run: yarn lint:check
+        run: pnpm lint:check
 
   # ===========================================================================
   # Prettier Check
@@ -103,13 +95,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Download node_modules
         uses: actions/download-artifact@v4
@@ -118,7 +112,7 @@ jobs:
           path: .
 
       - name: Run Prettier check
-        run: yarn prettier:check
+        run: pnpm prettier:check
 
   # ===========================================================================
   # Type Check
@@ -131,13 +125,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Download node_modules
         uses: actions/download-artifact@v4
@@ -146,10 +142,10 @@ jobs:
           path: .
 
       - name: Generate Prisma Client
-        run: yarn workspace @blrplt/server db:generate
+        run: pnpm --filter @blrplt/server db:generate
 
       - name: Run TypeScript check
-        run: yarn typecheck
+        run: pnpm typecheck
 
   # ===========================================================================
   # Build Check
@@ -162,13 +158,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Download node_modules
         uses: actions/download-artifact@v4
@@ -177,10 +175,10 @@ jobs:
           path: .
 
       - name: Generate Prisma Client
-        run: yarn workspace @blrplt/server db:generate
+        run: pnpm --filter @blrplt/server db:generate
 
       - name: Build all packages
-        run: yarn build
+        run: pnpm build
         env:
           # Client environment variables
           VITE_API_URL: https://api.example.com
@@ -235,13 +233,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Download node_modules
         uses: actions/download-artifact@v4
@@ -250,15 +250,15 @@ jobs:
           path: .
 
       - name: Generate Prisma Client
-        run: yarn workspace @blrplt/server db:generate
+        run: pnpm --filter @blrplt/server db:generate
 
       - name: Run database migrations
-        run: yarn workspace @blrplt/server db:push
+        run: pnpm --filter @blrplt/server db:push
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test_db
 
       - name: Run tests
-        run: yarn test
+        run: pnpm test
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379

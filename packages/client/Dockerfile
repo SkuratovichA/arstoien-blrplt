@@ -11,17 +11,17 @@ WORKDIR /app
 
 RUN apk add --no-cache libc6-compat
 
-RUN corepack enable && corepack prepare yarn@4.0.2 --activate
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
 
 # Copy workspace configuration
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Copy package.json files
 COPY packages/client/package.json ./packages/client/
 
 # Install dependencies
-RUN yarn install --immutable
+RUN pnpm install --frozen-lockfile
 
 # -----------------------------------------------------------------------------
 # Stage 2: Builder
@@ -30,7 +30,7 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare yarn@4.0.2 --activate
+RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
 
 # Build arguments for environment variables
 ARG VITE_API_URL
@@ -43,16 +43,15 @@ ENV VITE_APP_NAME=$VITE_APP_NAME
 
 # Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/.yarn ./.yarn
 COPY --from=deps /app/packages/client/node_modules ./packages/client/node_modules
 
 # Copy source code
-COPY package.json yarn.lock .yarnrc.yml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY tsconfig.json ./
 COPY packages/client ./packages/client
 
 # Build the application
-RUN yarn workspace @blrplt/client build
+RUN pnpm --filter @blrplt/client build
 
 # -----------------------------------------------------------------------------
 # Stage 3: Production - Nginx
