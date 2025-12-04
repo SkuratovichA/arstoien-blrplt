@@ -12,18 +12,17 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache libc6-compat python3 make g++
 
-# Enable corepack for yarn
-RUN corepack enable && corepack prepare yarn@4.0.2 --activate
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
 
 # Copy workspace configuration
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Copy package.json files for all workspaces
 COPY packages/server/package.json ./packages/server/
 
 # Install dependencies
-RUN yarn install --immutable
+RUN pnpm install --frozen-lockfile
 
 # -----------------------------------------------------------------------------
 # Stage 2: Builder
@@ -32,23 +31,22 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare yarn@4.0.2 --activate
+RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/.yarn ./.yarn
 COPY --from=deps /app/packages/server/node_modules ./packages/server/node_modules
 
 # Copy source code
-COPY package.json yarn.lock .yarnrc.yml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY tsconfig.json ./
 COPY packages/server ./packages/server
 
 # Generate Prisma client
-RUN yarn workspace @blrplt/server db:generate
+RUN pnpm --filter @blrplt/server db:generate
 
 # Build the application
-RUN yarn workspace @blrplt/server build
+RUN pnpm --filter @blrplt/server build
 
 # -----------------------------------------------------------------------------
 # Stage 3: Production
@@ -64,13 +62,7 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Install production dependencies only
 RUN apk add --no-cache libc6-compat
 
-RUN corepack enable && corepack prepare yarn@4.0.2 --activate
-
 # Copy necessary files
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/yarn.lock ./
-COPY --from=builder /app/.yarnrc.yml ./
-COPY --from=builder /app/.yarn ./.yarn
 COPY --from=builder /app/packages/server/package.json ./packages/server/
 COPY --from=builder /app/packages/server/dist ./packages/server/dist
 COPY --from=builder /app/packages/server/prisma ./packages/server/prisma

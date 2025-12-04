@@ -23,6 +23,7 @@ concurrency:
 
 env:
   NODE_VERSION: '22'
+  PNPM_VERSION: '9.14.2'
   AWS_REGION: us-east-1
   ECR_REPOSITORY: blrplt-production-server
   ECS_CLUSTER: blrplt-production-cluster
@@ -102,19 +103,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: pnpm install --frozen-lockfile
 
       - name: Build client
-        run: yarn workspace @blrplt/client build
+        run: pnpm --filter @blrplt/client build
         env:
           VITE_API_URL: ${{ secrets.PRODUCTION_API_URL }}
           VITE_WS_URL: ${{ secrets.PRODUCTION_WS_URL }}
@@ -156,19 +160,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: pnpm install --frozen-lockfile
 
       - name: Build admin
-        run: yarn workspace @blrplt/admin build
+        run: pnpm --filter @blrplt/admin build
         env:
           VITE_API_URL: ${{ secrets.PRODUCTION_API_URL }}
           VITE_GRAPHQL_URL: ${{ secrets.PRODUCTION_GRAPHQL_URL }}
@@ -243,22 +250,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
-        run: yarn workspace @blrplt/server db:generate
+        run: pnpm --filter @blrplt/server db:generate
 
       - name: Run migrations
-        run: yarn workspace @blrplt/server db:migrate:prod
+        run: pnpm --filter @blrplt/server db:migrate:prod
         env:
           DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
 
