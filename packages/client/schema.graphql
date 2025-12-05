@@ -43,6 +43,19 @@ type BasicResponse {
   success: Boolean!
 }
 
+input BulkUpdateOtpInput {
+  enabled: Boolean!
+
+  """Specific user IDs to update. If not provided, updates all users."""
+  userIds: [String!]
+}
+
+type BulkUpdateResultType {
+  message: String
+  success: Boolean!
+  updated: Int!
+}
+
 input ChangePasswordInputType {
   currentPassword: String!
   newPassword: String!
@@ -88,6 +101,7 @@ input LoginInput {
 
 type Mutation {
   approveUser(input: ApproveUserInput!): UserObjectType!
+  bulkUpdateOtp(input: BulkUpdateOtpInput!): BulkUpdateResultType!
 
   """Change user password"""
   changePassword(input: ChangePasswordInputType!): BasicResponse!

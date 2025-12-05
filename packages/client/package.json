@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "npm run codegen && npm run generate:routes",
     "build": "tsc && vite build",
     "generate:routes": "tsc --noEmit",
     "preview": "vite preview",
@@ -78,6 +77,7 @@
     "@graphql-codegen/typescript": "^4.0.1",
     "@graphql-codegen/typescript-operations": "^4.0.1",
     "@graphql-codegen/typescript-react-apollo": "^4.1.0",
+    "@graphql-typed-document-node/core": "^3.2.0",
     "@parcel/watcher": "^2.4.0",
     "@tanstack/router-devtools": "^1.1.0",
     "@tanstack/router-vite-plugin": "^1.0.15",
