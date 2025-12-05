@@ -41,7 +41,7 @@ function Register() {
       });
 
       if (result.data?.register.success) {
-        toast.success(result.data.register.message || t('Registration successful'));
+        toast.success(result.data.register.message ?? t('Registration successful'));
         navigate({ to: '/login' });
       }
     } catch {
