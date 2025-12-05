@@ -97,7 +97,7 @@ function UsersPage() {
       });
 
       if (result.data?.bulkUpdateOtp?.success) {
-        toast.success(result.data.bulkUpdateOtp.message || t('OTP settings updated'));
+        toast.success(result.data.bulkUpdateOtp.message ?? t('OTP settings updated'));
         refetch();
       } else {
         toast.error(t('Failed to update OTP settings'));

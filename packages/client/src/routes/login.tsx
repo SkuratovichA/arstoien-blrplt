@@ -92,7 +92,7 @@ function Login() {
               search: { email },
             });
           } else {
-            const errorMsg = otpResult.data?.requestOtpLogin?.message || t('Failed to send OTP');
+            const errorMsg = otpResult.data?.requestOtpLogin?.message ?? t('Failed to send OTP');
             toast.error(errorMsg);
             throw new Error(errorMsg);
           }
