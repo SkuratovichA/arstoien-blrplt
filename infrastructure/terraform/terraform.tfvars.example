@@ -10,10 +10,13 @@ project_name = "blrplt"
 environment  = "production"
 aws_region   = "eu-central-1"
 
-# Domain (must already exist in Route 53)
-domain_name   = "example.com"
-api_subdomain = "api"    # api.example.com
-admin_subdomain = "admin" # admin.example.com
+# Domain Configuration
+# URL structure: {prefix}.{project}.{root_domain}
+# Example: api.blrplt.arstoien.org
+root_domain       = "arstoien.org"      # Must exist in Route 53
+project_subdomain = "blrplt"            # blrplt.arstoien.org
+api_prefix        = "api"               # api.blrplt.arstoien.org
+admin_prefix      = "admin"             # admin.blrplt.arstoien.org
 
 # Database (your existing RDS)
 database_url = "postgresql://user:password@your-rds-endpoint:5432/dbname"
