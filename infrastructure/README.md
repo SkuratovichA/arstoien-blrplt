@@ -2,12 +2,25 @@
 
 Simple, cost-effective AWS infrastructure using App Runner.
 
+## URL Structure
+
+```
+Production:
+├── blrplt.arstoien.org          → Client app
+├── admin.blrplt.arstoien.org    → Admin panel
+└── api.blrplt.arstoien.org      → API server
+
+PR Previews (with "deploy" label):
+├── Client: S3 static hosting with path /pr-{number}/
+└── API: Shares production (or use separate preview environment)
+```
+
 ## Architecture
 
 ```
                     ┌─────────────────┐
                     │   Route 53      │
-                    │   (DNS)         │
+                    │  arstoien.org   │
                     └────────┬────────┘
                              │
          ┌───────────────────┼───────────────────┐
@@ -15,22 +28,21 @@ Simple, cost-effective AWS infrastructure using App Runner.
          ▼                   ▼                   ▼
 ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
 │   CloudFront    │ │   CloudFront    │ │   App Runner    │
-│   (client)      │ │   (admin)       │ │   (server)      │
+│ blrplt.arstoien │ │admin.blrplt...  │ │ api.blrplt...   │
 └────────┬────────┘ └────────┬────────┘ └────────┬────────┘
          │                   │                   │
          ▼                   ▼                   │
 ┌─────────────────┐ ┌─────────────────┐          │
 │   S3 Bucket     │ │   S3 Bucket     │          │
-│   (client)      │ │   (admin)       │          │
 └─────────────────┘ └─────────────────┘          │
                                                  │
-                    ┌────────────────────────────┼────────────────────────────┐
-                    │                            │                            │
-                    ▼                            ▼                            ▼
-           ┌─────────────────┐          ┌─────────────────┐          ┌─────────────────┐
-           │   RDS           │          │   ElastiCache   │          │   S3 Bucket     │
-           │   (PostgreSQL)  │          │   (Redis)       │          │   (uploads)     │
-           └─────────────────┘          └─────────────────┘          └─────────────────┘
+                    ┌────────────────────────────┤
+                    │                            │
+                    ▼                            ▼
+           ┌─────────────────┐          ┌─────────────────┐
+           │   RDS           │          │   S3 Bucket     │
+           │   (existing)    │          │   (uploads)     │
+           └─────────────────┘          └─────────────────┘
 ```
 
 ## Estimated Monthly Cost
@@ -42,90 +54,175 @@ Simple, cost-effective AWS infrastructure using App Runner.
 | S3 | 3 buckets | ~$1-3 |
 | Route 53 | 1 hosted zone | ~$0.50 |
 | ACM | SSL certificates | Free |
-| RDS (existing) | Your existing instance | ~$3 |
-| ElastiCache (optional) | t3.micro | ~$12 |
+| RDS (existing) | Your instance | ~$3 |
 
-**Total: ~$20-50/month** (without Redis: ~$20-35/month)
+**Total: ~$20-35/month**
 
-## Setup
+---
 
-### Prerequisites
+## What You Need to Configure
 
-1. AWS CLI configured
-2. Terraform installed (>= 1.0)
-3. Domain registered in Route 53
+### Step 1: AWS Prerequisites
 
-### Deploy Infrastructure
+#### 1.1 Route 53 Hosted Zone
+Your root domain must exist in Route 53:
+
+```
+Route 53 → Hosted zones → arstoien.org
+```
+
+If domain is registered elsewhere, update nameservers to AWS.
+
+#### 1.2 IAM Role for GitHub Actions (OIDC)
+
+Create OIDC provider (one-time):
+```bash
+aws iam create-open-id-connect-provider \
+  --url https://token.actions.githubusercontent.com \
+  --client-id-list sts.amazonaws.com \
+  --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1
+```
+
+Create IAM role `github-actions-blrplt` with trust policy:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::YOUR_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": "repo:YOUR_ORG/arstoien-blrplt:*"
+        }
+      }
+    }
+  ]
+}
+```
+
+Attach policies:
+- `AmazonEC2ContainerRegistryPowerUser`
+- `AWSAppRunnerFullAccess`
+- Custom S3/CloudFront policy
+
+### Step 2: Terraform Configuration
+
+Create `terraform.tfvars`:
+
+```hcl
+# Project
+project_name = "blrplt"
+environment  = "production"
+aws_region   = "eu-central-1"
+
+# Domain - creates: api.blrplt.arstoien.org, admin.blrplt.arstoien.org, blrplt.arstoien.org
+root_domain       = "arstoien.org"
+project_subdomain = "blrplt"
+api_prefix        = "api"
+admin_prefix      = "admin"
+
+# Your existing RDS
+database_url = "postgresql://user:pass@your-rds.eu-central-1.rds.amazonaws.com:5432/blrplt"
+
+# Secrets (generate with: openssl rand -base64 32)
+jwt_secret         = "your-jwt-secret-at-least-32-characters-long"
+jwt_refresh_secret = "your-refresh-secret-at-least-32-characters"
+
+# Optional
+enable_redis      = false
+enable_s3_uploads = true
+
+# App Runner sizing
+server_cpu           = "256"
+server_memory        = "512"
+server_min_instances = 1
+server_max_instances = 2
+```
+
+### Step 3: Deploy Infrastructure
 
 ```bash
 cd infrastructure/terraform
-
-# Copy and edit variables
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your values
-
-# Initialize Terraform
 terraform init
-
-# Preview changes
 terraform plan
-
-# Apply changes
 terraform apply
 ```
 
-### GitHub Actions Secrets
+### Step 4: GitHub Secrets
 
-After deploying infrastructure, add these secrets to your GitHub repository:
+After `terraform apply`, add these secrets to your repo:
 
-| Secret | Description |
-|--------|-------------|
-| `AWS_ROLE_ARN` | IAM role ARN for GitHub Actions (OIDC) |
-| `NPM_TOKEN` | npm token for private packages |
-| `ECR_REPOSITORY` | ECR repository name |
-| `APPRUNNER_SERVICE_ARN` | App Runner service ARN |
-| `CLIENT_S3_BUCKET` | S3 bucket name for client |
-| `ADMIN_S3_BUCKET` | S3 bucket name for admin |
-| `CLIENT_CLOUDFRONT_ID` | CloudFront distribution ID for client |
-| `ADMIN_CLOUDFRONT_ID` | CloudFront distribution ID for admin |
-| `VITE_API_URL` | API URL (e.g., https://api.example.com) |
-| `VITE_WS_URL` | WebSocket URL (e.g., wss://api.example.com) |
-| `VITE_APP_NAME` | App name |
-| `VITE_GRAPHQL_URL` | GraphQL URL for admin |
+| Secret | Value (from terraform output) |
+|--------|-------------------------------|
+| `AWS_ROLE_ARN` | Your IAM role ARN |
+| `NPM_TOKEN` | Your npm token |
+| `ECR_REPOSITORY` | `blrplt-server` |
+| `APPRUNNER_SERVICE_ARN` | From terraform output |
+| `CLIENT_S3_BUCKET` | From terraform output |
+| `ADMIN_S3_BUCKET` | From terraform output |
+| `CLIENT_CLOUDFRONT_ID` | From terraform output |
+| `ADMIN_CLOUDFRONT_ID` | From terraform output |
+| `VITE_API_URL` | `https://api.blrplt.arstoien.org` |
+| `VITE_WS_URL` | `wss://api.blrplt.arstoien.org` |
+| `VITE_APP_NAME` | `Blrplt` |
+| `VITE_GRAPHQL_URL` | `https://api.blrplt.arstoien.org/graphql` |
 
-### Preview Environments
-
-For preview deployments, also add:
-
-| Secret | Description |
-|--------|-------------|
-| `PREVIEW_S3_BUCKET` | S3 bucket for preview deployments |
-| `PREVIEW_API_URL` | Preview API URL |
-| `PREVIEW_WS_URL` | Preview WebSocket URL |
-| `PREVIEW_GRAPHQL_URL` | Preview GraphQL URL |
+---
 
 ## HTTPS
 
-HTTPS is handled automatically:
-- **App Runner**: Built-in HTTPS with custom domain
-- **CloudFront**: SSL certificate from ACM (free)
+Fully automatic:
+- **API**: App Runner provides HTTPS automatically
+- **Static sites**: CloudFront + ACM certificate (free, auto-renewed)
 
-Both use ACM certificates that are automatically renewed.
+Terraform creates and validates certificates via DNS.
+
+---
 
 ## Deployment
 
 ### Production
-Push to `main` branch triggers automatic deployment.
+```
+Push to main → CI passes → Auto-deploy
+```
 
-### Preview
-Add the `deploy` label to a PR to create a preview environment.
-Remove the label or close the PR to clean up.
+### PR Preview
+```
+Add "deploy" label → Static files deployed → Comment with URLs
+Remove label / Close PR → Cleanup
+```
+
+---
+
+## PR Preview with Unique URLs
+
+For unique subdomain previews like `pr-123-api.blrplt.arstoien.org`, you need:
+
+1. **Wildcard certificate** for `*.blrplt.arstoien.org`
+2. **Dynamic Route 53 records** per PR
+3. **Per-PR App Runner services** (adds ~$15-25/PR)
+
+This is expensive for many PRs. Current setup uses:
+- Shared S3 bucket with paths (`/client-pr-123/`, `/admin-pr-123/`)
+- Shared production API (or manual preview API setup)
+
+To enable full subdomain isolation, uncomment the wildcard certificate in `main.tf` and update the preview workflow.
+
+---
 
 ## Scaling
 
-App Runner auto-scales based on traffic:
-- Min instances: 1 (configurable)
-- Max instances: 2 (configurable)
-- Scale based on concurrent requests
-
-To adjust, modify `server_min_instances` and `server_max_instances` in `terraform.tfvars`.
+```hcl
+# terraform.tfvars
+server_min_instances = 1    # Min (saves cost when idle)
+server_max_instances = 5    # Max (handles traffic spikes)
+server_cpu           = "512"  # Increase for compute-heavy
+server_memory        = "1024" # Increase for memory-heavy
+```

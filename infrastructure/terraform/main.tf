@@ -54,9 +54,12 @@ provider "aws" {
 }
 
 locals {
-  api_domain   = "${var.api_subdomain}.${var.domain_name}"
-  admin_domain = "${var.admin_subdomain}.${var.domain_name}"
-  client_domain = var.domain_name
+  # Domain structure: {prefix}.{project}.{root_domain}
+  # Example: api.blrplt.arstoien.org
+  project_domain = "${var.project_subdomain}.${var.root_domain}"
+  api_domain     = "${var.api_prefix}.${local.project_domain}"
+  admin_domain   = "${var.admin_prefix}.${local.project_domain}"
+  client_domain  = local.project_domain
 }
 
 # =============================================================================
@@ -64,7 +67,7 @@ locals {
 # =============================================================================
 
 data "aws_route53_zone" "main" {
-  name         = var.domain_name
+  name         = var.root_domain
   private_zone = false
 }
 
@@ -107,7 +110,7 @@ resource "aws_acm_certificate_validation" "api" {
 resource "aws_acm_certificate" "cloudfront" {
   provider = aws.us_east_1
 
-  domain_name               = var.domain_name
+  domain_name               = local.client_domain
   subject_alternative_names = [local.admin_domain]
   validation_method         = "DNS"
 
@@ -377,7 +380,7 @@ resource "aws_s3_bucket_cors_configuration" "uploads" {
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["GET", "PUT", "POST"]
-    allowed_origins = ["https://${var.domain_name}", "https://${local.admin_domain}"]
+    allowed_origins = ["https://${local.client_domain}", "https://${local.admin_domain}"]
     max_age_seconds = 3000
   }
 }

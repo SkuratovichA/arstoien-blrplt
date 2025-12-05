@@ -23,20 +23,29 @@ variable "aws_region" {
 # -----------------------------------------------------------------------------
 # Domain Configuration
 # -----------------------------------------------------------------------------
+# URL structure: {prefix}.{project}.{root_domain}
+# Example: api.blrplt.arstoien.org, admin.blrplt.arstoien.org
+# -----------------------------------------------------------------------------
 
-variable "domain_name" {
-  description = "Main domain name (e.g., example.com)"
+variable "root_domain" {
+  description = "Root domain registered in Route 53 (e.g., arstoien.org)"
   type        = string
 }
 
-variable "api_subdomain" {
-  description = "Subdomain for API (e.g., api for api.example.com)"
+variable "project_subdomain" {
+  description = "Project subdomain (e.g., blrplt for blrplt.arstoien.org)"
+  type        = string
+  default     = "blrplt"
+}
+
+variable "api_prefix" {
+  description = "Prefix for API (e.g., api for api.blrplt.arstoien.org)"
   type        = string
   default     = "api"
 }
 
-variable "admin_subdomain" {
-  description = "Subdomain for admin panel (e.g., admin for admin.example.com)"
+variable "admin_prefix" {
+  description = "Prefix for admin (e.g., admin for admin.blrplt.arstoien.org)"
   type        = string
   default     = "admin"
 }

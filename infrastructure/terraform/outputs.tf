@@ -3,18 +3,23 @@
 # =============================================================================
 
 output "api_url" {
-  description = "API URL"
+  description = "API URL (e.g., https://api.blrplt.arstoien.org)"
   value       = "https://${local.api_domain}"
 }
 
 output "client_url" {
-  description = "Client URL"
+  description = "Client URL (e.g., https://blrplt.arstoien.org)"
   value       = "https://${local.client_domain}"
 }
 
 output "admin_url" {
-  description = "Admin URL"
+  description = "Admin URL (e.g., https://admin.blrplt.arstoien.org)"
   value       = "https://${local.admin_domain}"
+}
+
+output "project_domain" {
+  description = "Project domain (e.g., blrplt.arstoien.org)"
+  value       = local.project_domain
 }
 
 output "ecr_repository_url" {
