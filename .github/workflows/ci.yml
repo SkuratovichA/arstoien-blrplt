@@ -140,7 +140,7 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm --filter @blrplt/server db:generate
 
-      - name: Generate GraphQL types for client
+      - name: Generate Routes types for client
         run: pnpm --filter @blrplt/client generate:routes
         env:
           CI: true
