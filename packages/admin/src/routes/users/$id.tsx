@@ -311,18 +311,13 @@ function UserDetailPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 md:col-span-2">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">
-                              {t('OTP Authentication')}
-                            </FormLabel>
+                            <FormLabel className="text-base">{t('OTP Authentication')}</FormLabel>
                             <FormDescription>
                               {t('Allow this user to sign in using OTP codes sent to their email')}
                             </FormDescription>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
                         </FormItem>
                       )}
