@@ -1,4 +1,4 @@
-import { ApolloClient, ApolloLink, InMemoryCache, split, gql, Observable} from '@apollo/client';
+import { ApolloClient, ApolloLink, InMemoryCache, split, gql, Observable } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { ErrorLink, onError } from '@apollo/client/link/error';
 import { env } from './env';

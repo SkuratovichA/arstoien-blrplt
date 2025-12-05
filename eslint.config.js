@@ -15,7 +15,12 @@ module.exports = [
       '**/postcss.config.js',
       '**/i18next-parser.config.cjs',
       '**/.eslintrc.js',
-      '**/.eslintrc.cjs'
+      '**/.eslintrc.cjs',
+      // Generated files
+      '**/routeTree.gen.ts',
+      '**/src/gql/**',
+      '**/schema.graphql',
+      '**/introspection.json'
     ]
   }
 ];
