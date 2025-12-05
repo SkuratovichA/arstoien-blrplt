@@ -31,7 +31,6 @@ import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
 import { useState } from 'react';
 import { tryCatch } from '@arstoien/former';
 
-
 export const Route = createFileRoute('/login')({
   beforeLoad: ({ context }) => {
     requireGuest(context as AuthGuardContext);
@@ -90,7 +89,7 @@ function Login() {
             // Navigate to OTP verification page
             navigate({
               to: '/verify-otp',
-              search: { email }
+              search: { email },
             });
           } else {
             const errorMsg = otpResult.data?.requestOtpLogin?.message || t('Failed to send OTP');
@@ -229,12 +228,15 @@ function Login() {
                 className="w-full"
                 disabled={loading || checkingOtp || requestingOtp}
               >
-                {loading ? t('Signing in...')
-                  : checkingOtp ? t('Checking authentication method...')
-                  : requestingOtp ? t('Sending verification code...')
-                  : showPassword ? t('Sign in')
-                  : t('Continue')
-                }
+                {loading
+                  ? t('Signing in...')
+                  : checkingOtp
+                    ? t('Checking authentication method...')
+                    : requestingOtp
+                      ? t('Sending verification code...')
+                      : showPassword
+                        ? t('Sign in')
+                        : t('Continue')}
               </Button>
             </form>
           </Form>
