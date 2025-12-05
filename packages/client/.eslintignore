@@ -1,0 +1,10 @@
+dist
+node_modules
+*.config.js
+*.config.ts
+*.config.cjs
+codegen.ts
+vite.config.ts
+tailwind.config.ts
+postcss.config.js
+i18next-parser.config.cjs
