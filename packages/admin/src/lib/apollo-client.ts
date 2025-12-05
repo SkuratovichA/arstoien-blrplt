@@ -1,6 +1,6 @@
-import { ApolloClient, ApolloLink, InMemoryCache, split, gql, Observable, type Operation, type NextLink } from '@apollo/client';
+import { ApolloClient, ApolloLink, InMemoryCache, split, gql, Observable} from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-import { onError } from '@apollo/client/link/error';
+import { ErrorLink, onError } from '@apollo/client/link/error';
 import { env } from './env';
 import { useAuthStore } from './auth-store';
 import toast from 'react-hot-toast';
@@ -8,6 +8,7 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs';
 import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
+import ErrorHandlerOptions = ErrorLink.ErrorHandlerOptions;
 
 const authLink = setContext((_, { headers }) => {
   const token = useAuthStore.getState().token;
@@ -39,9 +40,7 @@ const errorLink = onError((options) => {
   const { graphQLErrors, networkError, operation, forward } = options as {
     graphQLErrors?: ReadonlyArray<{ message: string; extensions?: { code?: string } }>;
     networkError?: Error;
-    operation: Operation;
-    forward: NextLink;
-  };
+  } & ErrorHandlerOptions;
 
   if (graphQLErrors) {
     for (const err of graphQLErrors) {

@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "pnpm codegen",
     "build": "tsc && vite build",
-    "generate:routes": "tsc --noEmit",
+    "generate:routes": "vite build --mode development --outDir temp-route-gen && rm -rf temp-route-gen",
     "preview": "vite preview",
     "lint:check": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
