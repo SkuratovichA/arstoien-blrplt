@@ -1,0 +1,14 @@
+# Generated files
+src/gql/
+src/routeTree.gen.ts
+src/graphql/introspection.json
+
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Temporary files
+temp-route-gen/

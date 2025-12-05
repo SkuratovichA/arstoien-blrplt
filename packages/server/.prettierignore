@@ -1,0 +1,14 @@
+# Generated files
+src/schema.graphql
+prisma/migrations/
+
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.*

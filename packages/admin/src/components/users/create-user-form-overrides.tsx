@@ -47,8 +47,7 @@ export const createUserFormOverrides = (
   }),
   PasswordInput: forwardRef<HTMLInputElement, PasswordInputProps<CreateUserFormData>>(
     (props, ref) => {
-      const { id, placeholder, disabled, required, value, onChange, onBlur, name, ...rest } =
-        props;
+      const { id, placeholder, disabled, required, value, onChange, onBlur, name, ...rest } = props;
       return (
         <Input
           ref={ref}

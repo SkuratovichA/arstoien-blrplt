@@ -140,9 +140,7 @@ function Profile() {
           <Card>
             <CardHeader>
               <CardTitle>{t('Personal Information')}</CardTitle>
-              <CardDescription>
-                {t('Update your personal details')}
-              </CardDescription>
+              <CardDescription>{t('Update your personal details')}</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">

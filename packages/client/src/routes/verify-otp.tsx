@@ -6,13 +6,7 @@ import { z } from 'zod';
 import { useMutation } from '@apollo/client/react';
 import { AuthLayout } from '../components/layout/auth-layout';
 import { Button } from '@arstoien/shared-ui';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@arstoien/shared-ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
 import {
   Form,
   FormControl,
@@ -229,8 +223,10 @@ function VerifyOtp() {
                             type="text"
                             inputMode="numeric"
                             maxLength={1}
-                            className="w-12 h-12 text-center text-lg font-bold"
-                            onChange={(e) => handleDigitChange(index, e.target.value.replace(/\D/g, ''))}
+                            className="h-12 w-12 text-center text-lg font-bold"
+                            onChange={(e) =>
+                              handleDigitChange(index, e.target.value.replace(/\D/g, ''))
+                            }
                             onKeyDown={(e) => handleKeyDown(index, e)}
                             onPaste={index === 0 ? handlePaste : undefined}
                             autoComplete="one-time-code"
@@ -257,7 +253,7 @@ function VerifyOtp() {
                 {verifying ? t('Verifying...') : t('Verify Code')}
               </Button>
 
-              <div className="text-center space-y-2">
+              <div className="space-y-2 text-center">
                 <div>
                   <Button
                     type="button"
@@ -270,12 +266,11 @@ function VerifyOtp() {
                       ? t('Sending...')
                       : canResend
                         ? t('Resend Code')
-                        : t('Resend available in {{time}}', { time: formatCountdown(countdown) })
-                    }
+                        : t('Resend available in {{time}}', { time: formatCountdown(countdown) })}
                   </Button>
                 </div>
 
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   {t('Wrong email?')}{' '}
                   <Link to="/login" className="text-foreground hover:underline">
                     {t('Back to login')}
