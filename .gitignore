@@ -56,17 +56,8 @@ public/uploads/
 logs/
 *.log
 
-# Generated files
-packages/client/src/routeTree.gen.ts
-packages/admin/src/routeTree.gen.ts
-packages/client/src/gql/
-packages/admin/src/gql/
-packages/server/src/schema.graphql
-packages/client/src/graphql/introspection.json
-packages/admin/src/graphql/introspection.json
-**/introspection.json
+
+#**/introspection.json
 
 # OS
-Thumbs.dbclaude-changelog/
-
-claude-changelog/*
+claude-changelog/
