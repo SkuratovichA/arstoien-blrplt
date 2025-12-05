@@ -1,4 +1,4 @@
-import { ApolloClient, ApolloLink, InMemoryCache, split, gql, Observable } from '@apollo/client';
+import { ApolloClient, ApolloLink, InMemoryCache, split, gql, Observable, type Operation, type NextLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { env } from './env';
@@ -39,8 +39,8 @@ const errorLink = onError((options) => {
   const { graphQLErrors, networkError, operation, forward } = options as {
     graphQLErrors?: ReadonlyArray<{ message: string; extensions?: { code?: string } }>;
     networkError?: Error;
-    operation: any;
-    forward: any;
+    operation: Operation;
+    forward: NextLink;
   };
 
   if (graphQLErrors) {
@@ -152,7 +152,7 @@ const wsLink = new GraphQLWsLink(
       };
     },
     on: {
-      connected: () => console.log('WebSocket connected'),
+      connected: () => console.debug('WebSocket connected'),
       error: (error) => console.error('WebSocket error:', error),
     },
   })
