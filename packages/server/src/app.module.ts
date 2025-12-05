@@ -17,6 +17,7 @@ import { NotificationModule } from '@modules/notification/notification.module';
 import { AdminModule } from '@modules/admin/admin.module';
 import { SchedulerModule } from '@modules/scheduler/scheduler.module';
 import { SettingsModule } from '@modules/settings/settings.module';
+import { HealthModule } from '@modules/health/health.module';
 
 // Common
 import { PubSubModule } from '@common/pubsub/pubsub.module';
@@ -170,6 +171,7 @@ interface GraphQLContext {
     AdminModule,
     SchedulerModule,
     SettingsModule,
+    HealthModule,
   ],
   providers: [DateScalar],
 })

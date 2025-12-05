@@ -1,0 +1,36 @@
+# =============================================================================
+# Terraform Variables Example
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in your values
+# DO NOT commit terraform.tfvars to git (it contains secrets)
+# =============================================================================
+
+# Project
+project_name = "blrplt"
+environment  = "production"
+aws_region   = "eu-central-1"
+
+# Domain (must already exist in Route 53)
+domain_name   = "example.com"
+api_subdomain = "api"    # api.example.com
+admin_subdomain = "admin" # admin.example.com
+
+# Database (your existing RDS)
+database_url = "postgresql://user:password@your-rds-endpoint:5432/dbname"
+
+# Redis (optional - set to true if you need Redis)
+enable_redis    = false
+redis_node_type = "cache.t3.micro"
+
+# App Runner sizing (smallest = cheapest)
+server_cpu           = "256"   # 0.25 vCPU
+server_memory        = "512"   # 512 MB
+server_min_instances = 1
+server_max_instances = 2
+
+# Secrets
+jwt_secret         = "your-jwt-secret-min-32-chars-long"
+jwt_refresh_secret = "your-jwt-refresh-secret-min-32-chars"
+
+# S3 for file uploads
+enable_s3_uploads = true
