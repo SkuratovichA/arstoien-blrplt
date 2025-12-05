@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { AuthLayout } from '../../components/layout/auth-layout';
+import { AuthLayout } from '@components/layout';
 import {
   Button,
   Card,

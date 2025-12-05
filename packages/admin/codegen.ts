@@ -2,7 +2,7 @@ import { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
   overwrite: true,
-  schema: process.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql',
+  schema: process.env.CI ? './schema.graphql' : (process.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql'),
   documents: ['src/**/*.graphql.ts'],
   ignoreNoDocuments: true,
   generates: {

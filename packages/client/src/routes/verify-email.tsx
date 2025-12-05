@@ -36,39 +36,39 @@ function VerifyEmail() {
   const [isVerified, setIsVerified] = useState(false);
   const navigate = useNavigate();
 
-  const handleVerify = async () => {
-    try {
-      const result = await verifyEmail({
-        variables: { token },
-      });
-
-      if (result.data?.verifyEmail?.success) {
-        if (user) {
-          setUser({ ...user, emailVerifiedAt: new Date().toISOString() });
-        }
-
-        setIsVerified(true);
-        toast.success(t('Email verified successfully'));
-
-        // If user is not logged in, redirect to login
-        if (!user) {
-          setTimeout(() => {
-            navigate({ to: '/login', search: {} });
-          }, 2000);
-        }
-      } else {
-        toast.error(result.data?.verifyEmail?.message ?? t('Email verification failed'));
-      }
-    } catch {
-      toast.error(t('Email verification failed'));
-    }
-  };
-
   useEffect(() => {
     if (token) {
+      const handleVerify = async () => {
+        try {
+          const result = await verifyEmail({
+            variables: { token },
+          });
+
+          if (result.data?.verifyEmail?.success) {
+            if (user) {
+              setUser({ ...user, emailVerifiedAt: new Date().toISOString() });
+            }
+
+            setIsVerified(true);
+            toast.success(t('Email verified successfully'));
+
+            // If user is not logged in, redirect to login
+            if (!user) {
+              setTimeout(() => {
+                navigate({ to: '/login', search: {} });
+              }, 2000);
+            }
+          } else {
+            toast.error(result.data?.verifyEmail?.message ?? t('Email verification failed'));
+          }
+        } catch {
+          toast.error(t('Email verification failed'));
+        }
+      };
+
       handleVerify();
     }
-  }, [handleVerify, token]);
+  }, [token, verifyEmail, user, setUser, navigate, t]);
 
   const handleResend = async () => {
     try {

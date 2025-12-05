@@ -41,7 +41,7 @@ function Register() {
       });
 
       if (result.data?.register.success) {
-        toast.success(result.data.register.message || t('Registration successful'));
+        toast.success(result.data.register.message ?? t('Registration successful'));
         navigate({ to: '/login' });
       }
     } catch {
@@ -66,10 +66,7 @@ function Register() {
           <CardDescription>{t('Create a new account')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Former<RegisterFormData>
-            config={formConfig}
-            componentOverrides={componentOverrides}
-          />
+          <Former<RegisterFormData> config={formConfig} componentOverrides={componentOverrides} />
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-muted-foreground text-sm">

@@ -1,0 +1,57 @@
+# Dependencies
+**/node_modules
+
+# Build outputs
+dist
+**/build
+.next
+**/.next
+# Generated files
+**/routeTree.gen.ts
+**/src/gql/**
+**/schema.graphql
+**/introspection.json
+packages/client/src/gql/
+packages/admin/src/gql/
+packages/server/src/schema.graphql
+packages/client/src/graphql/introspection.json
+packages/admin/src/graphql/introspection.json
+
+# Temporary files
+temp-route-gen
+**/temp-route-gen
+tmp
+**/tmp
+
+# Coverage
+coverage
+**/coverage
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Environment files
+.env
+.env.*
+
+# Cache
+.cache
+**/cache
+.turbo
