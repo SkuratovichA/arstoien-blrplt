@@ -67,3 +67,5 @@ packages/admin/src/graphql/introspection.json
 
 # OS
 Thumbs.dbclaude-changelog/
+
+claude-changelog/*
