@@ -22,10 +22,10 @@ env:
 
 jobs:
   # ===========================================================================
-  # Install dependencies
+  # Lint Check
   # ===========================================================================
-  install:
-    name: Install Dependencies
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -47,42 +47,6 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Upload node_modules artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: node_modules
-          path: |
-            node_modules
-            packages/*/node_modules
-          retention-days: 1
-
-  # ===========================================================================
-  # Lint Check
-  # ===========================================================================
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    needs: install
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
-        with:
-          name: node_modules
-          path: .
-
       - name: Run ESLint
         run: pnpm lint:check
 
@@ -92,7 +56,6 @@ jobs:
   prettier:
     name: Prettier
     runs-on: ubuntu-latest
-    needs: install
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -106,12 +69,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
 
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
-        with:
-          name: node_modules
-          path: .
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Run Prettier check
         run: pnpm prettier:check
@@ -122,7 +85,6 @@ jobs:
   typecheck:
     name: TypeScript
     runs-on: ubuntu-latest
-    needs: install
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -136,12 +98,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
 
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
-        with:
-          name: node_modules
-          path: .
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Generate Prisma Client
         run: pnpm --filter @blrplt/server db:generate
@@ -155,7 +117,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: install
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -169,12 +130,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
 
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
-        with:
-          name: node_modules
-          path: .
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Generate Prisma Client
         run: pnpm --filter @blrplt/server db:generate
@@ -189,23 +150,12 @@ jobs:
           # Admin environment variables
           VITE_GRAPHQL_URL: https://api.example.com/graphql
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: |
-            packages/server/dist
-            packages/client/dist
-            packages/admin/dist
-          retention-days: 1
-
   # ===========================================================================
   # Tests
   # ===========================================================================
   test:
     name: Tests
     runs-on: ubuntu-latest
-    needs: install
     services:
       postgres:
         image: postgres:15-alpine
@@ -244,12 +194,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
 
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
-        with:
-          name: node_modules
-          path: .
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Generate Prisma Client
         run: pnpm --filter @blrplt/server db:generate
