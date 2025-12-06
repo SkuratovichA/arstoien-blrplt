@@ -264,7 +264,7 @@ resource "aws_apprunner_service" "server" {
         runtime_environment_variables = {
           NODE_ENV     = var.environment
           PORT         = "3000"
-          DATABASE_URL = var.database_url
+          DATABASE_URL = local.database_url
           JWT_SECRET   = var.jwt_secret
           JWT_REFRESH_SECRET = var.jwt_refresh_secret
           REDIS_URL    = var.enable_redis ? "redis://${aws_elasticache_cluster.redis[0].cache_nodes[0].address}:6379" : ""
@@ -648,4 +648,78 @@ resource "aws_elasticache_cluster" "redis" {
   port                 = 6379
   subnet_group_name    = aws_elasticache_subnet_group.redis[0].name
   security_group_ids   = [aws_security_group.redis[0].id]
+}
+
+# =============================================================================
+# RDS - PostgreSQL Database (Optional)
+# =============================================================================
+
+resource "aws_db_subnet_group" "postgres" {
+  count      = var.create_rds ? 1 : 0
+  name       = "${var.project_name}-postgres"
+  subnet_ids = data.aws_subnets.default.ids
+
+  tags = {
+    Name = "${var.project_name}-postgres"
+  }
+}
+
+resource "aws_security_group" "postgres" {
+  count       = var.create_rds ? 1 : 0
+  name        = "${var.project_name}-postgres"
+  description = "Security group for PostgreSQL"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [data.aws_vpc.default.cidr_block]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-postgres"
+  }
+}
+
+resource "aws_db_instance" "postgres" {
+  count = var.create_rds ? 1 : 0
+
+  identifier     = "${var.project_name}-postgres"
+  engine         = "postgres"
+  engine_version = "15"
+
+  instance_class    = var.db_instance_class
+  allocated_storage = var.db_allocated_storage
+  storage_type      = "gp2"
+
+  db_name  = var.db_name
+  username = var.db_username
+  password = var.db_password
+
+  db_subnet_group_name   = aws_db_subnet_group.postgres[0].name
+  vpc_security_group_ids = [aws_security_group.postgres[0].id]
+
+  # Cost optimization
+  multi_az               = false
+  publicly_accessible    = false
+  skip_final_snapshot    = true
+  deletion_protection    = false
+  backup_retention_period = 7
+
+  tags = {
+    Name = "${var.project_name}-postgres"
+  }
+}
+
+# Computed database URL
+locals {
+  database_url = var.create_rds ? "postgresql://${var.db_username}:${var.db_password}@${aws_db_instance.postgres[0].endpoint}/${var.db_name}" : var.database_url
 }
