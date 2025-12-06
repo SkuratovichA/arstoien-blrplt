@@ -46,3 +46,11 @@ jwt_refresh_secret = "your-jwt-refresh-secret-min-32-chars"
 
 # S3 for file uploads
 enable_s3_uploads = true
+
+
+root_domain       = "arstoien.com"
+project_subdomain = "blrplt"
+database_url      = "postgresql://...your-rds..."
+jwt_secret        = "CG49ensbu1N/HLY/0K0NsoXyqFthjY97Jxq/0/egR5U="
+jwt_refresh_secret = "oS9RRz4JWBH0WFkktVpBeDnt7rWMN8F+8mJnEZGwHpU="
+
