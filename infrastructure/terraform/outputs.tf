@@ -61,3 +61,14 @@ output "redis_endpoint" {
   description = "Redis endpoint"
   value       = var.enable_redis ? aws_elasticache_cluster.redis[0].cache_nodes[0].address : null
 }
+
+output "rds_endpoint" {
+  description = "RDS PostgreSQL endpoint"
+  value       = var.create_rds ? aws_db_instance.postgres[0].endpoint : null
+}
+
+output "database_url" {
+  description = "Database connection URL (sensitive)"
+  value       = local.database_url
+  sensitive   = true
+}

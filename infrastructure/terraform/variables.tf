@@ -54,10 +54,48 @@ variable "admin_prefix" {
 # Database Configuration
 # -----------------------------------------------------------------------------
 
+variable "create_rds" {
+  description = "Create a new RDS instance (if false, use existing database_url)"
+  type        = bool
+  default     = true
+}
+
 variable "database_url" {
-  description = "PostgreSQL connection URL (use existing RDS)"
+  description = "PostgreSQL connection URL (only used if create_rds = false)"
   type        = string
   sensitive   = true
+  default     = ""
+}
+
+variable "db_instance_class" {
+  description = "RDS instance class (db.t3.micro is free tier eligible)"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "db_allocated_storage" {
+  description = "RDS storage in GB"
+  type        = number
+  default     = 20
+}
+
+variable "db_name" {
+  description = "Database name"
+  type        = string
+  default     = "blrplt"
+}
+
+variable "db_username" {
+  description = "Database master username"
+  type        = string
+  default     = "blrplt"
+}
+
+variable "db_password" {
+  description = "Database master password (min 8 characters)"
+  type        = string
+  sensitive   = true
+  default     = ""
 }
 
 # -----------------------------------------------------------------------------
