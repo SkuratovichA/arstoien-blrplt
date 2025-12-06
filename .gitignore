@@ -48,6 +48,21 @@ lerna-debug.log*
 packages/server/prisma/*.db
 packages/server/prisma/*.db-journal
 
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.out
+*.out
+.terraform/
+terraform.tfvars
+!terraform.tfvars.example
+
+# GitHub Actions local testing
+act
+.actrc
+.github/event.json
+
 # Uploads
 uploads/
 public/uploads/
