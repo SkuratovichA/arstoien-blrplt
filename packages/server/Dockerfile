@@ -75,6 +75,10 @@ COPY --from=builder /app/packages/server/prisma ./prisma
 COPY --from=builder /app/node_modules/.pnpm/@prisma+client*/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
+# Copy entrypoint script
+COPY packages/server/docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 # Set ownership
 RUN chown -R nestjs:nodejs /app
 
@@ -90,5 +94,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
-# Start server
-CMD ["node", "dist/main.js"]
+# Start server with migrations
+CMD ["./docker-entrypoint.sh"]
