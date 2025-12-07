@@ -5,12 +5,12 @@ import { Kind, ValueNode } from 'graphql';
 export class DateScalar implements CustomScalar<number, Date> {
   description = 'Date custom scalar type';
 
-  // @ts-expect-error
+  // @ts-ignore - TypeScript version differences in CustomScalar interface
   parseValue(value: number): Date {
     return new Date(value); // value from the client
   }
 
-  // @ts-expect-error
+  // @ts-ignore - TypeScript version differences in CustomScalar interface
   serialize(value: Date): number {
     return new Date(value).getTime(); // value sent to the client
   }
@@ -18,7 +18,7 @@ export class DateScalar implements CustomScalar<number, Date> {
   /**
    * Ensures that we accept both string and timestamp dates.
    */
-  // @ts-expect-error - generic issue?
+  // @ts-ignore - TypeScript version differences in CustomScalar interface
   parseLiteral(ast: ValueNode): Date | null {
     if (ast.kind === Kind.INT) {
       // ast.value is in fact a string number
