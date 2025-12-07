@@ -13,17 +13,19 @@ RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files for all workspace packages
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/server/package.json ./packages/server/
+COPY packages/client/package.json ./packages/client/
+COPY packages/admin/package.json ./packages/admin/
 
-# Copy .npmrc for private packages (NPM_TOKEN must be set as build arg)
+# Copy .npmrc for private packages
 COPY .npmrc ./
 ARG NPM_TOKEN
 ENV NPM_TOKEN=$NPM_TOKEN
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile --filter @blrplt/server
+# Install all dependencies with shamefully-hoist for flat node_modules structure
+RUN pnpm install --frozen-lockfile --shamefully-hoist
 
 # -----------------------------------------------------------------------------
 # Stage 2: Builder
@@ -34,19 +36,20 @@ RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
 
 WORKDIR /app
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/server/node_modules ./packages/server/node_modules
+# Copy all dependencies and workspace structure from deps stage
+COPY --from=deps /app ./
 
 # Copy source code
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/server ./packages/server
 
-# Generate Prisma client
-RUN pnpm --filter @blrplt/server db:generate
+# Generate Prisma client and build (run from package directory)
+WORKDIR /app/packages/server
+RUN pnpm prisma generate
 
-# Build
-RUN pnpm --filter @blrplt/server build
+# Build the application
+RUN pnpm build
+
+WORKDIR /app
 
 # -----------------------------------------------------------------------------
 # Stage 3: Production
@@ -65,12 +68,12 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=builder /app/packages/server/dist ./dist
 COPY --from=builder /app/packages/server/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages/server/node_modules ./packages_node_modules
 
 # Copy Prisma files for migrations
 COPY --from=builder /app/packages/server/prisma ./prisma
-COPY --from=builder /app/packages/server/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/packages/server/node_modules/@prisma ./node_modules/@prisma
+# With shamefully-hoist, Prisma is in root node_modules
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client*/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Set ownership
 RUN chown -R nestjs:nodejs /app
