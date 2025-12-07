@@ -283,6 +283,14 @@ resource "aws_apprunner_service" "server" {
     instance_role_arn = aws_iam_role.apprunner_instance.arn
   }
 
+  # VPC networking to access RDS
+  network_configuration {
+    egress_configuration {
+      egress_type       = "VPC"
+      vpc_connector_arn = aws_apprunner_vpc_connector.server.arn
+    }
+  }
+
   auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.server.arn
 
   health_check_configuration {
@@ -295,7 +303,8 @@ resource "aws_apprunner_service" "server" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.apprunner_ecr_access
+    aws_iam_role_policy_attachment.apprunner_ecr_access,
+    aws_apprunner_vpc_connector.server
   ]
 }
 
@@ -307,6 +316,36 @@ resource "aws_apprunner_auto_scaling_configuration_version" "server" {
 
   tags = {
     Name = "${var.project_name}-server-autoscaling"
+  }
+}
+
+# App Runner VPC Connector (required to access RDS)
+resource "aws_apprunner_vpc_connector" "server" {
+  vpc_connector_name = "${var.project_name}-vpc-connector"
+  subnets            = data.aws_subnets.default.ids
+  security_groups    = [aws_security_group.apprunner[0].id]
+
+  tags = {
+    Name = "${var.project_name}-vpc-connector"
+  }
+}
+
+# Security group for App Runner to access RDS
+resource "aws_security_group" "apprunner" {
+  count       = var.create_rds ? 1 : 0
+  name        = "${var.project_name}-apprunner"
+  description = "Security group for App Runner service"
+  vpc_id      = data.aws_vpc.default.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-apprunner"
   }
 }
 
@@ -671,10 +710,11 @@ resource "aws_security_group" "postgres" {
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = [data.aws_vpc.default.cidr_block]
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.apprunner[0].id]
+    description     = "Allow App Runner to connect to PostgreSQL"
   }
 
   egress {
