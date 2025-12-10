@@ -144,6 +144,27 @@ resource "aws_apprunner_vpc_connector" "server" {
 # -----------------------------------------------------------------------------
 
 resource "aws_apprunner_custom_domain_association" "api" {
-  domain_name = local.api_domain
-  service_arn = aws_apprunner_service.server.arn
+  domain_name          = local.api_domain
+  service_arn          = aws_apprunner_service.server.arn
+  enable_www_subdomain = false
+
+  lifecycle {
+    # Prevent recreation when validation records change
+    ignore_changes = [enable_www_subdomain]
+  }
+}
+
+# Certificate validation records for custom domain
+resource "aws_route53_record" "apprunner_domain_validation" {
+  for_each = {
+    for record in aws_apprunner_custom_domain_association.api.certificate_validation_records :
+    record.name => record
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.value]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = data.aws_route53_zone.main.zone_id
 }
