@@ -72,3 +72,29 @@ output "database_url" {
   value       = local.database_url
   sensitive   = true
 }
+
+# =============================================================================
+# SES Outputs
+# =============================================================================
+
+output "ses_smtp_host" {
+  description = "SES SMTP endpoint"
+  value       = "email-smtp.${var.aws_region}.amazonaws.com"
+}
+
+output "ses_smtp_username" {
+  description = "SES SMTP username"
+  value       = aws_iam_access_key.ses_smtp.id
+  sensitive   = true
+}
+
+output "ses_smtp_password" {
+  description = "SES SMTP password"
+  value       = aws_iam_access_key.ses_smtp.ses_smtp_password_v4
+  sensitive   = true
+}
+
+output "ses_domain_status" {
+  description = "SES domain verification status"
+  value       = aws_ses_domain_identity_verification.main.id
+}

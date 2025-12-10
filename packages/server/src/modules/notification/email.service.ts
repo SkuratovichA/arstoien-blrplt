@@ -6,6 +6,7 @@ import * as nodemailer from 'nodemailer';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 @Injectable()
 export class EmailService {
@@ -20,19 +21,18 @@ export class EmailService {
   private initializeTransporter() {
     const emailConfig = this.configService.get('app.email');
 
-    if (!emailConfig) {
+    if (!emailConfig?.host) {
       this.logger.warn('Email configuration not found. Email notifications will be disabled.');
       return;
     }
 
-    // Only include auth if credentials are provided (for Mailpit/MailHog, no auth is needed)
-    const transportConfig: typeof emailConfig = {
+    const transportConfig: SMTPTransport.Options = {
       host: emailConfig.host,
       port: emailConfig.port,
-      secure: emailConfig.secure,
+      // secure: true only for port 465, false for 587 (STARTTLS handles encryption)
+      secure: emailConfig.port === 465,
     };
 
-    // Add auth only if user and pass are provided
     if (emailConfig.user && emailConfig.pass) {
       transportConfig.auth = {
         user: emailConfig.user,
@@ -42,97 +42,13 @@ export class EmailService {
 
     this.transporter = nodemailer.createTransport(transportConfig);
 
-    this.logger.log('Email transporter initialized');
-  }
-
-  /**
-   * Send bid placed email
-   */
-  sendBidPlacedEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(to, 'Nová nabídka na vaši aukci', 'bid-placed', data);
-  }
-
-  /**
-   * Send outbid email
-   */
-  sendOutbidEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(to, 'Byli jste přebiti', 'bid-outbid', data);
-  }
-
-  /**
-   * Send auction won email
-   */
-  sendAuctionWonEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(to, 'Vyhráli jste aukci', 'auction-won', data);
-  }
-
-  /**
-   * Send auction ended email
-   */
-  sendAuctionEndedEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(to, 'Aukce skončila', 'auction-ended', data);
-  }
-
-  /**
-   * Send listing approved email
-   */
-  sendListingApprovedEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(to, 'Inzerát byl schválen', 'listing-approved', data);
-  }
-
-  /**
-   * Send listing rejected email
-   */
-  sendListingRejectedEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(to, 'Inzerát byl zamítnut', 'listing-rejected', data);
-  }
-
-  /**
-   * Send payment received email
-   */
-  sendPaymentReceivedEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(to, 'Platba byla přijata', 'payment-received', data);
-  }
-
-  /**
-   * Send payment reminder email
-   */
-  sendPaymentReminderEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(to, 'Připomínka platby', 'payment-reminder', data);
-  }
-
-  /**
-   * Send user approved email
-   */
-  sendUserApprovedEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(to, 'Váš účet byl schválen', 'user-approved', data);
+    // Verify connection on startup (optional but useful)
+    this.transporter
+      .verify()
+      .then(() =>
+        this.logger.log(`Email transporter initialized: ${emailConfig.host}:${emailConfig.port}`)
+      )
+      .catch((err) => this.logger.warn(`Email transporter verification failed: ${err.message}`));
   }
 
   /**
@@ -162,7 +78,9 @@ export class EmailService {
     try {
       // In development mode or when email is not configured, just log the verification link
       if (!this.transporter) {
-        this.logger.warn(`Email transporter not configured. Verification link for ${email}: ${verificationLink}`);
+        this.logger.warn(
+          `Email transporter not configured. Verification link for ${email}: ${verificationLink}`
+        );
         return;
       }
 
@@ -181,7 +99,9 @@ export class EmailService {
     } catch (error) {
       // In development, log the link even if email fails
       if (process.env.NODE_ENV !== 'production') {
-        this.logger.warn(`Email sending failed in development. Verification link for ${email}: ${verificationLink}`);
+        this.logger.warn(
+          `Email sending failed in development. Verification link for ${email}: ${verificationLink}`
+        );
         return;
       }
       this.logger.error(`Failed to send verification email to ${email}:`, error);
@@ -200,15 +120,10 @@ export class EmailService {
         return;
       }
 
-      const effect = this.sendTemplatedEmail(
-        email,
-        'Your Login Code - Boilerplate',
-        'otp-login',
-        {
-          otpCode,
-          expiryMinutes: 5,
-        }
-      );
+      const effect = this.sendTemplatedEmail(email, 'Your Login Code - Boilerplate', 'otp-login', {
+        otpCode,
+        expiryMinutes: 5,
+      });
 
       // Execute the effect and convert to Promise
       await Effect.runPromise(effect);
@@ -260,52 +175,6 @@ export class EmailService {
   }
 
   /**
-   * Send admin notification for new pending listing
-   */
-  sendAdminNewListingNotification(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(
-      to,
-      '[Admin] Nový inzerát čeká na schválení',
-      'admin-new-listing',
-      data
-    );
-  }
-
-  /**
-   * Send admin notification requesting document verification
-   */
-  sendDocumentRequestEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(
-      to,
-      '[Admin] Požadavek na ověření dokumentů',
-      'admin-document-request',
-      data
-    );
-  }
-
-  /**
-   * Send document request email to user
-   * Asks user to provide verification documents to support team
-   */
-  sendUserDocumentRequestEmail(
-    to: string,
-    data: Record<string, unknown>
-  ): Effect.Effect<void, ExternalApiError, never> {
-    return this.sendTemplatedEmail(
-      to,
-      'Požadavek na ověřovací dokumenty - Aukce Autobusů',
-      'user-document-request',
-      data
-    );
-  }
-
-  /**
    * Send templated email
    */
   private sendTemplatedEmail(
@@ -319,7 +188,9 @@ export class EmailService {
     const effect = Effect.tryPromise({
       try: async () => {
         if (!this.transporter) {
-          this.logger.warn(`Email transporter not initialized. Skipping email to ${to} with subject: ${subject}`);
+          this.logger.warn(
+            `Email transporter not initialized. Skipping email to ${to} with subject: ${subject}`
+          );
           // Log important data in development
           if (isDevelopment) {
             this.logger.debug(`Email data: ${JSON.stringify(data, null, 2)}`);
@@ -395,7 +266,10 @@ export class EmailService {
 
       return template;
     } catch (error) {
-      this.logger.error(`Failed to load template ${templateName} from path: ${templatePath}`, error);
+      this.logger.error(
+        `Failed to load template ${templateName} from path: ${templatePath}`,
+        error
+      );
 
       // Return fallback template
       return handlebars.compile(`

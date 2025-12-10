@@ -41,14 +41,21 @@ export function getCorsUrls(environment: string): string | string[] {
     ];
   }
 
-  // Production - get from environment variable
+  // Production - get from environment variables
+  const urls: string[] = [];
+
   const frontendUrl = process.env.FRONTEND_URL;
   if (frontendUrl) {
     // Support multiple URLs separated by comma
-    return frontendUrl.split(',').map((url) => url.trim());
+    urls.push(...frontendUrl.split(',').map((url) => url.trim()));
   }
 
-  return [];
+  const adminFrontendUrl = process.env.ADMIN_FRONTEND_URL;
+  if (adminFrontendUrl) {
+    urls.push(...adminFrontendUrl.split(',').map((url) => url.trim()));
+  }
+
+  return urls.length > 0 ? urls : [];
 }
 
 /**

@@ -46,3 +46,11 @@ jwt_refresh_secret = "your-jwt-refresh-secret-min-32-chars"
 
 # S3 for file uploads
 enable_s3_uploads = true
+
+# Email Configuration (using AWS SES on prod/dev and mailpit locally)
+smtp_host = "email-smtp.eu-central-1.amazonaws.com"
+smtp_port = 587
+smtp_secure = false
+smtp_user = "api-key"
+smtp_pass = "secret"
+email_from = "example@blrplt.com"
