@@ -7,6 +7,11 @@ output "api_url" {
   value       = "https://${local.api_domain}"
 }
 
+output "graphql_url" {
+  description = "GraphQL endpoint URL (e.g., https://api.blrplt.arstoien.org/graphql)"
+  value       = "https://${local.api_domain}/graphql"
+}
+
 output "client_url" {
   description = "Client URL (e.g., https://blrplt.arstoien.org)"
   value       = "https://${local.client_domain}"
