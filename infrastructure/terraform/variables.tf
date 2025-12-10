@@ -167,3 +167,45 @@ variable "enable_s3_uploads" {
   type        = bool
   default     = true
 }
+
+# -----------------------------------------------------------------------------
+# Email Configuration (SMTP)
+# -----------------------------------------------------------------------------
+
+variable "smtp_host" {
+  description = "SMTP server hostname (e.g., email-smtp.eu-central-1.amazonaws.com for AWS SES)"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_port" {
+  description = "SMTP server port (587 for TLS, 465 for SSL)"
+  type        = number
+  default     = 587
+}
+
+variable "smtp_secure" {
+  description = "Use TLS for SMTP connection"
+  type        = bool
+  default     = true
+}
+
+variable "smtp_user" {
+  description = "SMTP username"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "smtp_pass" {
+  description = "SMTP password"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "email_from" {
+  description = "Default sender email address (e.g., noreply@blrplt.arstoien.com)"
+  type        = string
+  default     = ""
+}
