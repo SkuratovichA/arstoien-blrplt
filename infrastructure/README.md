@@ -169,10 +169,10 @@ After `terraform apply`, add these secrets to your repo:
 | `ADMIN_S3_BUCKET` | From terraform output |
 | `CLIENT_CLOUDFRONT_ID` | From terraform output |
 | `ADMIN_CLOUDFRONT_ID` | From terraform output |
-| `VITE_API_URL` | `https://api.blrplt.arstoien.org` |
-| `VITE_WS_URL` | `wss://api.blrplt.arstoien.org` |
+| `VITE_API_URL` | `https://api.blrplt.arstoien.org/graphql` (use `graphql_url` output) |
+| `VITE_WS_URL` | `wss://api.blrplt.arstoien.org/graphql` |
 | `VITE_APP_NAME` | `Blrplt` |
-| `VITE_GRAPHQL_URL` | `https://api.blrplt.arstoien.org/graphql` |
+| `VITE_GRAPHQL_URL` | `https://api.blrplt.arstoien.org/graphql` (use `graphql_url` output) |
 
 ---
 

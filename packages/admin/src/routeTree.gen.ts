@@ -8,99 +8,99 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root';
-import { Route as SettingsRouteImport } from './routes/settings';
-import { Route as ProfileRouteImport } from './routes/profile';
-import { Route as NotificationsRouteImport } from './routes/notifications';
-import { Route as LoginRouteImport } from './routes/login';
-import { Route as AuditLogsRouteImport } from './routes/audit-logs';
-import { Route as IndexRouteImport } from './routes/index';
-import { Route as UsersIndexRouteImport } from './routes/users/index';
-import { Route as UsersPendingRouteImport } from './routes/users/pending';
-import { Route as UsersIdRouteImport } from './routes/users/$id';
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuditLogsRouteImport } from './routes/audit-logs'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as UsersIndexRouteImport } from './routes/users/index'
+import { Route as UsersPendingRouteImport } from './routes/users/pending'
+import { Route as UsersIdRouteImport } from './routes/users/$id'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AuditLogsRoute = AuditLogsRouteImport.update({
   id: '/audit-logs',
   path: '/audit-logs',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const UsersIndexRoute = UsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const UsersPendingRoute = UsersPendingRouteImport.update({
   id: '/users/pending',
   path: '/users/pending',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const UsersIdRoute = UsersIdRouteImport.update({
   id: '/users/$id',
   path: '/users/$id',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute;
-  '/audit-logs': typeof AuditLogsRoute;
-  '/login': typeof LoginRoute;
-  '/notifications': typeof NotificationsRoute;
-  '/profile': typeof ProfileRoute;
-  '/settings': typeof SettingsRoute;
-  '/users/$id': typeof UsersIdRoute;
-  '/users/pending': typeof UsersPendingRoute;
-  '/users': typeof UsersIndexRoute;
+  '/': typeof IndexRoute
+  '/audit-logs': typeof AuditLogsRoute
+  '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/users/$id': typeof UsersIdRoute
+  '/users/pending': typeof UsersPendingRoute
+  '/users': typeof UsersIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute;
-  '/audit-logs': typeof AuditLogsRoute;
-  '/login': typeof LoginRoute;
-  '/notifications': typeof NotificationsRoute;
-  '/profile': typeof ProfileRoute;
-  '/settings': typeof SettingsRoute;
-  '/users/$id': typeof UsersIdRoute;
-  '/users/pending': typeof UsersPendingRoute;
-  '/users': typeof UsersIndexRoute;
+  '/': typeof IndexRoute
+  '/audit-logs': typeof AuditLogsRoute
+  '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/users/$id': typeof UsersIdRoute
+  '/users/pending': typeof UsersPendingRoute
+  '/users': typeof UsersIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  '/': typeof IndexRoute;
-  '/audit-logs': typeof AuditLogsRoute;
-  '/login': typeof LoginRoute;
-  '/notifications': typeof NotificationsRoute;
-  '/profile': typeof ProfileRoute;
-  '/settings': typeof SettingsRoute;
-  '/users/$id': typeof UsersIdRoute;
-  '/users/pending': typeof UsersPendingRoute;
-  '/users/': typeof UsersIndexRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/audit-logs': typeof AuditLogsRoute
+  '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/users/$id': typeof UsersIdRoute
+  '/users/pending': typeof UsersPendingRoute
+  '/users/': typeof UsersIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/audit-logs'
@@ -110,8 +110,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users/$id'
     | '/users/pending'
-    | '/users';
-  fileRoutesByTo: FileRoutesByTo;
+    | '/users'
+  fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/audit-logs'
@@ -121,7 +121,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users/$id'
     | '/users/pending'
-    | '/users';
+    | '/users'
   id:
     | '__root__'
     | '/'
@@ -132,86 +132,86 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users/$id'
     | '/users/pending'
-    | '/users/';
-  fileRoutesById: FileRoutesById;
+    | '/users/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AuditLogsRoute: typeof AuditLogsRoute;
-  LoginRoute: typeof LoginRoute;
-  NotificationsRoute: typeof NotificationsRoute;
-  ProfileRoute: typeof ProfileRoute;
-  SettingsRoute: typeof SettingsRoute;
-  UsersIdRoute: typeof UsersIdRoute;
-  UsersPendingRoute: typeof UsersPendingRoute;
-  UsersIndexRoute: typeof UsersIndexRoute;
+  IndexRoute: typeof IndexRoute
+  AuditLogsRoute: typeof AuditLogsRoute
+  LoginRoute: typeof LoginRoute
+  NotificationsRoute: typeof NotificationsRoute
+  ProfileRoute: typeof ProfileRoute
+  SettingsRoute: typeof SettingsRoute
+  UsersIdRoute: typeof UsersIdRoute
+  UsersPendingRoute: typeof UsersPendingRoute
+  UsersIndexRoute: typeof UsersIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/settings': {
-      id: '/settings';
-      path: '/settings';
-      fullPath: '/settings';
-      preLoaderRoute: typeof SettingsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
-      id: '/profile';
-      path: '/profile';
-      fullPath: '/profile';
-      preLoaderRoute: typeof ProfileRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/notifications': {
-      id: '/notifications';
-      path: '/notifications';
-      fullPath: '/notifications';
-      preLoaderRoute: typeof NotificationsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
-      id: '/login';
-      path: '/login';
-      fullPath: '/login';
-      preLoaderRoute: typeof LoginRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/audit-logs': {
-      id: '/audit-logs';
-      path: '/audit-logs';
-      fullPath: '/audit-logs';
-      preLoaderRoute: typeof AuditLogsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/audit-logs'
+      preLoaderRoute: typeof AuditLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
-      id: '/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/users/': {
-      id: '/users/';
-      path: '/users';
-      fullPath: '/users';
-      preLoaderRoute: typeof UsersIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/users/'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof UsersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/users/pending': {
-      id: '/users/pending';
-      path: '/users/pending';
-      fullPath: '/users/pending';
-      preLoaderRoute: typeof UsersPendingRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/users/pending'
+      path: '/users/pending'
+      fullPath: '/users/pending'
+      preLoaderRoute: typeof UsersPendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/users/$id': {
-      id: '/users/$id';
-      path: '/users/$id';
-      fullPath: '/users/$id';
-      preLoaderRoute: typeof UsersIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/users/$id'
+      path: '/users/$id'
+      fullPath: '/users/$id'
+      preLoaderRoute: typeof UsersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,7 +225,7 @@ const rootRouteChildren: RootRouteChildren = {
   UsersIdRoute: UsersIdRoute,
   UsersPendingRoute: UsersPendingRoute,
   UsersIndexRoute: UsersIndexRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()

@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@apollo/client/react';
 import { Former } from '@arstoien/former';
-import { MainLayout } from '../components/layout/main-layout';
+import { MainLayout } from '@components/layout';
 import {
   Button,
   Card,
