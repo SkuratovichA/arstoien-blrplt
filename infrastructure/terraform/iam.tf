@@ -76,25 +76,7 @@ resource "aws_iam_role_policy" "apprunner_s3_access" {
   })
 }
 
-# SES access for sending emails via API
-resource "aws_iam_role_policy" "apprunner_ses_access" {
-  name = "${var.project_name}-apprunner-ses-access"
-  role = aws_iam_role.apprunner_instance.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ses:SendEmail",
-          "ses:SendRawEmail"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
-}
+# SES API access removed - using SMTP via VPC endpoint instead
 
 # -----------------------------------------------------------------------------
 # SES SMTP User (for email sending)
