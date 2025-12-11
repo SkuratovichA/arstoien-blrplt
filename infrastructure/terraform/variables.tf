@@ -114,6 +114,13 @@ variable "redis_node_type" {
   default     = "cache.t3.micro"
 }
 
+variable "external_redis_url" {
+  description = "External Redis URL (e.g., Redis Labs). If provided, this is used instead of ElastiCache"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 # -----------------------------------------------------------------------------
 # App Runner Configuration
 # -----------------------------------------------------------------------------
