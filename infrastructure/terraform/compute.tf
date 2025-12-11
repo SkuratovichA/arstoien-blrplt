@@ -61,7 +61,7 @@ resource "aws_apprunner_service" "server" {
           DATABASE_URL       = local.database_url
           JWT_SECRET         = var.jwt_secret
           JWT_REFRESH_SECRET = var.jwt_refresh_secret
-          REDIS_URL          = var.enable_redis ? "redis://${aws_elasticache_cluster.redis[0].cache_nodes[0].address}:6379" : ""
+          REDIS_URL          = var.external_redis_url != "" ? var.external_redis_url : (var.enable_redis ? "redis://${aws_elasticache_cluster.redis[0].cache_nodes[0].address}:6379" : "")
           S3_BUCKET          = var.enable_s3_uploads ? aws_s3_bucket.uploads[0].id : ""
           S3_REGION          = var.aws_region
           AWS_REGION         = var.aws_region
