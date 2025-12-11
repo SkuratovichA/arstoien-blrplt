@@ -196,6 +196,7 @@ export class EmailService {
     to: string,
     data: Record<string, unknown>
   ): Effect.Effect<void, ExternalApiError, never> {
+    this.logger.log(`Attempting to send admin notification to ${to} for user ${data.email}`);
     return this.sendTemplatedEmail(
       to,
       '[Admin] Nový uživatel čeká na schválení',
@@ -213,8 +214,10 @@ export class EmailService {
     templateName: string,
     data: Record<string, unknown>
   ): Effect.Effect<void, ExternalApiError, never> {
+    this.logger.debug(`sendTemplatedEmail called: to=${to}, subject=${subject}, template=${templateName}`);
     const effect = Effect.tryPromise({
       try: async () => {
+        this.logger.debug(`Effect executing: to=${to}, isProduction=${this.isProduction}, hasSES=${!!this.sesClient}, hasSMTP=${!!this.smtpTransporter}`);
         if (!this.sesClient && !this.smtpTransporter) {
           this.logger.warn(
             `Email service not initialized. Skipping email to ${to} with subject: ${subject}`
