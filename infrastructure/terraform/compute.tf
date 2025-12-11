@@ -64,13 +64,15 @@ resource "aws_apprunner_service" "server" {
           REDIS_URL          = var.enable_redis ? "redis://${aws_elasticache_cluster.redis[0].cache_nodes[0].address}:6379" : ""
           S3_BUCKET          = var.enable_s3_uploads ? aws_s3_bucket.uploads[0].id : ""
           S3_REGION          = var.aws_region
+          AWS_REGION         = var.aws_region # For AWS SDK (SES)
           FRONTEND_URL       = "https://${local.client_domain}"
           ADMIN_FRONTEND_URL = "https://${local.admin_domain}"
-          SMTP_HOST          = "email-smtp.${var.aws_region}.amazonaws.com"
-          SMTP_PORT          = "587"
-          SMTP_SECURE        = "false" # STARTTLS, not implicit TLS
-          SMTP_USER          = aws_iam_access_key.ses_smtp.id
-          SMTP_PASS          = aws_iam_access_key.ses_smtp.ses_smtp_password_v4
+          # SMTP configuration no longer needed when using SES API
+          # SMTP_HOST          = "email-smtp.${var.aws_region}.amazonaws.com"
+          # SMTP_PORT          = "587"
+          # SMTP_SECURE        = "false"
+          # SMTP_USER          = aws_iam_access_key.ses_smtp.id
+          # SMTP_PASS          = aws_iam_access_key.ses_smtp.ses_smtp_password_v4
           EMAIL_FROM         = "noreply@${local.project_domain}"
         }
       }
