@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import type { CookieOptionsConfig, CorsConfig, DatabaseConfig, EmailConfig, GoogleOAuthConfig, GraphqlConfig, JwtConfig, RedisConfig, S3Config, SentryConfig, UploadConfig, } from './config-types';
+import type { AwsConfig, CookieOptionsConfig, CorsConfig, DatabaseConfig, EmailConfig, GoogleOAuthConfig, GraphqlConfig, JwtConfig, RedisConfig, S3Config, SentryConfig, UploadConfig, } from './config-types';
 
 export type AppConfig = {
   environment: string;
@@ -17,6 +17,7 @@ export type AppConfig = {
   redis: RedisConfig;
   jwt: JwtConfig;
   google: GoogleOAuthConfig;
+  aws: AwsConfig;
   s3: S3Config;
   email: EmailConfig;
   admin: {
@@ -135,6 +136,11 @@ export const appConfig = registerAs('app', (): AppConfig => {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       callbackUrl: process.env.GOOGLE_CALLBACK_URL ?? 'http://localhost:4000/auth/google/callback',
+    },
+
+    // AWS
+    aws: {
+      region: process.env.AWS_REGION ?? process.env.S3_REGION ?? 'eu-central-1',
     },
 
     // S3 / MinIO

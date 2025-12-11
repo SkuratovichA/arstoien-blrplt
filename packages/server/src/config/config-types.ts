@@ -1,3 +1,7 @@
+export type AwsConfig = {
+  region: string;
+};
+
 export type DatabaseConfig = {
   url: string;
 };
