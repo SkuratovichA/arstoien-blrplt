@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Effect } from 'effect';
 import { ExternalApiError } from '@/common/effect';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import * as nodemailer from 'nodemailer';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs/promises';
@@ -12,43 +11,14 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private sesClient: SESClient | null = null;
-  private smtpTransporter: nodemailer.Transporter | null = null;
+  private transporter: nodemailer.Transporter | null = null;
   private templateCache: Map<string, HandlebarsTemplateDelegate> = new Map();
-  private readonly isProduction: boolean;
 
   constructor(private readonly configService: ConfigService) {
-    this.isProduction = this.configService.get('app.isProduction') ?? false;
-
-    if (this.isProduction) {
-      this.initializeSesClient();
-    } else {
-      this.initializeSmtpTransporter();
-    }
+    this.initializeTransporter();
   }
 
-  private initializeSesClient() {
-    const awsRegion = this.configService.get('app.aws.region');
-
-    if (!awsRegion) {
-      this.logger.warn('AWS region not configured. Email notifications will be disabled.');
-      return;
-    }
-
-    try {
-      // Initialize AWS SES client
-      // In App Runner, this will use the instance role for authentication
-      this.sesClient = new SESClient({
-        region: awsRegion,
-      });
-
-      this.logger.log(`AWS SES client initialized for region: ${awsRegion}`);
-    } catch (error) {
-      this.logger.error('Failed to initialize AWS SES client:', error);
-    }
-  }
-
-  private initializeSmtpTransporter() {
+  private initializeTransporter() {
     const emailConfig = this.configService.get('app.email');
 
     if (!emailConfig?.host) {
@@ -70,15 +40,15 @@ export class EmailService {
       };
     }
 
-    this.smtpTransporter = nodemailer.createTransport(transportConfig);
+    this.transporter = nodemailer.createTransport(transportConfig);
 
     // Verify connection on startup (optional but useful)
-    this.smtpTransporter
+    this.transporter
       .verify()
       .then(() =>
-        this.logger.log(`SMTP transporter initialized: ${emailConfig.host}:${emailConfig.port}`)
+        this.logger.log(`Email transporter initialized: ${emailConfig.host}:${emailConfig.port}`)
       )
-      .catch((err) => this.logger.warn(`SMTP transporter verification failed: ${err.message}`));
+      .catch((err) => this.logger.warn(`Email transporter verification failed: ${err.message}`));
   }
 
   /**
@@ -107,9 +77,9 @@ export class EmailService {
   async sendVerificationEmail(email: string, verificationLink: string): Promise<void> {
     try {
       // In development mode or when email is not configured, just log the verification link
-      if (!this.sesClient && !this.smtpTransporter) {
+      if (!this.transporter) {
         this.logger.warn(
-          `Email service not configured. Verification link for ${email}: ${verificationLink}`
+          `Email transporter not configured. Verification link for ${email}: ${verificationLink}`
         );
         return;
       }
@@ -128,7 +98,7 @@ export class EmailService {
       this.logger.log(`Verification email sent to ${email}`);
     } catch (error) {
       // In development, log the link even if email fails
-      if (!this.isProduction) {
+      if (process.env.NODE_ENV !== 'production') {
         this.logger.warn(
           `Email sending failed in development. Verification link for ${email}: ${verificationLink}`
         );
@@ -145,8 +115,8 @@ export class EmailService {
   async sendOtpEmail(email: string, otpCode: string): Promise<void> {
     try {
       // In development mode or when email is not configured, just log the OTP code
-      if (!this.sesClient && !this.smtpTransporter) {
-        this.logger.warn(`Email service not configured. OTP code for ${email}: ${otpCode}`);
+      if (!this.transporter) {
+        this.logger.warn(`Email transporter not configured. OTP code for ${email}: ${otpCode}`);
         return;
       }
 
@@ -160,7 +130,7 @@ export class EmailService {
       this.logger.log(`OTP email sent to ${email}`);
     } catch (error) {
       // In development, log the code even if email fails
-      if (!this.isProduction) {
+      if (process.env.NODE_ENV !== 'production') {
         this.logger.warn(`Email sending failed in development. OTP code for ${email}: ${otpCode}`);
         return;
       }
@@ -206,7 +176,7 @@ export class EmailService {
   }
 
   /**
-   * Send templated email using either SES API (production) or SMTP (development)
+   * Send templated email
    */
   private sendTemplatedEmail(
     to: string,
@@ -214,16 +184,18 @@ export class EmailService {
     templateName: string,
     data: Record<string, unknown>
   ): Effect.Effect<void, ExternalApiError, never> {
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+
     this.logger.debug(`sendTemplatedEmail called: to=${to}, subject=${subject}, template=${templateName}`);
+
     const effect = Effect.tryPromise({
       try: async () => {
-        this.logger.debug(`Effect executing: to=${to}, isProduction=${this.isProduction}, hasSES=${!!this.sesClient}, hasSMTP=${!!this.smtpTransporter}`);
-        if (!this.sesClient && !this.smtpTransporter) {
+        if (!this.transporter) {
           this.logger.warn(
-            `Email service not initialized. Skipping email to ${to} with subject: ${subject}`
+            `Email transporter not initialized. Skipping email to ${to} with subject: ${subject}`
           );
           // Log important data in development
-          if (!this.isProduction) {
+          if (isDevelopment) {
             this.logger.debug(`Email data: ${JSON.stringify(data, null, 2)}`);
           }
           return;
@@ -233,17 +205,13 @@ export class EmailService {
         const template = await this.loadTemplate(templateName);
         const html = template(data);
 
-        // Get sender email from config
-        const fromEmail = this.configService.get('app.email.from') || 'noreply@blrplt.arstoien.com';
-
-        // Send via SES API in production, SMTP in development
-        if (this.isProduction && this.sesClient) {
-          await this.sendViaSes(to, fromEmail, subject, html);
-        } else if (this.smtpTransporter) {
-          await this.sendViaSmtp(to, fromEmail, subject, html);
-        } else {
-          this.logger.warn('No email transport available');
-        }
+        // Send email
+        await this.transporter.sendMail({
+          from: this.configService.get('app.email.from'),
+          to,
+          subject,
+          html,
+        });
 
         this.logger.log(`Email sent to ${to}: ${subject}`);
       },
@@ -258,7 +226,7 @@ export class EmailService {
     });
 
     // In development mode, ignore email sending errors
-    if (!this.isProduction) {
+    if (isDevelopment) {
       return Effect.catchAll(effect, () => {
         this.logger.warn(`Development mode: Email failure ignored`);
         return Effect.void;
@@ -266,55 +234,6 @@ export class EmailService {
     }
 
     return effect;
-  }
-
-  /**
-   * Send email via AWS SES API
-   */
-  private async sendViaSes(to: string, from: string, subject: string, html: string): Promise<void> {
-    if (!this.sesClient) {
-      throw new Error('SES client not initialized');
-    }
-
-    const command = new SendEmailCommand({
-      Source: from,
-      Destination: {
-        ToAddresses: [to],
-      },
-      Message: {
-        Subject: {
-          Data: subject,
-          Charset: 'UTF-8',
-        },
-        Body: {
-          Html: {
-            Data: html,
-            Charset: 'UTF-8',
-          },
-        },
-      },
-    });
-
-    const response = await this.sesClient.send(command);
-    this.logger.log(`Email sent via SES (MessageId: ${response.MessageId})`);
-  }
-
-  /**
-   * Send email via SMTP (for local development)
-   */
-  private async sendViaSmtp(to: string, from: string, subject: string, html: string): Promise<void> {
-    if (!this.smtpTransporter) {
-      throw new Error('SMTP transporter not initialized');
-    }
-
-    await this.smtpTransporter.sendMail({
-      from,
-      to,
-      subject,
-      html,
-    });
-
-    this.logger.log(`Email sent via SMTP`);
   }
 
   /**
@@ -329,7 +248,8 @@ export class EmailService {
     // Load template file
     // In development: src/modules/notification/templates
     // In production (built): dist/modules/notification/templates
-    const basePath = this.isProduction ? 'dist' : 'src';
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const basePath = isDevelopment ? 'src' : 'dist';
 
     const templatePath = path.join(
       process.cwd(),
@@ -376,44 +296,19 @@ export class EmailService {
   ): Effect.Effect<void, ExternalApiError, never> {
     return Effect.tryPromise({
       try: async () => {
-        if (!this.sesClient && !this.smtpTransporter) {
-          this.logger.warn('Email service not initialized. Skipping email.');
+        if (!this.transporter) {
+          this.logger.warn('Email transporter not initialized. Skipping email.');
           return;
         }
 
-        const fromEmail = this.configService.get('app.email.from') || 'noreply@blrplt.arstoien.com';
+        await this.transporter.sendMail({
+          from: this.configService.get('app.email.from'),
+          to,
+          subject,
+          text,
+        });
 
-        if (this.isProduction && this.sesClient) {
-          const command = new SendEmailCommand({
-            Source: fromEmail,
-            Destination: {
-              ToAddresses: [to],
-            },
-            Message: {
-              Subject: {
-                Data: subject,
-                Charset: 'UTF-8',
-              },
-              Body: {
-                Text: {
-                  Data: text,
-                  Charset: 'UTF-8',
-                },
-              },
-            },
-          });
-
-          const response = await this.sesClient.send(command);
-          this.logger.log(`Plain email sent via SES (MessageId: ${response.MessageId})`);
-        } else if (this.smtpTransporter) {
-          await this.smtpTransporter.sendMail({
-            from: fromEmail,
-            to,
-            subject,
-            text,
-          });
-          this.logger.log(`Plain email sent via SMTP`);
-        }
+        this.logger.log(`Plain email sent to ${to}: ${subject}`);
       },
       catch: (error) => {
         this.logger.error(`Failed to send plain email to ${to}:`, error);
