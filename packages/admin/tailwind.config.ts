@@ -5,7 +5,7 @@ export default {
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
-    '../../node_modules/@arstoien/shared-ui/dist/**/*.{js,mjs,cjs}',
+    './node_modules/@arstoien/shared-ui/dist/**/*.{js,mjs,cjs}',
   ],
   theme: {
     extend: {
