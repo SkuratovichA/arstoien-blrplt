@@ -34,8 +34,9 @@ PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "postgre
   echo "Database created successfully!"
 }
 
-echo "Database exists. Running migrations..."
-npx prisma migrate deploy
+echo "Database exists. Pushing schema to database..."
+# Use db push for initial setup (creates tables without migrations)
+npx prisma db push --accept-data-loss --skip-generate
 
 echo ""
 echo "=== Starting Server ==="
