@@ -2,53 +2,40 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Effect } from 'effect';
 import { ExternalApiError } from '@/common/effect';
-import * as nodemailer from 'nodemailer';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter | null = null;
+  private sesClient: SESClient | null = null;
   private templateCache: Map<string, HandlebarsTemplateDelegate> = new Map();
 
   constructor(private readonly configService: ConfigService) {
-    this.initializeTransporter();
+    this.initializeSesClient();
   }
 
-  private initializeTransporter() {
-    const emailConfig = this.configService.get('app.email');
+  private initializeSesClient() {
+    const awsRegion = this.configService.get('app.aws.region');
 
-    if (!emailConfig?.host) {
-      this.logger.warn('Email configuration not found. Email notifications will be disabled.');
+    if (!awsRegion) {
+      this.logger.warn('AWS region not configured. Email notifications will be disabled.');
       return;
     }
 
-    const transportConfig: SMTPTransport.Options = {
-      host: emailConfig.host,
-      port: emailConfig.port,
-      // secure: true only for port 465, false for 587 (STARTTLS handles encryption)
-      secure: emailConfig.port === 465,
-    };
+    try {
+      // Initialize AWS SES client
+      // In App Runner, this will use the instance role for authentication
+      this.sesClient = new SESClient({
+        region: awsRegion,
+      });
 
-    if (emailConfig.user && emailConfig.pass) {
-      transportConfig.auth = {
-        user: emailConfig.user,
-        pass: emailConfig.pass,
-      };
+      this.logger.log(`AWS SES client initialized for region: ${awsRegion}`);
+    } catch (error) {
+      this.logger.error('Failed to initialize AWS SES client:', error);
     }
-
-    this.transporter = nodemailer.createTransport(transportConfig);
-
-    // Verify connection on startup (optional but useful)
-    this.transporter
-      .verify()
-      .then(() =>
-        this.logger.log(`Email transporter initialized: ${emailConfig.host}:${emailConfig.port}`)
-      )
-      .catch((err) => this.logger.warn(`Email transporter verification failed: ${err.message}`));
   }
 
   /**
@@ -76,10 +63,10 @@ export class EmailService {
    */
   async sendVerificationEmail(email: string, verificationLink: string): Promise<void> {
     try {
-      // In development mode or when email is not configured, just log the verification link
-      if (!this.transporter) {
+      // In development mode or when SES is not configured, just log the verification link
+      if (!this.sesClient) {
         this.logger.warn(
-          `Email transporter not configured. Verification link for ${email}: ${verificationLink}`
+          `SES client not configured. Verification link for ${email}: ${verificationLink}`
         );
         return;
       }
@@ -114,9 +101,9 @@ export class EmailService {
    */
   async sendOtpEmail(email: string, otpCode: string): Promise<void> {
     try {
-      // In development mode or when email is not configured, just log the OTP code
-      if (!this.transporter) {
-        this.logger.warn(`Email transporter not configured. OTP code for ${email}: ${otpCode}`);
+      // In development mode or when SES is not configured, just log the OTP code
+      if (!this.sesClient) {
+        this.logger.warn(`SES client not configured. OTP code for ${email}: ${otpCode}`);
         return;
       }
 
@@ -175,7 +162,7 @@ export class EmailService {
   }
 
   /**
-   * Send templated email
+   * Send templated email using AWS SES API
    */
   private sendTemplatedEmail(
     to: string,
@@ -187,9 +174,9 @@ export class EmailService {
 
     const effect = Effect.tryPromise({
       try: async () => {
-        if (!this.transporter) {
+        if (!this.sesClient) {
           this.logger.warn(
-            `Email transporter not initialized. Skipping email to ${to} with subject: ${subject}`
+            `SES client not initialized. Skipping email to ${to} with subject: ${subject}`
           );
           // Log important data in development
           if (isDevelopment) {
@@ -202,15 +189,31 @@ export class EmailService {
         const template = await this.loadTemplate(templateName);
         const html = template(data);
 
-        // Send email
-        await this.transporter.sendMail({
-          from: this.configService.get('app.email.from'),
-          to,
-          subject,
-          html,
+        // Get sender email from config
+        const fromEmail = this.configService.get('app.email.from') || 'noreply@blrplt.arstoien.com';
+
+        // Send email using AWS SES
+        const command = new SendEmailCommand({
+          Source: fromEmail,
+          Destination: {
+            ToAddresses: [to],
+          },
+          Message: {
+            Subject: {
+              Data: subject,
+              Charset: 'UTF-8',
+            },
+            Body: {
+              Html: {
+                Data: html,
+                Charset: 'UTF-8',
+              },
+            },
+          },
         });
 
-        this.logger.log(`Email sent to ${to}: ${subject}`);
+        const response = await this.sesClient.send(command);
+        this.logger.log(`Email sent to ${to}: ${subject} (MessageId: ${response.MessageId})`);
       },
       catch: (error) => {
         this.logger.error(`Failed to send email to ${to}:`, error);
@@ -284,7 +287,7 @@ export class EmailService {
   }
 
   /**
-   * Send plain email (no template)
+   * Send plain email (no template) using AWS SES
    */
   sendPlainEmail(
     to: string,
@@ -293,19 +296,34 @@ export class EmailService {
   ): Effect.Effect<void, ExternalApiError, never> {
     return Effect.tryPromise({
       try: async () => {
-        if (!this.transporter) {
-          this.logger.warn('Email transporter not initialized. Skipping email.');
+        if (!this.sesClient) {
+          this.logger.warn('SES client not initialized. Skipping email.');
           return;
         }
 
-        await this.transporter.sendMail({
-          from: this.configService.get('app.email.from'),
-          to,
-          subject,
-          text,
+        const fromEmail = this.configService.get('app.email.from') || 'noreply@blrplt.arstoien.com';
+
+        const command = new SendEmailCommand({
+          Source: fromEmail,
+          Destination: {
+            ToAddresses: [to],
+          },
+          Message: {
+            Subject: {
+              Data: subject,
+              Charset: 'UTF-8',
+            },
+            Body: {
+              Text: {
+                Data: text,
+                Charset: 'UTF-8',
+              },
+            },
+          },
         });
 
-        this.logger.log(`Plain email sent to ${to}: ${subject}`);
+        const response = await this.sesClient.send(command);
+        this.logger.log(`Plain email sent to ${to}: ${subject} (MessageId: ${response.MessageId})`);
       },
       catch: (error) => {
         this.logger.error(`Failed to send plain email to ${to}:`, error);
