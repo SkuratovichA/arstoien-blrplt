@@ -62,7 +62,7 @@ Production-ready full-stack boilerplate with authentication, user management, an
 - **PostgreSQL 15** - Primary database
 - **Redis 7** - Cache and sessions
 - **Docker** - Containerization
-- **Yarn 4** - Package management
+- **pnpm** - Package management
 - **TypeScript** - Type safety
 
 ## Project Structure
@@ -83,7 +83,7 @@ arstoien-blrplt/
 ### Prerequisites
 
 - Node.js 22+
-- Yarn 4.0.2
+- pnpm 9.14.2
 - Docker & Docker Compose
 - PostgreSQL 15 (or use Docker)
 - Redis 7 (or use Docker)
@@ -96,15 +96,17 @@ git clone https://github.com/arstoien/arstoien-blrplt.git
 cd arstoien-blrplt
 ```
 
-2. **Install Yarn**
+2. **Install pnpm**
 ```bash
 corepack enable
-corepack prepare yarn@4.0.2 --activate
+corepack prepare pnpm@9.14.2 --activate
+# Or install globally
+npm install -g pnpm
 ```
 
 3. **Install dependencies**
 ```bash
-yarn install
+pnpm install
 ```
 
 4. **Start Docker services**
@@ -125,24 +127,24 @@ cp packages/admin/.env.example packages/admin/.env
 6. **Setup database**
 ```bash
 # Generate Prisma client
-yarn workspace @blrplt/server prisma generate
+pnpm --filter @blrplt/server prisma generate
 
 # Run migrations
-yarn workspace @blrplt/server prisma migrate dev
+pnpm --filter @blrplt/server prisma migrate dev
 
 # Seed database (optional)
-yarn workspace @blrplt/server prisma db seed
+pnpm --filter @blrplt/server prisma db seed
 ```
 
 7. **Start development servers**
 ```bash
 # Start all services
-yarn dev
+pnpm dev
 
 # Or start individually:
-yarn workspace @blrplt/server dev    # Backend on :4000
-yarn workspace @blrplt/client dev    # Client on :3000
-yarn workspace @blrplt/admin dev     # Admin on :5173
+pnpm --filter @blrplt/server dev    # Backend on :4000
+pnpm --filter @blrplt/client dev    # Client on :3000
+pnpm --filter @blrplt/admin dev     # Admin on :5173
 ```
 
 ## Environment Configuration
@@ -197,33 +199,178 @@ VITE_WS_URL=ws://localhost:4000/graphql
 ## Available Scripts
 
 ### Root Level
-- `yarn dev` - Start all services in development
-- `yarn build` - Build all packages
-- `yarn test` - Run all tests
-- `yarn typecheck` - TypeScript checking
-- `yarn lint:check` - Check linting
-- `yarn lint:fix` - Fix linting issues
-- `yarn prettier:check` - Check formatting
-- `yarn prettier:fix` - Fix formatting
+- `pnpm dev` - Start all services in development
+- `pnpm build` - Build all packages
+- `pnpm test` - Run all tests
+- `pnpm typecheck` - TypeScript checking
+- `pnpm lint:check` - Check linting
+- `pnpm lint:fix` - Fix linting issues
+- `pnpm prettier:check` - Check formatting
+- `pnpm prettier:fix` - Fix formatting
 
 ### Database
-- `yarn db:migrate` - Run migrations
-- `yarn db:push` - Push schema changes
-- `yarn db:seed` - Seed database
-- `yarn db:studio` - Open Prisma Studio
+- `pnpm db:migrate` - Run migrations
+- `pnpm db:push` - Push schema changes
+- `pnpm db:seed` - Seed database
+- `pnpm db:studio` - Open Prisma Studio
+- `pnpm create:admin` - Create admin user (requires env vars)
+- `pnpm create:test-users` - Create test users for development
 
 ### Code Generation
-- `yarn codegen` - Generate GraphQL types
-- `yarn i18n` - Extract i18n strings
+- `pnpm codegen` - Generate GraphQL types
+- `pnpm i18n` - Extract i18n strings
+
+## Production Database Setup
+
+### Prerequisites
+- AWS CLI configured with proper credentials
+- Database connection details (from Terraform outputs)
+- Admin credentials ready
+
+### Step 1: Make RDS Database Accessible
+
+For security, production RDS databases are typically not publicly accessible. To connect:
+
+```bash
+# 1. Temporarily make RDS publicly accessible
+aws rds modify-db-instance \
+  --db-instance-identifier blrplt-postgres \
+  --publicly-accessible \
+  --apply-immediately \
+  --region eu-central-1
+
+# 2. Wait for the modification to complete
+aws rds wait db-instance-available \
+  --db-instance-identifier blrplt-postgres \
+  --region eu-central-1
+
+# 3. Add your IP to the security group
+MY_IP=$(curl -s ifconfig.me)
+echo "Your IP: $MY_IP"
+
+aws ec2 authorize-security-group-ingress \
+  --group-id <your-security-group-id> \
+  --protocol tcp \
+  --port 5432 \
+  --cidr $MY_IP/32 \
+  --region eu-central-1
+```
+
+### Step 2: Check Database Connection
+
+```bash
+# Export database URL (get from Terraform outputs or AWS console)
+export DATABASE_URL="postgresql://username:password@host:5432/database"
+
+# Test connection with psql
+psql $DATABASE_URL -c "SELECT version();"
+
+# Or check via the application
+cd packages/server
+pnpm db:studio  # Opens Prisma Studio to view data
+```
+
+### Step 3: Run Migrations
+
+```bash
+cd packages/server
+
+# Generate Prisma client
+pnpm db:generate
+
+# Run production migrations
+pnpm db:migrate:prod
+```
+
+### Step 4: Create Admin User
+
+The application requires an admin user to manage the system. Create one using environment variables:
+
+```bash
+cd packages/server
+
+# Set required environment variables
+export DATABASE_URL="postgresql://username:password@host:5432/database"
+export ADMIN_EMAIL="admin@yourdomain.com"
+export ADMIN_PASSWORD="YourSecurePassword123!"
+export ADMIN_FIRST_NAME="Admin"  # Optional
+export ADMIN_LAST_NAME="User"     # Optional
+
+# Create the admin user
+pnpm create:admin
+```
+
+### Step 5: Create Test Users (Development Only)
+
+For development/staging environments, you can create test users:
+
+```bash
+cd packages/server
+
+# Set required environment variables
+export DATABASE_URL="postgresql://username:password@host:5432/database"
+export BASE_PWD="YourBasePassword"  # Required - base password for test users
+
+# This creates several test accounts with different roles
+pnpm create:test-users
+```
+
+Test users created (passwords are BASE_PWD + suffix):
+- `moderator@example.com` / `${BASE_PWD}_moderator123!` (MODERATOR)
+- `john.doe@example.com` / `${BASE_PWD}_user123!` (USER)
+- `jane.smith@example.com` / `${BASE_PWD}_user123!` (USER)
+- `test.user@example.com` / `${BASE_PWD}_test123!` (USER)
+- `demo@example.com` / `${BASE_PWD}_demo123!` (USER)
+
+⚠️ **Warning**: Never run `create:test-users` in production!
+
+### Step 6: Secure Database Access
+
+After setup, always revert the security changes:
+
+```bash
+# 1. Make RDS private again
+aws rds modify-db-instance \
+  --db-instance-identifier blrplt-postgres \
+  --no-publicly-accessible \
+  --apply-immediately \
+  --region eu-central-1
+
+# 2. Remove your IP from security group
+aws ec2 revoke-security-group-ingress \
+  --group-id <your-security-group-id> \
+  --protocol tcp \
+  --port 5432 \
+  --cidr $MY_IP/32 \
+  --region eu-central-1
+```
+
+### Alternative: Connect via App Runner
+
+If direct connection is not possible, you can run commands through your App Runner service:
+
+```bash
+# Update App Runner start command temporarily
+aws apprunner update-service \
+  --service-arn <your-app-runner-arn> \
+  --region eu-central-1 \
+  --source-configuration '{
+    "ImageRepository": {
+      "ImageConfiguration": {
+        "StartCommand": "sh -c \"npx prisma migrate deploy && node src/scripts/create-admin.js && npm start\""
+      }
+    }
+  }'
+```
 
 ## Development Workflow
 
 1. **Make changes** to code
-2. **Run type checking**: `yarn typecheck`
-3. **Run linting**: `yarn lint:check`
-4. **Run tests**: `yarn test`
-5. **Generate types** (if GraphQL changed): `yarn codegen`
-6. **Run migrations** (if schema changed): `yarn db:migrate`
+2. **Run type checking**: `pnpm typecheck`
+3. **Run linting**: `pnpm lint:check`
+4. **Run tests**: `pnpm test`
+5. **Generate types** (if GraphQL changed): `pnpm codegen`
+6. **Run migrations** (if schema changed): `pnpm db:migrate`
 
 ## Authentication Flow
 
