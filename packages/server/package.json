@@ -18,7 +18,9 @@
     "db:migrate:prod": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "create:admin": "tsx src/scripts/create-admin.ts",
+    "create:test-users": "tsx src/scripts/create-test-users.ts"
   },
   "dependencies": {
     "@apollo/server": "^4.10.0",
