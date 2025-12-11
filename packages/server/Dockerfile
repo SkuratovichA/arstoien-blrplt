@@ -60,6 +60,9 @@ RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
 
 WORKDIR /app
 
+# Install PostgreSQL client for database creation
+RUN apk add --no-cache postgresql-client
+
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
