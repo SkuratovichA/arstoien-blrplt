@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { UserRole } from '@/gql/graphql';
 
 interface User {
   id: string;
@@ -7,6 +8,7 @@ interface User {
   firstName?: string | null;
   lastName?: string | null;
   phone?: string | null;
+  role?: UserRole | null;
   emailVerifiedAt?: string | null;
   createdAt: string;
 }

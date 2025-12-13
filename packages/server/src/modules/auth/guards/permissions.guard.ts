@@ -49,7 +49,9 @@ export class PermissionsGuard implements CanActivate {
     ];
 
     const permissionMap: Record<UserRole, Permission[]> = {
-      [UserRole.USER]: baseUserPermissions,
+      [UserRole.CUSTOMER]: baseUserPermissions,
+
+      [UserRole.CARRIER]: baseUserPermissions,
 
       [UserRole.SUPPORT]: [
         ...baseUserPermissions,

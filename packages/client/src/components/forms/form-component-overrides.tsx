@@ -7,6 +7,8 @@ import type {
   FieldLabelProps,
   FieldDescriptionProps,
   SubmitButtonProps,
+  NextButtonProps,
+  PrevButtonProps,
   FieldValues,
 } from '@arstoien/former';
 import { Button, Input, PasswordInput, Label } from '@arstoien/shared-ui';
@@ -67,8 +69,35 @@ export const createFormComponentOverrides = <T extends FieldValues>(
   ),
 
   SubmitButton: ({ label, isSubmitting, disabled }: SubmitButtonProps) => (
-    <Button type="submit" className="w-full" disabled={disabled ?? isSubmitting}>
+    <Button
+      type="submit"
+      className="w-full bg-gray-900 text-white hover:bg-gray-800 border border-gray-900"
+      disabled={disabled ?? isSubmitting}
+    >
       {isSubmitting ? t('Loading...') : label}
+    </Button>
+  ),
+
+  NextButton: ({ label, onClick, disabled }: NextButtonProps) => (
+    <Button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="w-full bg-gray-900 text-white hover:bg-gray-800 border border-gray-900"
+    >
+      {label}
+    </Button>
+  ),
+
+  PrevButton: ({ label, onClick, disabled }: PrevButtonProps) => (
+    <Button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      variant="outline"
+      className="w-full border-gray-300 text-gray-900 hover:bg-gray-50"
+    >
+      {label}
     </Button>
   ),
 });

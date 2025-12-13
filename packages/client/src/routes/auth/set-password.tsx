@@ -95,6 +95,7 @@ function SetPassword() {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          role: user.role,
           emailVerifiedAt: user.emailVerifiedAt ?? new Date().toISOString(),
           createdAt: user.createdAt,
         });

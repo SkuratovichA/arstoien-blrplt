@@ -6,6 +6,7 @@ import { useMutation, useApolloClient } from '@apollo/client/react';
 import { LOGOUT } from '@graphql/auth.graphql';
 import toast from 'react-hot-toast';
 import { env } from '@lib/env';
+import { UserRole } from '@/gql/graphql';
 
 export function Header() {
   const { t } = useTranslation();
@@ -39,6 +40,28 @@ export function Header() {
               <Link to="/dashboard">
                 <Button variant="ghost">{t('Dashboard')}</Button>
               </Link>
+
+              {/* Customer-specific navigation */}
+              {user.role === UserRole.Customer && (
+                <>
+                  <Link to="/orders">
+                    <Button variant="ghost">{t('My Orders')}</Button>
+                  </Link>
+                </>
+              )}
+
+              {/* Carrier-specific navigation */}
+              {user.role === UserRole.Carrier && (
+                <>
+                  <Link to="/fleet">
+                    <Button variant="ghost">{t('Fleet')}</Button>
+                  </Link>
+                  <Link to="/orders/available">
+                    <Button variant="ghost">{t('Available Orders')}</Button>
+                  </Link>
+                </>
+              )}
+
               <Link to="/profile">
                 <Button variant="ghost">{t('Profile')}</Button>
               </Link>

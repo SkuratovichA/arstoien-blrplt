@@ -408,7 +408,7 @@ export class AdminResolver {
           firstName: input.firstName,
           lastName: input.lastName,
           phone: input.phone,
-          role: input.role ?? 'USER',
+          role: input.role,
           passwordHash: hashedPassword,
           status: 'ACTIVE',
           emailVerifiedAt: new Date(), // Admin-created users are pre-verified
