@@ -25,7 +25,6 @@ export function App() {
         firstName: data.currentUser.firstName,
         lastName: data.currentUser.lastName,
         phone: data.currentUser.phone,
-        role: data.currentUser.role,
         emailVerifiedAt: data.currentUser.emailVerifiedAt,
         createdAt: data.currentUser.createdAt,
       });

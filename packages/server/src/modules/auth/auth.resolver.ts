@@ -6,8 +6,6 @@ import { AuthResponse } from './dto/auth-response.dto';
 import { LoginInput } from './dto/login.input';
 import { RegisterInput } from './dto/register.input';
 import { RegisterWithPasswordInput } from './dto/register-with-password.input';
-import { RegisterCustomerInput } from './dto/register-customer.input';
-import { RegisterCarrierInput } from './dto/register-carrier.input';
 import { SetPasswordInput } from './dto/set-password.input';
 import { RegisterResponse } from './dto/register-response.dto';
 import { SetPasswordWithTokenInput } from './dto/set-password-with-token.input';
@@ -150,40 +148,6 @@ export class AuthResolver {
         input.firstName,
         input.lastName,
         input.phone
-      )
-    );
-  }
-
-  @Mutation(() => RegisterResponse, {
-    description: 'Register new customer account. Admin approval required.',
-  })
-  async registerCustomer(
-    @Args('input') input: RegisterCustomerInput
-  ): Promise<RegisterResponse> {
-    return runEffect(
-      this.authService.registerCustomer(
-        input.email,
-        input.firstName,
-        input.lastName,
-        input.phone
-      )
-    );
-  }
-
-  @Mutation(() => RegisterResponse, {
-    description: 'Register new carrier account. Admin approval required.',
-  })
-  async registerCarrier(
-    @Args('input') input: RegisterCarrierInput
-  ): Promise<RegisterResponse> {
-    return runEffect(
-      this.authService.registerCarrier(
-        input.companyName,
-        input.email,
-        input.contactPerson,
-        input.identificationNumber,
-        input.identificationNumberType,
-        input.operatingRegion
       )
     );
   }

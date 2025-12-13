@@ -137,7 +137,6 @@ function VerifyOtp() {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role,
           emailVerifiedAt: user.emailVerifiedAt,
           createdAt: user.createdAt,
         });

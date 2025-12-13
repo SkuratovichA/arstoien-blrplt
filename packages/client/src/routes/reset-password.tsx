@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from '@apollo/client/react';
-import { AuthLayout } from '@components/layout';
+import { AuthLayout } from '../components/layout/auth-layout';
 import { Button } from '@arstoien/shared-ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
 import {

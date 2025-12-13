@@ -28,7 +28,7 @@ async function main() {
       password: 'User123!',
       firstName: 'Test',
       lastName: 'User',
-      role: 'CUSTOMER' as const,
+      role: 'USER' as const,
     },
   ];
 
@@ -38,7 +38,7 @@ async function main() {
   for (const userData of testUsers) {
     const passwordHash = await bcrypt.hash(userData.password, 10);
 
-    const user = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: userData.email },
       update: {},
       create: {
@@ -52,17 +52,6 @@ async function main() {
         emailVerifiedAt: new Date(),
       },
     });
-
-    // Create customer profile if user is a customer
-    if (userData.role === 'CUSTOMER') {
-      await prisma.customerProfile.upsert({
-        where: { userId: user.id },
-        update: {},
-        create: {
-          userId: user.id,
-        },
-      });
-    }
 
     // eslint-disable-next-line no-console
     console.log(`✅ ${userData.role.padEnd(12)} | ${userData.email.padEnd(25)} | Password: ${userData.password}`);

@@ -18,8 +18,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardCustomerRouteImport } from './routes/dashboard/customer'
-import { Route as DashboardCarrierRouteImport } from './routes/dashboard/carrier'
 import { Route as AuthSetPasswordRouteImport } from './routes/auth/set-password'
 
 const VerifyOtpRoute = VerifyOtpRouteImport.update({
@@ -67,16 +65,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardCustomerRoute = DashboardCustomerRouteImport.update({
-  id: '/customer',
-  path: '/customer',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardCarrierRoute = DashboardCarrierRouteImport.update({
-  id: '/carrier',
-  path: '/carrier',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const AuthSetPasswordRoute = AuthSetPasswordRouteImport.update({
   id: '/auth/set-password',
   path: '/auth/set-password',
@@ -85,7 +73,7 @@ const AuthSetPasswordRoute = AuthSetPasswordRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
@@ -94,12 +82,10 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof VerifyEmailRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/auth/set-password': typeof AuthSetPasswordRoute
-  '/dashboard/carrier': typeof DashboardCarrierRoute
-  '/dashboard/customer': typeof DashboardCustomerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
@@ -108,13 +94,11 @@ export interface FileRoutesByTo {
   '/verify-email': typeof VerifyEmailRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/auth/set-password': typeof AuthSetPasswordRoute
-  '/dashboard/carrier': typeof DashboardCarrierRoute
-  '/dashboard/customer': typeof DashboardCustomerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
@@ -123,8 +107,6 @@ export interface FileRoutesById {
   '/verify-email': typeof VerifyEmailRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/auth/set-password': typeof AuthSetPasswordRoute
-  '/dashboard/carrier': typeof DashboardCarrierRoute
-  '/dashboard/customer': typeof DashboardCustomerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,8 +121,6 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/verify-otp'
     | '/auth/set-password'
-    | '/dashboard/carrier'
-    | '/dashboard/customer'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -153,8 +133,6 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/verify-otp'
     | '/auth/set-password'
-    | '/dashboard/carrier'
-    | '/dashboard/customer'
   id:
     | '__root__'
     | '/'
@@ -167,13 +145,11 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/verify-otp'
     | '/auth/set-password'
-    | '/dashboard/carrier'
-    | '/dashboard/customer'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRouteWithChildren
+  DashboardRoute: typeof DashboardRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
@@ -249,20 +225,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/customer': {
-      id: '/dashboard/customer'
-      path: '/customer'
-      fullPath: '/dashboard/customer'
-      preLoaderRoute: typeof DashboardCustomerRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/carrier': {
-      id: '/dashboard/carrier'
-      path: '/carrier'
-      fullPath: '/dashboard/carrier'
-      preLoaderRoute: typeof DashboardCarrierRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/auth/set-password': {
       id: '/auth/set-password'
       path: '/auth/set-password'
@@ -273,23 +235,9 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface DashboardRouteChildren {
-  DashboardCarrierRoute: typeof DashboardCarrierRoute
-  DashboardCustomerRoute: typeof DashboardCustomerRoute
-}
-
-const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardCarrierRoute: DashboardCarrierRoute,
-  DashboardCustomerRoute: DashboardCustomerRoute,
-}
-
-const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
-  DashboardRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRouteWithChildren,
+  DashboardRoute: DashboardRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,

@@ -24,8 +24,7 @@ enum AuthProvider {
 }
 
 enum UserRole {
-  CUSTOMER
-  CARRIER
+  USER
   ADMIN
   MODERATOR
   SUPER_ADMIN
@@ -57,7 +56,7 @@ model User {
   lastName     String       @db.VarChar(100)
   phone        String?      @db.VarChar(20)
   status       UserStatus   @default(PENDING_APPROVAL)
-  role         UserRole
+  role         UserRole     @default(USER)
   avatar       String?
   bio          String?      @db.Text
 
@@ -81,8 +80,6 @@ model User {
 
   // Relations
   notifications Notification[]
-  customerProfile CustomerProfile?
-  carrierProfile  CarrierProfile?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -178,42 +175,4 @@ model SystemSettings {
   updatedAt      DateTime @updatedAt
   updatedBy      String?  // User ID who last updated
   createdAt      DateTime @default(now())
-}
-
-model CustomerProfile {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Customer-specific fields can be added here as needed
-  // For future expansion (loyalty points, preferences, etc.)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-}
-
-model CarrierProfile {
-  id                     String   @id @default(uuid())
-  userId                 String   @unique
-  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  companyName            String   @db.VarChar(255)
-  contactPerson          String   @db.VarChar(200)
-  operatingRegion        String   @db.VarChar(255)
-  identificationNumber   String   @db.VarChar(50) // Company identification number
-  identificationNumberType String @db.VarChar(20) // Type of ID: ICO (Czech/Slovakia), NIP (Poland), etc.
-
-  // Fleet and document fields to be added later
-  // fleetSize       Int?
-  // documents       Json?    // Will store document URLs/metadata
-  // verifiedAt      DateTime?
-  // verifiedBy      String?
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([userId])
-  @@index([companyName])
 }
