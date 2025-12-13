@@ -94,7 +94,7 @@ export type CreateUserInput = {
   lastName: Scalars['String']['input'];
   password?: InputMaybe<Scalars['String']['input']>;
   phone?: InputMaybe<Scalars['String']['input']>;
-  role?: InputMaybe<Scalars['String']['input']>;
+  role: Scalars['String']['input'];
 };
 
 export type DeleteAccountInputType = {
@@ -144,6 +144,10 @@ export type Mutation = {
   refresh?: Maybe<Scalars['String']['output']>;
   /** User registration with personal details and optional company ICO. Admin approval required. */
   register: RegisterResponse;
+  /** Register new carrier account. Admin approval required. */
+  registerCarrier: RegisterResponse;
+  /** Register new customer account. Admin approval required. */
+  registerCustomer: RegisterResponse;
   /** Register new user account with password (legacy) */
   registerWithPassword: AuthResponse;
   rejectUser: UserObjectType;
@@ -222,6 +226,16 @@ export type MutationMarkNotificationAsReadArgs = {
 
 export type MutationRegisterArgs = {
   input: RegisterInput;
+};
+
+
+export type MutationRegisterCarrierArgs = {
+  input: RegisterCarrierInput;
+};
+
+
+export type MutationRegisterCustomerArgs = {
+  input: RegisterCustomerInput;
 };
 
 
@@ -404,6 +418,21 @@ export type RecentActivityType = {
   userId?: Maybe<Scalars['String']['output']>;
 };
 
+export type RegisterCarrierInput = {
+  companyName: Scalars['String']['input'];
+  contactPerson: Scalars['String']['input'];
+  email: Scalars['String']['input'];
+  operatingRegion: Scalars['String']['input'];
+  password: Scalars['String']['input'];
+};
+
+export type RegisterCustomerInput = {
+  email: Scalars['String']['input'];
+  firstName: Scalars['String']['input'];
+  lastName: Scalars['String']['input'];
+  phone?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type RegisterInput = {
   companyPhone?: InputMaybe<Scalars['String']['input']>;
   email: Scalars['String']['input'];
@@ -556,11 +585,12 @@ export type UserResponse = {
 /** The role of a user in the system */
 export enum UserRole {
   Admin = 'ADMIN',
+  Carrier = 'CARRIER',
+  Customer = 'CUSTOMER',
   Manager = 'MANAGER',
   Moderator = 'MODERATOR',
   SuperAdmin = 'SUPER_ADMIN',
-  Support = 'SUPPORT',
-  User = 'USER'
+  Support = 'SUPPORT'
 }
 
 /** The status of a user account */

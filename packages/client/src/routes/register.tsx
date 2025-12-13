@@ -1,8 +1,8 @@
-import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@apollo/client/react';
 import { Former } from '@arstoien/former';
-import { AuthLayout } from '../components/layout/auth-layout';
+import { AuthLayout } from '@components/layout';
 import {
   Card,
   CardContent,
@@ -11,14 +11,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@arstoien/shared-ui';
-import { REGISTER } from '../graphql/auth.graphql.ts';
-import toast from 'react-hot-toast';
-import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
+import { REGISTER_CARRIER, REGISTER_CUSTOMER } from '../graphql/auth.graphql.ts';
+import { type AuthGuardContext, requireGuest } from '../lib/auth-guard';
 import { createFormComponentOverrides } from '../components/forms/form-component-overrides';
 import {
   createRegisterFormConfig,
   type RegisterFormData,
-} from '../components/forms/register-form-config';
+} from '../components/forms/multi-step-register-form-config';
+import { UserRole } from '@/gql/graphql.ts';
+// import { match } from 'ts-pattern';
+import toast from 'react-hot-toast';
 
 export const Route = createFileRoute('/register')({
   beforeLoad: ({ context }) => {
@@ -30,22 +32,52 @@ export const Route = createFileRoute('/register')({
 function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [register] = useMutation(REGISTER);
+  const [registerCustomer] = useMutation(REGISTER_CUSTOMER);
+  const [registerCarrier] = useMutation(REGISTER_CARRIER);
 
-  const onSubmit = async (data: RegisterFormData) => {
-    try {
-      const result = await register({
-        variables: {
-          input: data,
-        },
-      });
-
-      if (result.data?.register.success) {
-        toast.success(result.data.register.message ?? t('Registration successful'));
-        navigate({ to: '/login' });
+  const onSubmit = async (inputData: RegisterFormData) => {
+    const result = await (async () => {
+      switch (inputData.role) {
+        case UserRole.Customer:
+          const { data: res1, error: err1 } = await registerCustomer({
+            variables: {
+              input: {
+                email: inputData.email,
+                firstName: inputData.firstName!,
+                lastName: inputData.lastName!,
+                phone: inputData.phone!,
+              },
+            },
+          });
+          if (res1 && !err1) {
+            return res1.registerCustomer;
+          }
+          toast.error(t('Registration failed: ' + err1?.message));
+          return null;
+        case UserRole.Carrier:
+          const { data: res2, error: err2 } = await registerCarrier({
+            variables: {
+              input: {
+                companyName: inputData.companyName!,
+                email: inputData.email,
+                contactPerson: inputData.contactPerson!,
+                identificationNumber: inputData.identificationNumber!,
+                identificationNumberType: inputData.identificationNumberType!,
+                operatingRegion: inputData.operatingRegion!,
+              },
+            },
+          });
+          if (res2 && !err2) {
+            return res2.registerCarrier;
+          }
+          toast.error(t('Registration failed: ' + err2?.message));
+          return null;
       }
-    } catch {
-      toast.error(t('Registration failed'));
+    })();
+
+    if (result) {
+      toast.success(result.message ?? t('Registration successful'));
+      navigate({ to: '/login' });
     }
   };
 
@@ -56,7 +88,7 @@ function Register() {
   });
 
   // Create component overrides
-  const componentOverrides = createFormComponentOverrides<RegisterFormData>(t);
+  const componentOverrides = createFormComponentOverrides<RegisterFormData>(t)
 
   return (
     <AuthLayout>

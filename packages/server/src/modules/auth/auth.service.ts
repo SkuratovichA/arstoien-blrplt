@@ -10,7 +10,7 @@ import { UserService } from '../user/user.service';
 import { EmailService } from '../notification/email.service';
 import { RefreshTokenService } from '../refresh-token/refresh-token.service';
 import { OtpService } from './otp.service';
-import { AuthProvider, User, UserStatus } from '@prisma/client';
+import { AuthProvider, User, UserStatus, UserRole } from '@prisma/client';
 import { ConflictError, DatabaseError, promiseToEffect, runEffect, UnauthorizedError, ValidationError, } from '@/common/effect';
 import { PubSubService } from '@common/pubsub/pubsub.service';
 
@@ -148,7 +148,7 @@ export class AuthService {
         );
       }
 
-      // Create user with PENDING_APPROVAL status
+      // Create user with CUSTOMER role and PENDING_APPROVAL status (legacy method defaults to CUSTOMER)
       const user = yield* self.userService.createUser({
         email,
         firstName,
@@ -156,7 +156,17 @@ export class AuthService {
         phone,
         authProvider: AuthProvider.EMAIL,
         status: UserStatus.PENDING_APPROVAL,
+        role: UserRole.CUSTOMER,
       });
+
+      // Create customer profile
+      yield* promiseToEffect(() =>
+        self.prisma.customerProfile.create({
+          data: {
+            userId: user.id,
+          },
+        })
+      );
 
       self.logger.log(`User created (pending approval): ${user.id}`);
 
@@ -172,6 +182,169 @@ export class AuthService {
       );
 
       self.logger.log(`Registration completed for email: ${email}, awaiting admin approval`);
+
+      return {
+        success: true,
+        message:
+          'Registration submitted. An administrator will review your application and you will receive an email once approved.',
+      };
+    });
+  }
+
+  registerCustomer(
+    email: string,
+    firstName: string,
+    lastName: string,
+    phone: string
+  ): Effect.Effect<
+    { success: boolean; message: string },
+    ConflictError | ValidationError | DatabaseError,
+    never
+  > {
+    const self = this;
+
+    return Effect.gen(function* () {
+      self.logger.log(
+        `Starting customer registration for email: ${email}, firstName: ${firstName}, lastName: ${lastName}`
+      );
+
+      // Check if user exists
+      const existingUser = yield* Effect.match(self.userService.findByEmail(email), {
+        onFailure: () => null,
+        onSuccess: (user) => user,
+      });
+
+      if (existingUser) {
+        self.logger.warn(`Registration failed: user already exists with email: ${email}`);
+        return yield* Effect.fail(
+          new ConflictError({
+            message: 'User with this email already exists',
+            field: 'email',
+          })
+        );
+      }
+
+      // Create user with CUSTOMER role and PENDING_APPROVAL status
+      const user = yield* self.userService.createUser({
+        email,
+        firstName,
+        lastName,
+        phone,
+        authProvider: AuthProvider.EMAIL,
+        status: UserStatus.PENDING_APPROVAL,
+        role: UserRole.CUSTOMER,
+      });
+
+      // Create customer profile
+      yield* promiseToEffect(() =>
+        self.prisma.customerProfile.create({
+          data: {
+            userId: user.id,
+          },
+        })
+      );
+
+      self.logger.log(`Customer created (pending approval): ${user.id}`);
+
+      // Notify admins about new pending user
+      yield* Effect.forkDaemon(
+        Effect.tryPromise({
+          try: () => self.notifyAdminsAboutNewUser(user),
+          catch: () =>
+            new DatabaseError({ message: 'Failed to notify admins', operation: 'notify' }),
+        }).pipe(
+          Effect.catchAll(() => Effect.void)
+        )
+      );
+
+      self.logger.log(`Customer registration completed for email: ${email}, awaiting admin approval`);
+
+      return {
+        success: true,
+        message:
+          'Registration submitted. An administrator will review your application and you will receive an email once approved.',
+      };
+    });
+  }
+
+  registerCarrier(
+    companyName: string,
+    email: string,
+    contactPerson: string,
+    identificationNumber: string,
+    identificationNumberType: string,
+    operatingRegion: string
+  ): Effect.Effect<
+    { success: boolean; message: string },
+    ConflictError | ValidationError | DatabaseError,
+    never
+  > {
+    const self = this;
+
+    return Effect.gen(function* () {
+      self.logger.log(
+        `Starting carrier registration for email: ${email}, company: ${companyName}`
+      );
+
+      // Check if user exists
+      const existingUser = yield* Effect.match(self.userService.findByEmail(email), {
+        onFailure: () => null,
+        onSuccess: (user) => user,
+      });
+
+      if (existingUser) {
+        self.logger.warn(`Registration failed: user already exists with email: ${email}`);
+        return yield* Effect.fail(
+          new ConflictError({
+            message: 'User with this email already exists',
+            field: 'email',
+          })
+        );
+      }
+
+      // Parse contact person to get first and last name
+      const nameParts = contactPerson.split(' ');
+      const firstName = nameParts[0] || contactPerson;
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // Create user with CARRIER role and PENDING_APPROVAL status (no password)
+      const user = yield* self.userService.createUser({
+        email,
+        firstName,
+        lastName,
+        authProvider: AuthProvider.EMAIL,
+        status: UserStatus.PENDING_APPROVAL,
+        role: UserRole.CARRIER,
+      });
+
+      // Create carrier profile with identification number
+      yield* promiseToEffect(() =>
+        self.prisma.carrierProfile.create({
+          data: {
+            userId: user.id,
+            companyName,
+            contactPerson,
+            operatingRegion,
+            identificationNumber,
+            identificationNumberType,
+          },
+        })
+      );
+
+      self.logger.log(`Carrier created (pending approval): ${user.id}`);
+
+      // Notify admins about new pending user
+      yield* Effect.forkDaemon(
+        Effect.tryPromise({
+          try: () => self.notifyAdminsAboutNewUser(user),
+          catch: () =>
+            new DatabaseError({ message: 'Failed to notify admins', operation: 'notify' }),
+        }).pipe(
+          Effect.catchAll(() => Effect.void)
+        )
+      );
+
+      self.logger.log(`Carrier registration completed for email: ${email}, awaiting admin approval`);
 
       return {
         success: true,
@@ -211,7 +384,7 @@ export class AuthService {
       // Hash password
       const passwordHash = yield* promiseToEffect(() => bcrypt.hash(password, 10));
 
-      // Create user with pending status
+      // Create user with CUSTOMER role and pending status (legacy method defaults to CUSTOMER)
       const user = yield* self.userService.createUser({
         email,
         passwordHash,
@@ -219,7 +392,17 @@ export class AuthService {
         lastName,
         authProvider: AuthProvider.EMAIL,
         status: UserStatus.PENDING_APPROVAL,
+        role: UserRole.CUSTOMER,
       });
+
+      // Create customer profile
+      yield* promiseToEffect(() =>
+        self.prisma.customerProfile.create({
+          data: {
+            userId: user.id,
+          },
+        })
+      );
 
       self.logger.log(`User created via registration: ${user.id}`);
 
@@ -313,7 +496,7 @@ export class AuthService {
     if (!user) {
       this.logger.log(`Creating new user via Google login: ${profile.email}`);
 
-      // Create new user
+      // Create new user with CUSTOMER role (default for Google OAuth)
       user = await Effect.runPromise(
         this.userService.createUser({
           googleId: profile.googleId,
@@ -322,11 +505,19 @@ export class AuthService {
           lastName: profile.lastName,
           avatar: profile.avatar,
           authProvider: AuthProvider.GOOGLE,
-          status: UserStatus.PENDING_APPROVAL, // Still needs ICO verification
+          status: UserStatus.PENDING_APPROVAL,
+          role: UserRole.CUSTOMER,
         })
       );
 
       this.logger.log(`New user created via Google: ${user.id}`);
+
+      // Create customer profile
+      await this.prisma.customerProfile.create({
+        data: {
+          userId: user.id,
+        },
+      });
 
       // Notify admins about new pending user (fire and forget)
       this.notifyAdminsAboutNewUser(user).catch(() => {});

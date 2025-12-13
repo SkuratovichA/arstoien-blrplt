@@ -21,10 +21,9 @@ export class CreateUserInput {
   @IsOptional()
   phone?: string;
 
-  @Field(() => String, { nullable: true, defaultValue: 'USER' })
+  @Field(() => String)
   @IsEnum(UserRole)
-  @IsOptional()
-  role?: UserRole;
+  role!: UserRole;
 
   @Field({ nullable: true })
   @IsString()

@@ -10,6 +10,26 @@ export const REGISTER = graphql(`
   }
 `);
 
+// Register customer mutation
+export const REGISTER_CUSTOMER = graphql(`
+  mutation RegisterCustomer($input: RegisterCustomerInput!) {
+    registerCustomer(input: $input) {
+      success
+      message
+    }
+  }
+`);
+
+// Register carrier mutation
+export const REGISTER_CARRIER = graphql(`
+  mutation RegisterCarrier($input: RegisterCarrierInput!) {
+    registerCarrier(input: $input) {
+      success
+      message
+    }
+  }
+`);
+
 // Login mutation returns AuthResponse with tokens and user
 export const LOGIN = graphql(`
   mutation Login($input: LoginInput!) {
