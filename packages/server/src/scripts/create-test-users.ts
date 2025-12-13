@@ -9,7 +9,7 @@
  * This will create several test users with different roles
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -23,7 +23,7 @@ interface TestUser {
   password: string;
   firstName: string;
   lastName: string;
-  role: 'SUPER_ADMIN' | 'MODERATOR' | 'USER';
+  role: UserRole;
 }
 
 const testUsers: TestUser[] = [
@@ -39,28 +39,35 @@ const testUsers: TestUser[] = [
     password: basePwd + '_user123!',
     firstName: 'John',
     lastName: 'Doe',
-    role: 'USER',
+    role: 'CUSTOMER',
   },
   {
     email: 'jane.smith@example.com',
     password: basePwd + '_user123!',
     firstName: 'Jane',
     lastName: 'Smith',
-    role: 'USER',
+    role: 'CUSTOMER',
   },
   {
     email: 'test.user@example.com',
     password: basePwd + '_test123!',
     firstName: 'Test',
     lastName: 'User',
-    role: 'USER',
+    role: 'CUSTOMER',
   },
   {
     email: 'demo@example.com',
     password: basePwd + '_demo123!',
     firstName: 'Demo',
     lastName: 'Account',
-    role: 'USER',
+    role: 'CUSTOMER',
+  },
+  {
+    email: 'carrier@example.com',
+    password: basePwd + '_carrier123!',
+    firstName: 'Carrier',
+    lastName: 'Company',
+    role: 'CARRIER',
   },
 ];
 
@@ -108,8 +115,34 @@ async function createTestUsers() {
         },
       });
 
+      // Create profile for customer or carrier
+      if (userData.role === 'CUSTOMER') {
+        await prisma.customerProfile.upsert({
+          where: { userId: user.id },
+          update: {},
+          create: {
+            userId: user.id,
+          },
+        });
+      } else if (userData.role === 'CARRIER') {
+        await prisma.carrierProfile.upsert({
+          where: { userId: user.id },
+          update: {},
+          create: {
+            userId: user.id,
+            companyName: userData.firstName + ' Transport Co.',
+            contactPerson: userData.firstName + ' ' + userData.lastName,
+            operatingRegion: 'Czechia',
+            identificationNumber: '12345678',
+            identificationNumberType: 'ICO',
+          },
+        });
+      }
+
       const roleEmoji = userData.role === 'SUPER_ADMIN' ? '👑' :
-                        userData.role === 'MODERATOR' ? '🛡️' : '👤';
+                        userData.role === 'MODERATOR' ? '🛡️' :
+                        userData.role === 'CARRIER' ? '🚚' :
+                        userData.role === 'CUSTOMER' ? '🛒' : '👤';
 
       console.log(`║ ${roleEmoji} ${userData.role.padEnd(12)} │ ${userData.email.padEnd(25)} │ ${userData.password.padEnd(15)} ║`);
     }
