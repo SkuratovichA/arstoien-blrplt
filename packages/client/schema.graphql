@@ -67,7 +67,7 @@ input CreateUserInput {
   lastName: String!
   password: String
   phone: String
-  role: String!
+  role: String = "USER"
 }
 
 """Date custom scalar type"""
@@ -138,12 +138,6 @@ type Mutation {
   User registration with personal details and optional company ICO. Admin approval required.
   """
   register(input: RegisterInput!): RegisterResponse!
-
-  """Register new carrier account. Admin approval required."""
-  registerCarrier(input: RegisterCarrierInput!): RegisterResponse!
-
-  """Register new customer account. Admin approval required."""
-  registerCustomer(input: RegisterCustomerInput!): RegisterResponse!
 
   """Register new user account with password (legacy)"""
   registerWithPassword(input: RegisterWithPasswordInput!): AuthResponse!
@@ -255,21 +249,6 @@ type RecentActivityType {
   id: String!
   userEmail: String
   userId: String
-}
-
-input RegisterCarrierInput {
-  companyName: String!
-  contactPerson: String!
-  email: String!
-  operatingRegion: String!
-  password: String!
-}
-
-input RegisterCustomerInput {
-  email: String!
-  firstName: String!
-  lastName: String!
-  phone: String
 }
 
 input RegisterInput {
@@ -419,12 +398,11 @@ type UserResponse {
 """The role of a user in the system"""
 enum UserRole {
   ADMIN
-  CARRIER
-  CUSTOMER
   MANAGER
   MODERATOR
   SUPER_ADMIN
   SUPPORT
+  USER
 }
 
 """The status of a user account"""
