@@ -70,8 +70,9 @@ resource "aws_apprunner_service" "server" {
           SMTP_HOST          = "email-smtp.${var.aws_region}.amazonaws.com"
           SMTP_PORT          = "587"
           SMTP_SECURE        = "false" # STARTTLS, not implicit TLS
-          SMTP_USER          = aws_iam_access_key.ses_smtp.id
-          SMTP_PASS          = aws_iam_access_key.ses_smtp.ses_smtp_password_v4
+          # Use manual SMTP credentials if provided, otherwise use auto-generated ones
+          SMTP_USER          = var.smtp_user != "" ? var.smtp_user : aws_iam_access_key.ses_smtp.id
+          SMTP_PASS          = var.smtp_pass != "" ? var.smtp_pass : aws_iam_access_key.ses_smtp.ses_smtp_password_v4
           EMAIL_FROM         = "noreply@${local.project_domain}"
         }
       }
