@@ -20,7 +20,9 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "create:admin": "tsx src/scripts/create-admin.ts",
-    "create:test-users": "tsx src/scripts/create-test-users.ts"
+    "create:test-users": "tsx src/scripts/create-test-users.ts",
+    "test:email": "ts-node scripts/test-email.ts",
+    "test:email-service": "ts-node scripts/test-email-service.ts"
   },
   "dependencies": {
     "@apollo/server": "^4.10.0",

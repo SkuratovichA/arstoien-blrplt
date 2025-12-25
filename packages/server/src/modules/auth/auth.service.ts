@@ -877,7 +877,12 @@ export class AuthService {
           lastName: user.lastName,
           registeredAt: user.createdAt,
         })
-      ).catch(() => {});
+      ).catch((error) => {
+        this.logger.error(
+          `Failed to send admin notification to ${adminEmail} for user ${user.email}: ${error?.message || error}`,
+          error?.stack || error
+        );
+      });
     }
 
     // Publish pending counts update for admin real-time notifications
