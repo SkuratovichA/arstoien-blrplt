@@ -29,7 +29,7 @@ export class LockService implements OnModuleDestroy {
   private redisClient: Redis;
 
   constructor(private configService: ConfigService) {
-    const redisUrl = this.configService.get<string>('redis.url') ?? 'redis://localhost:6379';
+    const redisUrl = this.configService.get<string>('app.redis.url') ?? 'redis://localhost:6379';
 
     // Parse Redis URL
     const parsedUrl = this.parseRedisUrl(redisUrl);

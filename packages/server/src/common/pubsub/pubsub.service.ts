@@ -16,7 +16,7 @@ export class PubSubService implements OnModuleDestroy {
   private pubSub: RedisPubSub;
 
   constructor(private configService: ConfigService) {
-    const redisUrl = this.configService.get<string>('redis.url') ?? '';
+    const redisUrl = this.configService.get<string>('app.redis.url') ?? '';
     const redisOptions = this.parseRedisUrl(redisUrl);
 
     this.pubSub = new RedisPubSub({

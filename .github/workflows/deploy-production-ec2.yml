@@ -1,0 +1,343 @@
+# =============================================================================
+# Production Deployment to EC2
+# =============================================================================
+# Deploys to production EC2 instance when pushing to main branch
+# - Builds application locally
+# - Deploys to EC2 via SSH
+# - Syncs static files to S3 + invalidates CloudFront
+# =============================================================================
+
+name: Deploy Production (EC2)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: eu-central-1
+  NODE_VERSION: '22'
+  PNPM_VERSION: '9.14.2'
+
+jobs:
+  # ===========================================================================
+  # Build and Deploy Server to EC2
+  # ===========================================================================
+  deploy-server:
+    name: Deploy Server to EC2
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Build server
+        run: pnpm --filter @blrplt/server build
+
+      - name: Prepare deployment package
+        run: |
+          # Create deployment directory
+          mkdir -p deployment
+
+          # Copy built files
+          cp -r packages/server/dist deployment/
+          cp packages/server/package.json deployment/
+          cp -r packages/server/prisma deployment/
+
+          # Copy environment file template
+          echo "Creating environment template..."
+          cat > deployment/.env << EOF
+          NODE_ENV=production
+          PORT=3000
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          REDIS_URL=${{ secrets.REDIS_URL }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+          AWS_REGION=${{ env.AWS_REGION }}
+          S3_BUCKET=${{ secrets.S3_BUCKET }}
+          SMTP_HOST=email-smtp.${{ env.AWS_REGION }}.amazonaws.com
+          SMTP_PORT=587
+          SMTP_USER=${{ secrets.SMTP_USER }}
+          SMTP_PASS=${{ secrets.SMTP_PASS }}
+          EMAIL_FROM=${{ secrets.EMAIL_FROM }}
+          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          ADMIN_FRONTEND_URL=${{ secrets.ADMIN_FRONTEND_URL }}
+          EOF
+
+          # Create deployment archive
+          tar -czf deployment.tar.gz deployment/
+
+      - name: Setup SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key.pem
+          chmod 600 deploy_key.pem
+
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ec2-user
+        run: |
+          # Copy deployment package to EC2
+          scp -o StrictHostKeyChecking=no -i deploy_key.pem deployment.tar.gz $EC2_USER@$EC2_HOST:/tmp/
+
+          # Deploy on EC2
+          ssh -o StrictHostKeyChecking=no -i deploy_key.pem $EC2_USER@$EC2_HOST << 'ENDSSH'
+            # Stop current application
+            sudo systemctl stop blrplt || true
+
+            # Backup current deployment
+            if [ -d /app/current ]; then
+              sudo mv /app/current /app/backup-$(date +%Y%m%d-%H%M%S)
+            fi
+
+            # Extract new deployment
+            cd /tmp
+            tar -xzf deployment.tar.gz
+            sudo mkdir -p /app
+            sudo mv deployment /app/current
+
+            # Copy environment file
+            sudo mv /app/current/.env /app/current/
+
+            # Install production dependencies
+            cd /app/current
+            sudo npm install --production
+
+            # Run database migrations
+            npx prisma migrate deploy
+
+            # Start application
+            sudo systemctl start blrplt
+
+            # Wait for health check
+            sleep 5
+            curl -f http://localhost:3000/health || exit 1
+
+            echo "Deployment successful!"
+
+            # Cleanup
+            rm /tmp/deployment.tar.gz
+          ENDSSH
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f deploy_key.pem
+          rm -f deployment.tar.gz
+          rm -rf deployment/
+
+  # ===========================================================================
+  # Alternative: Deploy Server via Docker
+  # ===========================================================================
+  deploy-server-docker:
+    name: Deploy Server via Docker (Alternative)
+    runs-on: ubuntu-latest
+    if: false  # Set to true to use Docker deployment instead
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t blrplt-server:${{ github.sha }} \
+            -t blrplt-server:latest \
+            -f packages/server/Dockerfile \
+            .
+
+      - name: Save Docker image
+        run: |
+          docker save blrplt-server:latest | gzip > server-image.tar.gz
+
+      - name: Setup SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key.pem
+          chmod 600 deploy_key.pem
+
+      - name: Deploy Docker image to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ec2-user
+        run: |
+          # Copy Docker image to EC2
+          scp -o StrictHostKeyChecking=no -i deploy_key.pem server-image.tar.gz $EC2_USER@$EC2_HOST:/tmp/
+
+          # Deploy on EC2
+          ssh -o StrictHostKeyChecking=no -i deploy_key.pem $EC2_USER@$EC2_HOST << 'ENDSSH'
+            # Load Docker image
+            gunzip -c /tmp/server-image.tar.gz | sudo docker load
+
+            # Stop current container
+            sudo docker stop blrplt-server || true
+            sudo docker rm blrplt-server || true
+
+            # Run new container
+            sudo docker run -d \
+              --name blrplt-server \
+              --restart unless-stopped \
+              -p 3000:3000 \
+              --env-file /app/.env \
+              blrplt-server:latest
+
+            # Wait for health check
+            sleep 5
+            curl -f http://localhost:3000/health || exit 1
+
+            echo "Docker deployment successful!"
+
+            # Cleanup old images
+            sudo docker image prune -f
+            rm /tmp/server-image.tar.gz
+          ENDSSH
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f deploy_key.pem
+          rm -f server-image.tar.gz
+
+  # ===========================================================================
+  # Build and Deploy Client
+  # ===========================================================================
+  deploy-client:
+    name: Deploy Client
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Build client
+        run: pnpm --filter @blrplt/client build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
+          VITE_APP_NAME: ${{ secrets.VITE_APP_NAME }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync packages/client/dist s3://${{ secrets.CLIENT_S3_BUCKET }} \
+            --delete \
+            --cache-control "max-age=31536000,public" \
+            --exclude "index.html"
+          aws s3 cp packages/client/dist/index.html s3://${{ secrets.CLIENT_S3_BUCKET }}/index.html \
+            --cache-control "max-age=0,no-cache,no-store,must-revalidate"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLIENT_CLOUDFRONT_ID }} \
+            --paths "/*"
+
+  # ===========================================================================
+  # Build and Deploy Admin
+  # ===========================================================================
+  deploy-admin:
+    name: Deploy Admin
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Build admin
+        run: pnpm --filter @blrplt/admin build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_GRAPHQL_URL: ${{ secrets.VITE_GRAPHQL_URL }}
+          VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync packages/admin/dist s3://${{ secrets.ADMIN_S3_BUCKET }} \
+            --delete \
+            --cache-control "max-age=31536000,public" \
+            --exclude "index.html"
+          aws s3 cp packages/admin/dist/index.html s3://${{ secrets.ADMIN_S3_BUCKET }}/index.html \
+            --cache-control "max-age=0,no-cache,no-store,must-revalidate"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.ADMIN_CLOUDFRONT_ID }} \
+            --paths "/*"

@@ -1,0 +1,56 @@
+# =============================================================================
+# Terraform Variables Example
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in your values
+# DO NOT commit terraform.tfvars to git (it contains secrets)
+# =============================================================================
+
+# Project
+project_name = "blrplt"
+environment  = "production"
+aws_region   = "eu-central-1"
+
+# Domain Configuration
+# URL structure: {prefix}.{project}.{root_domain}
+# Example: api.blrplt.arstoien.org
+root_domain       = "arstoien.com"      # Must exist in Route 53
+project_subdomain = "blrplt"            # blrplt.arstoien.org
+api_prefix        = "api"               # api.blrplt.arstoien.org
+admin_prefix      = "admin"             # admin.blrplt.arstoien.org
+
+# Database - Option 1: Create new RDS (recommended)
+create_rds           = true
+db_instance_class    = "db.t3.micro"  # Free tier eligible
+db_allocated_storage = 20              # GB
+db_name              = "blrplt"
+db_username          = "blrplt"
+db_password          = "your-secure-password-min-8-chars"  # Change this!
+
+# Database - Option 2: Use existing RDS (set create_rds = false)
+# create_rds   = false
+# database_url = "postgresql://user:password@your-rds-endpoint:5432/dbname"
+
+# Redis (optional - set to true if you need Redis)
+enable_redis    = false
+redis_node_type = "cache.t3.micro"
+
+# App Runner sizing (smallest = cheapest)
+server_cpu           = "256"   # 0.25 vCPU
+server_memory        = "512"   # 512 MB
+server_min_instances = 1
+server_max_instances = 2
+
+# Secrets
+jwt_secret         = "your-jwt-secret-min-32-chars-long"
+jwt_refresh_secret = "your-jwt-refresh-secret-min-32-chars"
+
+# S3 for file uploads
+enable_s3_uploads = true
+
+# Email Configuration (using AWS SES on prod/dev and mailpit locally)
+smtp_host = "email-smtp.eu-central-1.amazonaws.com"
+smtp_port = 587
+smtp_secure = false
+smtp_user = "api-key"
+smtp_pass = "secret"
+email_from = "example@blrplt.com"
