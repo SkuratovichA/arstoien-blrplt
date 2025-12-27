@@ -31,8 +31,11 @@ lerna-debug.log*
 # Environment
 .env
 .env*.local
+.env.production
 !.env.example
 .secrets
+**/GITHUB-SECRETS*.md
+!GITHUB-SECRETS-EC2.md
 
 # IDE
 .idea/
