@@ -18,8 +18,8 @@ import {
   runEffect,
   UnauthorizedError,
   ValidationError,
-} from '@/common/effect';
-import { PrismaService } from '@/prisma/prisma.service';
+} from '../../common/effect';
+import { PrismaService } from '../../prisma/prisma.service';
 import { AdminService } from '../admin/admin.service';
 import { EmailService } from '../notification/email.service';
 import { RefreshTokenService } from '../refresh-token/refresh-token.service';

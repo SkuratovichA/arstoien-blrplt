@@ -2,7 +2,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { PrismaModule } from '@prisma/prisma.module';
+import { PrismaModule } from '../../prisma/prisma.module';
 import { AdminModule } from '../admin/admin.module';
 import { NotificationModule } from '../notification/notification.module';
 import { RefreshTokenModule } from '../refresh-token/refresh-token.module';

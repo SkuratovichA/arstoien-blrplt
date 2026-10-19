@@ -1,8 +1,8 @@
 import type { Logger } from '@nestjs/common';
 import { Effect, pipe } from 'effect';
-import type { DatabaseError, ValidationError } from '@/common/effect';
-import { NotFoundError, promiseToEffect } from '@/common/effect';
-import type { PrismaService } from '@/prisma/prisma.service';
+import type { PrismaService } from '../../prisma/prisma.service';
+import type { DatabaseError, ValidationError } from '../effect';
+import { NotFoundError, promiseToEffect } from '../effect';
 
 /**
  * Structural constraint that every Prisma model delegate satisfies. Method syntax keeps the parameters

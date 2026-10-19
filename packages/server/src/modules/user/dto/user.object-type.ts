@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { AuthProvider, UserRole, UserStatus } from '@/common/graphql/enums';
+import { AuthProvider, UserRole, UserStatus } from '../../../common/graphql/enums';
 
 @ObjectType()
 export class UserObjectType {

@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env tsx
 
 /**
  * Test the actual EmailService class from the application
@@ -7,7 +7,7 @@
  * and all the methods we've fixed.
  *
  * Usage:
- *   pnpm ts-node scripts/test-email-service.ts [test-type] [recipient-email]
+ *   pnpm tsx scripts/test-email-service.ts [test-type] [recipient-email]
  *
  * Test types:
  *   - admin: Test admin notification email
@@ -18,8 +18,8 @@
  *   - all: Test all email types
  *
  * Example:
- *   pnpm ts-node scripts/test-email-service.ts admin admin@example.com
- *   NODE_ENV=production pnpm ts-node scripts/test-email-service.ts all test@example.com
+ *   pnpm tsx scripts/test-email-service.ts admin admin@example.com
+ *   NODE_ENV=production pnpm tsx scripts/test-email-service.ts all test@example.com
  */
 
 import 'reflect-metadata';

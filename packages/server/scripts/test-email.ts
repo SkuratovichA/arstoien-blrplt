@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env tsx
 
 /**
  * Email Service Testing Script
@@ -7,10 +7,10 @@
  * to verify that the SMTP setup is working correctly.
  *
  * Usage:
- *   pnpm ts-node scripts/test-email.ts [recipient-email]
+ *   pnpm tsx scripts/test-email.ts [recipient-email]
  *
  * For production testing:
- *   NODE_ENV=production pnpm ts-node scripts/test-email.ts [recipient-email]
+ *   NODE_ENV=production pnpm tsx scripts/test-email.ts [recipient-email]
  */
 
 import 'dotenv/config';

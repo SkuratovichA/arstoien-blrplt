@@ -1,9 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, User, UserRole } from '@prisma/client';
 import { Effect } from 'effect';
-import { DatabaseError, NotFoundError, promiseToEffect, ValidationError } from '@/common/effect';
-import { CrudService } from '@/common/services';
-import { PrismaService } from '@/prisma/prisma.service';
+import {
+  DatabaseError,
+  NotFoundError,
+  promiseToEffect,
+  ValidationError,
+} from '../../common/effect';
+import { CrudService } from '../../common/services';
+import { PrismaService } from '../../prisma/prisma.service';
 
 // User type removed - using User directly
 

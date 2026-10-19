@@ -1,11 +1,11 @@
-import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
-import { Roles } from '@modules/auth/decorators/roles.decorator';
-import { GqlAuthGuard } from '@modules/auth/guards/gql-auth.guard';
-import { RolesGuard } from '@modules/auth/guards/roles.guard';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { User, UserRole } from '@prisma/client';
-import { runEffect } from '@/common/effect';
+import { runEffect } from '../../common/effect';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { SystemSettingsObjectType, UpdateSystemSettingsInputType } from './dto';
 import { SettingsService } from './settings.service';
 

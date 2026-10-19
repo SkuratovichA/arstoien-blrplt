@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { NotificationStatus, NotificationType } from '@/common/graphql/enums';
+import { NotificationStatus, NotificationType } from '../../../common/graphql/enums';
 import { User } from '../../user/dto/user.object-type';
 
 @ObjectType()

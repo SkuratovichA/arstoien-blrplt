@@ -1,8 +1,8 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { type Lock, Redlock } from '@sesamecare-oss/redlock';
 import { Data, Effect, pipe } from 'effect';
 import Redis from 'ioredis';
-import Redlock, { Lock } from 'redlock';
 import { BusinessLogicError } from '../effect/errors';
 
 const lockLogger = new Logger('LockService');

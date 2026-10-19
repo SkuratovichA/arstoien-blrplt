@@ -1,10 +1,10 @@
-import { CurrentUser, Roles } from '@modules/auth/decorators';
 import { Logger, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Prisma, User, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { Effect } from 'effect';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CurrentUser, Roles } from '../auth/decorators';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { BasicResponse } from './dto/basic-response.dto';

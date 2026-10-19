@@ -62,7 +62,7 @@ Production-ready full-stack boilerplate with authentication, user management, an
 - **Redis 7** - Cache and sessions
 - **Docker** - Containerization
 - **pnpm** - Package management
-- **TypeScript** - Type safety
+- **TypeScript 7** - Type safety with the native compiler; the server is compiled by `tsc` itself, so it uses relative imports and no path aliases
 
 ## Project Structure
 

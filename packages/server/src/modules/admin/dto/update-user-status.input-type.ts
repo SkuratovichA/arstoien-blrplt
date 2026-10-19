@@ -1,6 +1,6 @@
 import { Field, ID, InputType } from '@nestjs/graphql';
 import { IsEnum, IsString } from 'class-validator';
-import { UserStatus } from '@/common/graphql/enums';
+import { UserStatus } from '../../../common/graphql/enums';
 
 @InputType()
 export class UpdateUserStatusInput {

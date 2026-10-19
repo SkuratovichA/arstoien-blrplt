@@ -19,10 +19,13 @@ import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '@/components/layout/admin-layout';
 import { DataTable } from '@/components/shared/data-table';
 import { Loading } from '@/components/shared/loading';
+import type { AuditLogsQuery } from '@/gql/graphql';
 import { AUDIT_LOGS_QUERY } from '@/graphql/audit.graphql';
 import { requireAuth } from '@/lib/auth-guard';
 
-const columnHelper = createColumnHelper();
+type AuditLog = AuditLogsQuery['auditLogs'][number];
+
+const columnHelper = createColumnHelper<AuditLog>();
 
 export const Route = createFileRoute('/audit-logs')({
   beforeLoad: () => requireAuth(),

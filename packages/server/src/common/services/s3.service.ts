@@ -7,9 +7,10 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { AppConfig } from '@config/app.config';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { imageSize } from 'image-size';
+import { AppConfig } from '../../config/app.config';
 
 export interface UploadResult {
   key: string;
@@ -277,10 +278,8 @@ export class S3Service {
       maxHeight?: number;
     }
   ): Promise<void> {
-    const sizeOf = await import('image-size');
-
     try {
-      const dimensions = sizeOf.default(buffer);
+      const dimensions = imageSize(buffer);
 
       if (!dimensions.width || !dimensions.height) {
         throw new Error('Unable to determine image dimensions');

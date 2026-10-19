@@ -7,10 +7,10 @@ import {
   NotFoundError,
   promiseToEffect,
   ValidationError,
-} from '@/common/effect';
-import { NotificationType } from '@/common/graphql/enums';
-import { CrudService } from '@/common/services';
-import { PrismaService } from '@/prisma/prisma.service';
+} from '../../common/effect';
+import { NotificationType } from '../../common/graphql/enums';
+import { CrudService } from '../../common/services';
+import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationFiltersInputType } from './dto/notification-filters.input-type';
 import { EmailService } from './email.service';
 

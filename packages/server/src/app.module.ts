@@ -1,26 +1,26 @@
-import { CommonModule } from '@common/common.module';
-import { PubSubModule } from '@common/pubsub/pubsub.module';
-import { DateScalar } from '@common/scalars/date.scalar';
-import { AppConfig, appConfig } from '@config/app.config';
-import { AdminModule } from '@modules/admin/admin.module';
-import { AuthModule } from '@modules/auth/auth.module';
-import { HealthModule } from '@modules/health/health.module';
-import { NotificationModule } from '@modules/notification/notification.module';
-import { SchedulerModule } from '@modules/scheduler/scheduler.module';
-import { SettingsModule } from '@modules/settings/settings.module';
-import { UserModule } from '@modules/user/user.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { PrismaModule } from '@prisma/prisma.module';
-import { PrismaService } from '@prisma/prisma.service';
 import { Request, Response } from 'express';
+import { CommonModule } from './common/common.module';
+import { PubSubModule } from './common/pubsub/pubsub.module';
+import { DateScalar } from './common/scalars/date.scalar';
+import { AppConfig, appConfig } from './config/app.config';
+import { AdminModule } from './modules/admin/admin.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { HealthModule } from './modules/health/health.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { UserModule } from './modules/user/user.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { PrismaService } from './prisma/prisma.service';
 
 // Import to ensure all GraphQL enums are registered
-import '@/common/graphql';
+import './common/graphql';
 
 const graphqlContextLogger = new Logger('GraphQLContext');
 

@@ -1,6 +1,6 @@
-import { NotificationModule } from '@modules/notification/notification.module';
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationModule } from '../notification/notification.module';
 import { SchedulerService } from './scheduler.service';
 
 /**

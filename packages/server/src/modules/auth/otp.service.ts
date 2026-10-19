@@ -1,7 +1,7 @@
 import * as crypto from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { Effect } from 'effect';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 interface OtpGenerationResult {
   code: string;

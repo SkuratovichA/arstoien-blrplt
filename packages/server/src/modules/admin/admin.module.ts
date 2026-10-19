@@ -1,7 +1,7 @@
-import { AuthModule } from '@modules/auth/auth.module';
-import { NotificationModule } from '@modules/notification/notification.module';
-import { SettingsModule } from '@modules/settings/settings.module';
 import { forwardRef, Module } from '@nestjs/common';
+import { AuthModule } from '../auth/auth.module';
+import { NotificationModule } from '../notification/notification.module';
+import { SettingsModule } from '../settings/settings.module';
 import { AdminResolver } from './admin.resolver';
 import { AdminService } from './admin.service';
 

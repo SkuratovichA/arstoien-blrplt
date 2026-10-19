@@ -6,8 +6,8 @@
     "node": ">=26.0.0"
   },
   "scripts": {
-    "build": "nest build",
-    "dev": "nest start --watch",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
+    "dev": "pnpm build && (tsc -p tsconfig.build.json --watch --preserveWatchOutput & node --watch dist/main.js)",
     "start": "node dist/main",
     "start:prod": "node dist/main",
     "check": "biome check .",
@@ -27,8 +27,8 @@
     "db:studio": "prisma studio",
     "create:admin": "tsx src/scripts/create-admin.ts",
     "create:test-users": "tsx src/scripts/create-test-users.ts",
-    "test:email": "ts-node scripts/test-email.ts",
-    "test:email-service": "ts-node scripts/test-email-service.ts"
+    "test:email": "tsx scripts/test-email.ts",
+    "test:email-service": "tsx scripts/test-email-service.ts"
   },
   "dependencies": {
     "@apollo/server": "^4.10.0",
@@ -47,6 +47,7 @@
     "@nestjs/schedule": "^6.0.1",
     "@nestjs/throttler": "^5.1.1",
     "@prisma/client": "^6.18.0",
+    "@sesamecare-oss/redlock": "^1.4.0",
     "@types/express-session": "^1.18.2",
     "@types/image-size": "^0.8.0",
     "@types/speakeasy": "^2.0.10",
@@ -80,7 +81,6 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "qrcode": "^1.5.4",
-    "redlock": "5.0.0-beta.2",
     "reflect-metadata": "^0.2.1",
     "rxjs": "^7.8.1",
     "speakeasy": "^2.0.0",
@@ -88,8 +88,6 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.3.0",
-    "@nestjs/schematics": "^10.1.0",
     "@nestjs/testing": "^10.3.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.10",
@@ -109,9 +107,6 @@
     "prisma": "^6.18.0",
     "supertest": "^6.3.4",
     "ts-jest": "^29.1.1",
-    "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.7.0",
     "typescript": "catalog:"
   },

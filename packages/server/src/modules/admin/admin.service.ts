@@ -1,6 +1,3 @@
-import { PubSubEvents, PubSubService } from '@common/pubsub/pubsub.service';
-import { AuthService } from '@modules/auth/auth.service';
-import { EmailService } from '@modules/notification/email.service';
 import {
   BadRequestException,
   forwardRef,
@@ -9,9 +6,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AuditLog, User, UserStatus } from '@prisma/client';
-import { PrismaService } from '@prisma/prisma.service';
 import { Effect } from 'effect';
-import { runEffect } from '@/common/effect';
+import { runEffect } from '../../common/effect';
+import { PubSubEvents, PubSubService } from '../../common/pubsub/pubsub.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AuthService } from '../auth/auth.service';
+import { EmailService } from '../notification/email.service';
 
 @Injectable()
 export class AdminService {
