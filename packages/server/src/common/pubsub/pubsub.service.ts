@@ -48,7 +48,7 @@ export class PubSubService implements OnModuleDestroy {
   }
 
   asyncIterator<T>(triggers: string | string[]): AsyncIterator<T> {
-    return this.pubSub.asyncIterator<T>(triggers);
+    return this.pubSub.asyncIterableIterator<T>(triggers);
   }
 
   async onModuleDestroy() {

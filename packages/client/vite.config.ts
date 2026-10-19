@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { TanStackRouterVite } from '@tanstack/router-vite-plugin';
+import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
@@ -10,10 +10,12 @@ export default defineConfig({
     ...(process.env.VITEST
       ? []
       : [
-          TanStackRouterVite({
+          tanstackRouter({
             routesDirectory: './src/routes',
             generatedRouteTree: './src/routeTree.gen.ts',
             routeFileIgnorePattern: 'components',
+            // The default header also carries a linter directive, which Biome does not read
+            routeTreeFileHeader: ['// @ts-nocheck', '// noinspection JSUnusedGlobalSymbols'],
           }),
         ]),
   ],

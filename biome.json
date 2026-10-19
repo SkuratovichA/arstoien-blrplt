@@ -111,8 +111,7 @@
       "includes": [
         "packages/server/prisma/**",
         "packages/server/scripts/**",
-        "packages/server/src/scripts/**",
-        "packages/server/src/prisma/seed.ts"
+        "packages/server/src/scripts/**"
       ],
       "linter": {
         "rules": {

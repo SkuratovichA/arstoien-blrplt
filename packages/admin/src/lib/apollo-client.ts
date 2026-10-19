@@ -59,6 +59,12 @@ const errorLink = onError((options) => {
               }),
             ]),
             cache: new InMemoryCache(),
+            // A failed refresh must reject, so the catch below logs the user out
+            defaultOptions: {
+              watchQuery: { errorPolicy: 'none' },
+              query: { errorPolicy: 'none' },
+              mutate: { errorPolicy: 'none' },
+            },
           });
 
           return new Observable((observer) => {
