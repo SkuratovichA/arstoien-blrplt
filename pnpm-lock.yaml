@@ -543,9 +543,6 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.922.0
         version: 3.943.0
-      '@effect/schema':
-        specifier: ^0.75.5
-        version: 0.75.5(effect@3.19.8)
       '@nestjs/apollo':
         specifier: ^14.0.3
         version: 14.0.3(@apollo/server@5.5.1(graphql@16.12.0)(supports-color@8.1.1))(@as-integrations/express5@1.1.2(@apollo/server@5.5.1(graphql@16.12.0)(supports-color@8.1.1))(express@5.3.0(supports-color@8.1.1)))(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.3)(@nestjs/graphql@14.0.3(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.1.3)(class-transformer@0.5.1)(class-validator@0.14.3)(graphql@16.12.0)(reflect-metadata@0.2.2)(typescript@7.0.2))(graphql@16.12.0)
@@ -613,8 +610,8 @@ importers:
         specifier: ^2.2.2
         version: 2.2.3
       effect:
-        specifier: ^3.18.4
-        version: 3.19.8
+        specifier: ^4.0.5
+        version: 4.0.5
       express:
         specifier: ^5.3.0
         version: 5.3.0(supports-color@8.1.1)
@@ -645,9 +642,6 @@ importers:
       ioredis:
         specifier: ^5.3.2
         version: 5.8.2(supports-color@8.1.1)
-      joi:
-        specifier: ^17.11.0
-        version: 17.13.3
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.3
@@ -1611,12 +1605,6 @@ packages:
   '@csstools/css-tokenizer@4.0.2':
     resolution: {integrity: sha512-OoKoR0f76dCY666JlcbhmVTs2drYj1GUXZTYTcbUgJjh9Nv41aFfZ21bPQTERm5+L5cBDo466NltB2lplS5GBw==}
     engines: {node: '>=20.19.0'}
-
-  '@effect/schema@0.75.5':
-    resolution: {integrity: sha512-TQInulTVCuF+9EIbJpyLP6dvxbQJMphrnRqgexm/Ze39rSjfhJuufF7XvU3SxTgg3HnL7B/kpORTJbHhlE6thw==}
-    deprecated: this package has been merged into the main effect package
-    peerDependencies:
-      effect: ^3.9.2
 
   '@electric-sql/pglite-socket@0.1.3':
     resolution: {integrity: sha512-LAciWM0M1dCL8hlsxu2venbVZcdxema0BtDfpWYVqr+Y468UADw0pFWidhKw1M8sfJ8rdLT71tjMmnirf/IZRQ==}
@@ -5301,6 +5289,9 @@ packages:
 
   effect@3.20.0:
     resolution: {integrity: sha512-qMLfDJscrNG8p/aw+IkT9W7fgj50Z4wG5bLBy0Txsxz8iUHjDIkOgO3SV0WZfnQbNG2VJYb0b+rDLMrhM4+Krw==}
+
+  effect@4.0.5:
+    resolution: {integrity: sha512-BY4/28NlpOd99yzmV741xbVGmp+1U7tks4oB7F/Png64bTa5tm5eCA6W0RiXsnuLDDoJpjfVSo4Dnq4BZb/89Q==}
 
   electron-to-chromium@1.5.265:
     resolution: {integrity: sha512-B7IkLR1/AE+9jR2LtVF/1/6PFhY5TlnEHnlrKmGk7PvkJibg5jr+mLXLLzq3QYl6PA1T/vLDthQPqIPAlS/PPA==}
@@ -9651,11 +9642,6 @@ snapshots:
 
   '@csstools/css-tokenizer@4.0.2': {}
 
-  '@effect/schema@0.75.5(effect@3.19.8)':
-    dependencies:
-      effect: 3.19.8
-      fast-check: 3.23.2
-
   '@electric-sql/pglite-socket@0.1.3(@electric-sql/pglite@0.4.3)':
     dependencies:
       '@electric-sql/pglite': 0.4.3
@@ -10410,11 +10396,13 @@ snapshots:
     dependencies:
       is-negated-glob: 1.0.0
 
-  '@hapi/hoek@9.3.0': {}
+  '@hapi/hoek@9.3.0':
+    optional: true
 
   '@hapi/topo@5.1.0':
     dependencies:
       '@hapi/hoek': 9.3.0
+    optional: true
 
   '@hookform/resolvers@5.9.2(@sinclair/typebox@0.27.8)(@standard-schema/spec@1.0.0)(ajv-formats@2.1.1(ajv@8.17.1))(ajv@8.17.1)(class-transformer@0.5.1)(class-validator@0.14.3)(effect@3.19.8)(joi@17.13.3)(react-hook-form@7.90.0(@types/react@19.2.7)(react@19.3.1))(valibot@1.4.2(typescript@7.0.2))(zod@4.6.7)':
     dependencies:
@@ -11396,10 +11384,13 @@ snapshots:
   '@sideway/address@4.1.5':
     dependencies:
       '@hapi/hoek': 9.3.0
+    optional: true
 
-  '@sideway/formula@3.0.1': {}
+  '@sideway/formula@3.0.1':
+    optional: true
 
-  '@sideway/pinpoint@2.0.0': {}
+  '@sideway/pinpoint@2.0.0':
+    optional: true
 
   '@sinclair/typebox@0.27.8':
     optional: true
@@ -13638,6 +13629,8 @@ snapshots:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2
 
+  effect@4.0.5: {}
+
   electron-to-chromium@1.5.265: {}
 
   elkjs@0.11.1: {}
@@ -14610,6 +14603,7 @@ snapshots:
       '@sideway/address': 4.1.5
       '@sideway/formula': 3.0.1
       '@sideway/pinpoint': 2.0.0
+    optional: true
 
   jose@5.10.0: {}
 

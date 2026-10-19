@@ -76,3 +76,33 @@ export class BusinessLogicError extends Data.TaggedError('BusinessLogicError')<{
   message: string;
   code: string;
 }> {}
+
+/**
+ * Rate Limit Error
+ */
+export class RateLimitError extends Data.TaggedError('RateLimitError')<{
+  message: string;
+  retryAfterSeconds: number;
+}> {}
+
+/**
+ * Every error class above. The union AppError derives from this list, and the HTTP mapping in effect-adapter.ts is exhaustive over it, so a class that joins the list does not compile until it has an HTTP status.
+ */
+const appErrorClasses = [
+  DomainError,
+  NotFoundError,
+  ValidationError,
+  UnauthorizedError,
+  ForbiddenError,
+  ConflictError,
+  ExternalApiError,
+  DatabaseError,
+  BusinessLogicError,
+  RateLimitError,
+] as const;
+
+export type AppError = InstanceType<(typeof appErrorClasses)[number]>;
+
+export function isAppError(error: unknown): error is AppError {
+  return appErrorClasses.some((errorClass) => error instanceof errorClass);
+}

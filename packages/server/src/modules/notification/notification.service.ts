@@ -64,7 +64,7 @@ export class NotificationService extends CrudService<PrismaService['notification
 
       // Send email notification (fire and forget)
       yield* self.sendEmailNotification(userId, type, data).pipe(
-        Effect.catchAll((error) => {
+        Effect.catch((error) => {
           self.logger.error(`Failed to send email notification: ${error}`);
           return Effect.succeed(undefined);
         })
@@ -88,7 +88,7 @@ export class NotificationService extends CrudService<PrismaService['notification
 
       for (const userId of userIds) {
         const notification = yield* self.sendNotification(userId, type, data).pipe(
-          Effect.catchAll((error) => {
+          Effect.catch((error) => {
             self.logger.error(`Failed to send notification to user ${userId}: ${error}`);
             return Effect.succeed(null as Notification | null);
           })

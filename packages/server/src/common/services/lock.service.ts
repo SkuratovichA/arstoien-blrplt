@@ -104,7 +104,7 @@ export class LockService implements OnModuleDestroy {
         lockLogger.warn(`Failed to release lock: ${String(error)}`);
         return undefined;
       },
-    }).pipe(Effect.catchAll(() => Effect.succeed(undefined)));
+    }).pipe(Effect.catch(() => Effect.succeed(undefined)));
   }
 
   /**

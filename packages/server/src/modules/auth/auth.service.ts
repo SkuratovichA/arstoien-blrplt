@@ -14,6 +14,7 @@ import {
   ConflictError,
   DatabaseError,
   promiseToEffect,
+  type RateLimitError,
   runEffect,
   UnauthorizedError,
   ValidationError,
@@ -172,13 +173,13 @@ export class AuthService {
       self.logger.log(`User created (pending approval): ${user.id}`);
 
       // Notify admins about new pending user (fire and forget)
-      yield* Effect.forkDaemon(
+      yield* Effect.forkDetach(
         Effect.tryPromise({
           try: () => self.notifyAdminsAboutNewUser(user),
           catch: () =>
             new DatabaseError({ message: 'Failed to notify admins', operation: 'notify' }),
         }).pipe(
-          Effect.catchAll(() => Effect.void) // Ignore errors for notification
+          Effect.catch(() => Effect.void) // Ignore errors for notification
         )
       );
 
@@ -235,9 +236,9 @@ export class AuthService {
       self.logger.log(`User created via registration: ${user.id}`);
 
       // Notify admins about new pending user (fire and forget)
-      yield* Effect.forkDaemon(
+      yield* Effect.forkDetach(
         promiseToEffect(() => self.notifyAdminsAboutNewUser(user)).pipe(
-          Effect.catchAll(() => Effect.void)
+          Effect.catch(() => Effect.void)
         )
       );
 
@@ -942,32 +943,28 @@ export class AuthService {
     email: string
   ): Effect.Effect<
     { success: boolean; message: string },
-    ValidationError | UnauthorizedError | DatabaseError,
+    ValidationError | UnauthorizedError | RateLimitError | DatabaseError,
     never
   > {
-    const self = this;
-
-    return Effect.gen(function* () {
-      self.logger.log(`OTP login requested for email: ${email}`);
+    return Effect.gen({ self: this }, function* () {
+      this.logger.log(`OTP login requested for email: ${email}`);
 
       // Check if OTP is enabled
-      const otpEnabled = yield* promiseToEffect(() => self.isOtpEnabledForUser(email));
+      const otpEnabled = yield* promiseToEffect(() => this.isOtpEnabledForUser(email));
 
       if (!otpEnabled) {
-        self.logger.warn(`OTP login attempted but not enabled for: ${email}`);
-        return yield* Effect.fail(
-          new UnauthorizedError({ message: 'OTP authentication is not enabled' })
-        );
+        this.logger.warn(`OTP login attempted but not enabled for: ${email}`);
+        return yield* new UnauthorizedError({ message: 'OTP authentication is not enabled' });
       }
 
       // Find user
-      const user = yield* Effect.match(self.userService.findByEmail(email), {
+      const user = yield* Effect.match(this.userService.findByEmail(email), {
         onFailure: () => null,
         onSuccess: (user) => user,
       });
 
       if (!user) {
-        self.logger.warn(`OTP login failed: user not found with email: ${email}`);
+        this.logger.warn(`OTP login failed: user not found with email: ${email}`);
         // Return success to avoid email enumeration
         return {
           success: true,
@@ -977,7 +974,7 @@ export class AuthService {
 
       // Check user status
       if (user.status === UserStatus.BLOCKED || user.status === UserStatus.SUSPENDED) {
-        self.logger.warn(`OTP login failed: account not active for user: ${user.id}`);
+        this.logger.warn(`OTP login failed: account not active for user: ${user.id}`);
         // Return success to avoid revealing account status
         return {
           success: true,
@@ -985,15 +982,13 @@ export class AuthService {
         };
       }
 
-      // Generate OTP
-      const otpResult = yield* promiseToEffect(() =>
-        Effect.runPromise(self.otpService.generateOtp(user.id, user.email))
-      );
+      // Generate OTP; a RateLimitError after too many requests goes to the caller as it is
+      const otpResult = yield* this.otpService.generateOtp(user.id, user.email);
 
       // Send OTP email
-      yield* promiseToEffect(() => self.emailService.sendOtpEmail(user.email, otpResult.code));
+      yield* promiseToEffect(() => this.emailService.sendOtpEmail(user.email, otpResult.code));
 
-      self.logger.log(`OTP sent to: ${email}`);
+      this.logger.log(`OTP sent to: ${email}`);
 
       return {
         success: true,
@@ -1013,49 +1008,49 @@ export class AuthService {
     email: string,
     code: string
   ): Effect.Effect<AuthResponse, ValidationError | UnauthorizedError | DatabaseError, never> {
-    const self = this;
-
-    return Effect.gen(function* () {
-      self.logger.log(`OTP verification attempt for email: ${email}`);
+    return Effect.gen({ self: this }, function* () {
+      this.logger.log(`OTP verification attempt for email: ${email}`);
 
       // Find user
-      const user = yield* Effect.match(self.userService.findByEmail(email), {
+      const user = yield* Effect.match(this.userService.findByEmail(email), {
         onFailure: () => null,
         onSuccess: (user) => user,
       });
 
       if (!user) {
-        self.logger.warn(`OTP verification failed: user not found with email: ${email}`);
-        return yield* Effect.fail(new UnauthorizedError({ message: 'Invalid OTP code' }));
+        this.logger.warn(`OTP verification failed: user not found with email: ${email}`);
+        return yield* new UnauthorizedError({ message: 'Invalid OTP code' });
       }
 
-      // Validate OTP
-      const isValid = yield* promiseToEffect(() =>
-        Effect.runPromise(self.otpService.validateOtp(user.id, code))
+      // Validate OTP; a wrong and an expired code look the same to the client
+      yield* this.otpService.validateOtp(user.id, code).pipe(
+        Effect.catchTags({
+          OtpInvalidError: () => {
+            this.logger.warn(`OTP verification failed: invalid code for user: ${user.id}`);
+            return Effect.fail(new UnauthorizedError({ message: 'Invalid or expired OTP code' }));
+          },
+          OtpExpiredError: () => {
+            this.logger.warn(`OTP verification failed: expired code for user: ${user.id}`);
+            return Effect.fail(new UnauthorizedError({ message: 'Invalid or expired OTP code' }));
+          },
+        })
       );
-
-      if (!isValid) {
-        self.logger.warn(`OTP verification failed: invalid code for user: ${user.id}`);
-        return yield* Effect.fail(
-          new UnauthorizedError({ message: 'Invalid or expired OTP code' })
-        );
-      }
 
       // Check user status
       if (user.status === UserStatus.BLOCKED) {
-        self.logger.warn(`OTP login failed: account blocked for user: ${user.id}`);
-        return yield* Effect.fail(new UnauthorizedError({ message: 'Account is blocked' }));
+        this.logger.warn(`OTP login failed: account blocked for user: ${user.id}`);
+        return yield* new UnauthorizedError({ message: 'Account is blocked' });
       }
 
       if (user.status === UserStatus.SUSPENDED) {
-        self.logger.warn(`OTP login failed: account suspended for user: ${user.id}`);
-        return yield* Effect.fail(new UnauthorizedError({ message: 'Account is suspended' }));
+        this.logger.warn(`OTP login failed: account suspended for user: ${user.id}`);
+        return yield* new UnauthorizedError({ message: 'Account is suspended' });
       }
 
       // Mark email as verified if not already
       if (!user.emailVerifiedAt) {
         yield* promiseToEffect(() =>
-          self.prisma.user.update({
+          this.prisma.user.update({
             where: { id: user.id },
             data: { emailVerifiedAt: new Date() },
           })
@@ -1063,14 +1058,14 @@ export class AuthService {
       }
 
       // Update last login
-      yield* self.userService.updateLastLogin(user.id);
+      yield* this.userService.updateLastLogin(user.id);
 
       // Generate tokens
-      const tokens = yield* promiseToEffect(() => self.generateTokens(user));
+      const tokens = yield* promiseToEffect(() => this.generateTokens(user));
 
       // Create audit log
       yield* promiseToEffect(() =>
-        self.prisma.auditLog.create({
+        this.prisma.auditLog.create({
           data: {
             userId: user.id,
             action: 'OTP_LOGIN_SUCCESS',
@@ -1084,7 +1079,7 @@ export class AuthService {
         })
       );
 
-      self.logger.log(`OTP login successful for user: ${user.id}`);
+      this.logger.log(`OTP login successful for user: ${user.id}`);
 
       return {
         user,

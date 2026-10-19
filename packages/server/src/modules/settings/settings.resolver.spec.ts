@@ -1,51 +1,25 @@
 import { Test } from '@nestjs/testing';
-import {
-  AuthProvider,
-  type Prisma,
-  type SystemSettings,
-  type User,
-  UserRole,
-  UserStatus,
-} from '../../generated/prisma/client.js';
+import { createUser, fixtureDate } from '../../common/testing/fixtures.js';
+import { type Prisma, type SystemSettings, UserRole } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { SettingsResolver } from './settings.resolver.js';
 import { SettingsService } from './settings.service.js';
-
-const createdAt = new Date('2026-01-01T00:00:00.000Z');
 
 const settings: SystemSettings = {
   id: 'default',
   supportEmail: 'help@example.com',
   otpAuthEnabled: false,
   updatedBy: null,
-  createdAt,
-  updatedAt: createdAt,
+  createdAt: fixtureDate,
+  updatedAt: fixtureDate,
 };
 
-const superAdmin: User = {
-  id: 'user-1',
+const superAdmin = createUser({
   email: 'root@example.com',
-  passwordHash: null,
-  googleId: null,
-  authProvider: AuthProvider.EMAIL,
   firstName: 'Root',
   lastName: 'Admin',
-  phone: null,
-  status: UserStatus.ACTIVE,
   role: UserRole.SUPER_ADMIN,
-  avatar: null,
-  bio: null,
-  preferredLocale: 'cs',
-  otpAuthEnabled: false,
-  lastLoginAt: null,
-  emailVerifiedAt: createdAt,
-  approvedAt: null,
-  approvedById: null,
-  rejectionReason: null,
-  createdAt,
-  updatedAt: createdAt,
-  deletedAt: null,
-};
+});
 
 const prisma = {
   systemSettings: {

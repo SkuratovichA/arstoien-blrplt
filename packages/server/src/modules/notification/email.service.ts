@@ -328,7 +328,7 @@ export class EmailService {
 
     // In development mode, log errors but don't fail the operation
     if (isDevelopment) {
-      return Effect.catchAll(effect, (error) => {
+      return Effect.catch(effect, (error) => {
         this.logger.warn(`Development mode: Email sending failed but operation continues`);
         this.logger.warn(`Email error details: ${error?.message || JSON.stringify(error)}`);
         // Still return void to not break the flow, but we've logged the error

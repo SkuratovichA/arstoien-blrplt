@@ -1,180 +1,67 @@
 import {
   BadRequestException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   InternalServerErrorException,
+  Logger,
   ConflictException as NestConflictException,
   NotFoundException as NestNotFoundException,
   UnauthorizedException as NestUnauthorizedException,
 } from '@nestjs/common';
-import { Effect } from 'effect';
+import { Effect, Match } from 'effect';
 
-import {
-  BusinessLogicError,
-  ConflictError,
-  DatabaseError,
-  DomainError,
-  ExternalApiError,
-  ForbiddenError,
-  NotFoundError,
-  UnauthorizedError,
-  ValidationError,
-} from './errors.js';
+import { type AppError, DatabaseError, isAppError, ValidationError } from './errors.js';
+
+const logger = new Logger('EffectAdapter');
 
 /**
- * Convert Effect errors to NestJS HTTP exceptions
+ * The HTTP exception for an error of the application. Match.valueTags is exhaustive over the tags of AppError, so an error class without a status here does not compile.
+ */
+export function toHttpException(error: AppError): HttpException {
+  return Match.valueTags(error, {
+    // GraphQL shows the first field error as the main message
+    ValidationError: (e) => new BadRequestException(e.errors?.[0]?.message ?? e.message),
+    NotFoundError: (e) =>
+      new NestNotFoundException({ message: e.message, resource: e.resource, id: e.id }),
+    UnauthorizedError: (e) => new NestUnauthorizedException(e.message),
+    ForbiddenError: (e) => new ForbiddenException({ message: e.message, resource: e.resource }),
+    ConflictError: (e) => new NestConflictException({ message: e.message, field: e.field }),
+    BusinessLogicError: (e) => new BadRequestException({ message: e.message, code: e.code }),
+    DomainError: (e) =>
+      new BadRequestException({ message: e.message, code: e.code, metadata: e.metadata }),
+    RateLimitError: (e) =>
+      new HttpException(
+        { message: e.message, retryAfterSeconds: e.retryAfterSeconds },
+        HttpStatus.TOO_MANY_REQUESTS
+      ),
+    ExternalApiError: (e) =>
+      new InternalServerErrorException({
+        message: `External service error: ${e.service}`,
+        details: e.message,
+      }),
+    DatabaseError: (e) =>
+      new InternalServerErrorException({
+        message: 'Database operation failed',
+        operation: e.operation,
+      }),
+  });
+}
+
+/**
+ * Convert whatever an Effect failed with into a NestJS HTTP exception and throw it. Effect.runPromise rejects with the typed error itself (or with the defect), so no wrapper needs unpacking here.
  */
 export function mapEffectErrorToHttp(error: unknown): never {
-  if (error instanceof ValidationError) {
-    // If there are specific field errors, use the first one's message for GraphQL error
-    // (GraphQL will show this as the main error message)
-    const errorMessage =
-      error.errors && error.errors.length > 0 ? error?.errors[0].message : error.message;
-
-    throw new BadRequestException(errorMessage);
+  // Already an HTTP error, for example one that a Nest service raised inside the Effect
+  if (error instanceof HttpException) {
+    throw error;
   }
 
-  if (error instanceof NotFoundError) {
-    throw new NestNotFoundException({
-      message: error.message,
-      resource: error.resource,
-      id: error.id,
-    });
+  if (isAppError(error)) {
+    throw toHttpException(error);
   }
 
-  if (error instanceof UnauthorizedError) {
-    throw new NestUnauthorizedException(error.message);
-  }
-
-  if (error instanceof ForbiddenError) {
-    throw new ForbiddenException({
-      message: error.message,
-      resource: error.resource,
-    });
-  }
-
-  if (error instanceof ConflictError) {
-    throw new NestConflictException({
-      message: error.message,
-      field: error.field,
-    });
-  }
-
-  if (error instanceof BusinessLogicError) {
-    throw new BadRequestException({
-      message: error.message,
-      code: error.code,
-    });
-  }
-
-  if (error instanceof ExternalApiError) {
-    throw new InternalServerErrorException({
-      message: `External service error: ${error.service}`,
-      details: error.message,
-    });
-  }
-
-  if (error instanceof DatabaseError) {
-    throw new InternalServerErrorException({
-      message: 'Database operation failed',
-      operation: error.operation,
-    });
-  }
-
-  if (error instanceof DomainError) {
-    throw new BadRequestException({
-      message: error.message,
-      code: error.code,
-      metadata: error.metadata,
-    });
-  }
-
-  // Check if it's a Cause wrapping another error (Effect.js error wrapping)
-  if (error && typeof error === 'object') {
-    // Try to access the error through Symbol for cause
-    const errorObj = error as { _tag?: string; error?: unknown; '[Circular]'?: unknown };
-
-    // Check if it has a [Symbol.for('effect/Cause')] property
-    if (errorObj['[Circular]'] === undefined) {
-      // Try to find the actual error in the object structure
-      if (errorObj._tag === 'Fail' && errorObj.error) {
-        // Recursively handle the wrapped error
-        return mapEffectErrorToHttp(errorObj.error);
-      }
-    }
-
-    // Check if error has a cause property (Effect Cause)
-    if ('cause' in error && error.cause && typeof error.cause === 'object') {
-      const cause = error.cause as { _tag?: string; error?: unknown };
-
-      // Check if the cause has an error property or is the actual error
-      if (cause._tag === 'Fail' && cause.error) {
-        return mapEffectErrorToHttp(cause.error);
-      }
-
-      if ('error' in cause && cause.error) {
-        // Recursively handle the wrapped error
-        return mapEffectErrorToHttp(cause.error);
-      }
-    }
-
-    // Check for FiberFailure with message string - parse the error type
-    if ('message' in error) {
-      const errorMessage = String(error.message);
-
-      // Match "(FiberFailure) ErrorType: message" pattern
-      const fiberMatch = errorMessage.match(/\(FiberFailure\)\s+(\w+Error):\s+(.+)/);
-      if (fiberMatch) {
-        const [, errorType, message] = fiberMatch;
-
-        switch (errorType) {
-          case 'ValidationError':
-            throw new BadRequestException(message);
-          case 'NotFoundError':
-            throw new NestNotFoundException(message);
-          case 'ForbiddenError':
-            throw new ForbiddenException(message);
-          case 'BusinessLogicError':
-            throw new BadRequestException(message);
-          case 'UnauthorizedError':
-            throw new NestUnauthorizedException(message);
-          case 'ConflictError':
-            throw new NestConflictException(message);
-        }
-      }
-
-      // Try to extract the actual error from FiberFailure messages (fallback)
-      if (errorMessage.includes('ValidationError:')) {
-        const match = errorMessage.match(/ValidationError:\s*(.+)/);
-        if (match) {
-          throw new BadRequestException(match[1]);
-        }
-      }
-
-      if (errorMessage.includes('NotFoundError:')) {
-        const match = errorMessage.match(/NotFoundError:\s*(.+)/);
-        if (match) {
-          throw new NestNotFoundException(match[1]);
-        }
-      }
-
-      if (errorMessage.includes('ForbiddenError:')) {
-        const match = errorMessage.match(/ForbiddenError:\s*(.+)/);
-        if (match) {
-          throw new ForbiddenException(match[1]);
-        }
-      }
-
-      if (errorMessage.includes('BusinessLogicError:')) {
-        const match = errorMessage.match(/BusinessLogicError:\s*(.+)/);
-        if (match) {
-          throw new BadRequestException(match[1]);
-        }
-      }
-    }
-  }
-
-  // Unknown error
-  console.error('Unexpected error:', error);
+  logger.error('Unexpected error', error instanceof Error ? error.stack : String(error));
   throw new InternalServerErrorException('An unexpected error occurred');
 }
 
@@ -183,15 +70,11 @@ export function mapEffectErrorToHttp(error: unknown): never {
  * Use this in resolvers/controllers to handle Effect-based service methods
  */
 export async function runEffect<A, E>(effect: Effect.Effect<A, E, never>): Promise<A> {
-  // Catch errors before they become FiberFailure
-  const handledEffect = Effect.catchAll(effect, (error) => {
-    // Map the error directly - it's not wrapped yet
-    mapEffectErrorToHttp(error);
-    // This line won't be reached because mapEffectErrorToHttp always throws
-    return Effect.fail(error);
-  });
-
-  return Effect.runPromise(handledEffect);
+  try {
+    return await Effect.runPromise(effect);
+  } catch (error) {
+    return mapEffectErrorToHttp(error);
+  }
 }
 
 /**
@@ -232,23 +115,6 @@ export function promiseToEffect<A>(
             message: errorMessage,
             errors: [{ field: 'query', message: errorMessage }],
           });
-        }
-
-        // Check for Prisma Known Request Errors (P2xxx codes)
-        if ('code' in error && typeof (error as { code?: unknown }).code === 'string') {
-          const prismaError = error as { code: string; meta?: unknown };
-          const code = prismaError.code;
-
-          // P2002: Unique constraint violation
-          if (code === 'P2002') {
-            // This should ideally be ConflictError, but keeping as DatabaseError for now
-            // to maintain backwards compatibility
-          }
-
-          // P2025: Record not found
-          if (code === 'P2025') {
-            // This could be NotFoundError, but keeping as DatabaseError for now
-          }
         }
       }
 

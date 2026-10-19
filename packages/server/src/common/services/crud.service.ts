@@ -370,7 +370,7 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
     const { take = 10, skip = 0, ...findArgs } = args;
     const page = Math.floor(skip / take) + 1;
 
-    return Effect.gen(this, function* () {
+    return Effect.gen({ self: this }, function* () {
       const [data, total] = yield* Effect.all([
         this.findMany({ ...findArgs, take, skip } as TArgs),
         this.count({ where: (findArgs as { where?: unknown }).where }),
