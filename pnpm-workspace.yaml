@@ -31,3 +31,8 @@ catalog:
   vite: ^8.3.4
   vitest: ^5.0.5
   zod: ^4.6.7
+
+peerDependencyRules:
+  allowedVersions:
+    # @nestjs/graphql declares typescript ^5.5 || ^6 for its schema-first typings generator, which this repo does not use; the code-first schema is built without the compiler API and the server boots on TypeScript 7
+    '@nestjs/graphql>typescript': '7'

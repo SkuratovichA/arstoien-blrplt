@@ -52,7 +52,7 @@ export type UploadConfig = {
 };
 
 export type GraphqlConfig = {
-  playground: boolean;
+  graphiql: boolean;
   introspection: boolean;
 };
 

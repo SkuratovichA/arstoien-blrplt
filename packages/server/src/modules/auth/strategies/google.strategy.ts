@@ -49,7 +49,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       });
 
       // Extract redirect_uri from query parameter (passed via state)
-      const redirectUri = req.query?.redirect_uri as string | undefined;
+      const queryRedirectUri = req.query?.redirect_uri;
+      const redirectUri = typeof queryRedirectUri === 'string' ? queryRedirectUri : undefined;
 
       // Pass the full auth response (user + tokens) + redirect_uri to Passport
       done(null, { ...authResponse, redirectUri });

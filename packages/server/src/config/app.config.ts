@@ -117,7 +117,7 @@ export const appConfig = registerAs('app', (): AppConfig => {
 
     // GraphQL
     graphql: {
-      playground: !isProduction,
+      graphiql: !isProduction,
       introspection: !isProduction,
     },
 

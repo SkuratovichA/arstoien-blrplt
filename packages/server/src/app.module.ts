@@ -76,12 +76,9 @@ interface GraphQLContext {
           installSubscriptionHandlers: true,
           autoTransformHttpErrors: true,
           introspection: appConfig.graphql.introspection,
-          playground: appConfig.graphql.playground,
-          cors: appConfig.cors,
-          uploads: {
-            maxFileSize: 10000000, // 10MB
-            maxFiles: 10,
-          },
+          graphiql: appConfig.graphql.graphiql,
+          // Apollo Server 5 answers a malformed variable with HTTP 400; the clients of this API read errors from a 200 body
+          status400ForVariableCoercionErrors: false,
           context: async ({ req, res, connection }: GraphQLContext) => {
             // For subscriptions, connection.context contains user info from onConnect
             if (connection) {
