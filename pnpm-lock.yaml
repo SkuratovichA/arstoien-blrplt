@@ -669,6 +669,9 @@ importers:
       passport-local:
         specifier: ^1.0.0
         version: 1.0.0
+      prisma:
+        specifier: ^7.10.1
+        version: 7.10.1(@types/node@26.6.5)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(magicast@0.5.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@7.0.2)
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
@@ -730,9 +733,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 5.0.5(vitest@5.0.5)
-      prisma:
-        specifier: ^7.10.1
-        version: 7.10.1(@types/node@26.6.5)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(magicast@0.5.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@7.0.2)
       supertest:
         specifier: ^7.3.1
         version: 7.3.1(supports-color@8.1.1)

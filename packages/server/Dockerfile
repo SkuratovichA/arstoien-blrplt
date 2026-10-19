@@ -1,85 +1,83 @@
 # =============================================================================
 # NestJS Server Dockerfile
 # =============================================================================
-# Multi-stage build for minimal production image
+# Multi-stage build for a minimal production image.
+# Build it from the repository root: docker build -f packages/server/Dockerfile .
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Stage 1: Dependencies
+# Stage 1: Base
 # -----------------------------------------------------------------------------
-FROM node:22-alpine AS deps
-
-RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
+FROM node:26-alpine AS base
 
 WORKDIR /app
 
-# Copy package files for all workspace packages
+# Package manifests of every workspace package, so that the lockfile resolves
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/server/package.json ./packages/server/
 COPY packages/client/package.json ./packages/client/
 COPY packages/admin/package.json ./packages/admin/
 COPY packages/ui/package.json ./packages/ui/
 
-# Install all dependencies with shamefully-hoist for flat node_modules structure
-RUN pnpm install --frozen-lockfile --shamefully-hoist
+# Node.js 25 and later no longer bundle Corepack, so pnpm comes from npm at the version that the root package.json pins in "packageManager"
+RUN npm install --global "pnpm@$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")"
 
 # -----------------------------------------------------------------------------
-# Stage 2: Builder
+# Stage 2: Dependencies for the build (everything the server needs, dev tools included)
 # -----------------------------------------------------------------------------
-FROM node:22-alpine AS builder
+FROM base AS dev-deps
 
-RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
+RUN pnpm install --frozen-lockfile --filter @blrplt/server...
 
-WORKDIR /app
+# -----------------------------------------------------------------------------
+# Stage 3: Production dependencies of the server
+# -----------------------------------------------------------------------------
+FROM base AS prod-deps
 
-# Copy all dependencies and workspace structure from deps stage
-COPY --from=deps /app ./
+# prisma is a regular dependency of the server because the entrypoint runs "prisma db push" when the container starts
+RUN pnpm install --frozen-lockfile --prod --filter @blrplt/server...
 
-# Copy source code
+# -----------------------------------------------------------------------------
+# Stage 4: Builder
+# -----------------------------------------------------------------------------
+FROM dev-deps AS builder
+
+# packages/server/tsconfig.json extends the tsconfig.json of the repository root
+COPY tsconfig.json ./
 COPY packages/server ./packages/server
 
-# Generate Prisma client and build (run from package directory)
-WORKDIR /app/packages/server
-RUN pnpm prisma generate
-
-# Build the application
-RUN pnpm build
-
-WORKDIR /app
+# The build generates the Prisma client into src/generated and compiles the server with the TypeScript 7 compiler into dist
+RUN pnpm --filter @blrplt/server build
 
 # -----------------------------------------------------------------------------
-# Stage 3: Production
+# Stage 5: Production
 # -----------------------------------------------------------------------------
-FROM node:22-alpine AS production
+FROM node:26-alpine AS production
 
-RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
-
-WORKDIR /app
-
-# Install PostgreSQL client for database creation
+# PostgreSQL client for the database creation in the entrypoint
 RUN apk add --no-cache postgresql-client
 
-# Create non-root user
+# Non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
 
-# Copy built application
-COPY --from=builder /app/packages/server/dist ./dist
-COPY --from=builder /app/packages/server/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
+# The workspace layout stays as it is in the repository, because the packages of packages/server/node_modules are symlinks into node_modules/.pnpm at the root
+WORKDIR /app/packages/server
 
-# Copy Prisma files for migrations
-COPY --from=builder /app/packages/server/prisma ./prisma
-# With shamefully-hoist, Prisma is in root node_modules
-COPY --from=builder /app/node_modules/.pnpm/@prisma+client*/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules /app/node_modules
+COPY --from=prod-deps --chown=nestjs:nodejs /app/packages/server/node_modules ./node_modules
 
-# Copy entrypoint script
-COPY packages/server/docker-entrypoint.sh ./docker-entrypoint.sh
+# The compiled application; package.json is needed at runtime for "type": "module"
+COPY --from=builder --chown=nestjs:nodejs /app/packages/server/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/packages/server/package.json ./package.json
+
+# Prisma schema and config for "prisma db push"
+COPY --from=builder --chown=nestjs:nodejs /app/packages/server/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/packages/server/prisma.config.ts ./prisma.config.ts
+
+# Entrypoint script
+COPY --chown=nestjs:nodejs packages/server/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
-
-# Set ownership
-RUN chown -R nestjs:nodejs /app
 
 USER nestjs
 

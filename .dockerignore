@@ -1,0 +1,15 @@
+# Build context of packages/server/Dockerfile: keep dependencies, build output, history and secrets out of it
+**/node_modules
+**/dist
+**/build
+**/coverage
+.git
+.claude
+.github
+infrastructure
+LEARNING.md
+**/.env
+**/.env.*
+!**/.env.example
+.secrets
+GITHUB-SECRETS*.md

@@ -36,7 +36,7 @@ PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "postgre
 
 echo "Database exists. Pushing schema to database..."
 # Use db push for initial setup (creates tables without migrations)
-npx prisma db push --accept-data-loss --skip-generate
+./node_modules/.bin/prisma db push --accept-data-loss
 
 echo ""
 echo "=== Starting Server ==="
