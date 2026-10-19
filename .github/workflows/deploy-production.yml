@@ -20,8 +20,8 @@ concurrency:
 
 env:
   AWS_REGION: eu-central-1
-  NODE_VERSION: '22'
-  PNPM_VERSION: '9.14.2'
+  NODE_VERSION: '26'
+  PNPM_VERSION: '12.14.0'
 
 jobs:
   # ===========================================================================
@@ -93,12 +93,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Build client
         run: pnpm --filter @blrplt/client build
@@ -151,12 +152,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Build admin
         run: pnpm --filter @blrplt/admin build
