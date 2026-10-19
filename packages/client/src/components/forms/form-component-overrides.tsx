@@ -1,15 +1,15 @@
-import { forwardRef } from 'react';
-import type { ComponentPaletteOverrides } from '@arstoien/former';
 import type {
-  TextInputProps,
-  PasswordInputProps,
+  ComponentPaletteOverrides,
   ErrorMessageProps,
-  FieldLabelProps,
   FieldDescriptionProps,
-  SubmitButtonProps,
+  FieldLabelProps,
   FieldValues,
+  PasswordInputProps,
+  SubmitButtonProps,
+  TextInputProps,
 } from '@arstoien/former';
-import { Button, Input, PasswordInput, Label } from '@arstoien/shared-ui';
+import { Button, Input, Label, PasswordInput } from '@arstoien/shared-ui';
+import { forwardRef } from 'react';
 
 /**
  * Generic component overrides for Former forms in the client package

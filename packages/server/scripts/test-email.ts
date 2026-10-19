@@ -30,19 +30,33 @@ const colors = {
 // Get recipient email from command line or use default
 const recipientEmail = process.argv[2] || 'test@example.com';
 
-console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+console.log(
+  `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`
+);
 console.log(`${colors.magenta}           EMAIL SERVICE CONFIGURATION TEST${colors.reset}`);
-console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`);
+console.log(
+  `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`
+);
 
 // Display current configuration
 console.log(`${colors.yellow}📋 Current Configuration:${colors.reset}`);
-console.log(`   Environment: ${colors.magenta}${process.env.NODE_ENV || 'development'}${colors.reset}`);
+console.log(
+  `   Environment: ${colors.magenta}${process.env.NODE_ENV || 'development'}${colors.reset}`
+);
 console.log(`   SMTP Host: ${colors.magenta}${process.env.SMTP_HOST || 'Not set'}${colors.reset}`);
 console.log(`   SMTP Port: ${colors.magenta}${process.env.SMTP_PORT || 'Not set'}${colors.reset}`);
-console.log(`   SMTP Secure: ${colors.magenta}${process.env.SMTP_SECURE || 'false'}${colors.reset}`);
-console.log(`   SMTP User: ${colors.magenta}${process.env.SMTP_USER ? '***' + process.env.SMTP_USER.slice(-4) : 'Not set'}${colors.reset}`);
-console.log(`   SMTP Pass: ${colors.magenta}${process.env.SMTP_PASS ? '****' : 'Not set'}${colors.reset}`);
-console.log(`   From Email: ${colors.magenta}${process.env.EMAIL_FROM || 'Not set'}${colors.reset}`);
+console.log(
+  `   SMTP Secure: ${colors.magenta}${process.env.SMTP_SECURE || 'false'}${colors.reset}`
+);
+console.log(
+  `   SMTP User: ${colors.magenta}${process.env.SMTP_USER ? '***' + process.env.SMTP_USER.slice(-4) : 'Not set'}${colors.reset}`
+);
+console.log(
+  `   SMTP Pass: ${colors.magenta}${process.env.SMTP_PASS ? '****' : 'Not set'}${colors.reset}`
+);
+console.log(
+  `   From Email: ${colors.magenta}${process.env.EMAIL_FROM || 'Not set'}${colors.reset}`
+);
 console.log(`   Test Recipient: ${colors.magenta}${recipientEmail}${colors.reset}\n`);
 
 // Check if essential variables are set
@@ -52,19 +66,25 @@ if (!process.env.SMTP_PORT) missingVars.push('SMTP_PORT');
 if (!process.env.EMAIL_FROM) missingVars.push('EMAIL_FROM');
 
 if (missingVars.length > 0) {
-  console.error(`${colors.red}❌ Missing required environment variables: ${missingVars.join(', ')}${colors.reset}`);
+  console.error(
+    `${colors.red}❌ Missing required environment variables: ${missingVars.join(', ')}${colors.reset}`
+  );
   console.log('\nPlease set these variables in your .env file or environment.\n');
 
   // Show AWS SES configuration example if host looks like SES
   if (process.env.SMTP_HOST?.includes('amazonaws.com') || !process.env.SMTP_HOST) {
     console.log(`${colors.yellow}📝 For AWS SES, use these settings:${colors.reset}`);
     console.log(`   SMTP_HOST=email-smtp.[region].amazonaws.com`);
-    console.log(`   SMTP_PORT=587  ${colors.blue}(or 465 for SSL, 25 for unencrypted)${colors.reset}`);
+    console.log(
+      `   SMTP_PORT=587  ${colors.blue}(or 465 for SSL, 25 for unencrypted)${colors.reset}`
+    );
     console.log(`   SMTP_SECURE=false  ${colors.blue}(STARTTLS for port 587)${colors.reset}`);
     console.log(`   SMTP_USER=[Your AWS SES SMTP username]`);
     console.log(`   SMTP_PASS=[Your AWS SES SMTP password]`);
     console.log(`   EMAIL_FROM=[Verified sender email]\n`);
-    console.log(`${colors.yellow}⚠️  Note: Use SES SMTP credentials, not IAM credentials!${colors.reset}\n`);
+    console.log(
+      `${colors.yellow}⚠️  Note: Use SES SMTP credentials, not IAM credentials!${colors.reset}\n`
+    );
   }
 
   if (missingVars.includes('SMTP_HOST') || missingVars.includes('SMTP_PORT')) {
@@ -73,9 +93,13 @@ if (missingVars.length > 0) {
 }
 
 async function testEmailService() {
-  console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+  console.log(
+    `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`
+  );
   console.log(`${colors.yellow}🔧 Step 1: Creating SMTP Transporter${colors.reset}`);
-  console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`);
+  console.log(
+    `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`
+  );
 
   const transportConfig: SMTPTransport.Options = {
     host: process.env.SMTP_HOST || 'localhost',
@@ -99,9 +123,13 @@ async function testEmailService() {
   console.log(`✅ Transporter created\n`);
 
   // Step 2: Verify connection
-  console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+  console.log(
+    `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`
+  );
   console.log(`${colors.yellow}🔍 Step 2: Verifying SMTP Connection${colors.reset}`);
-  console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`);
+  console.log(
+    `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`
+  );
 
   try {
     await transporter.verify();
@@ -134,9 +162,13 @@ async function testEmailService() {
   }
 
   // Step 3: Send test email
-  console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+  console.log(
+    `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`
+  );
   console.log(`${colors.yellow}📧 Step 3: Sending Test Email${colors.reset}`);
-  console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`);
+  console.log(
+    `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`
+  );
 
   const testEmail = {
     from: process.env.EMAIL_FROM || 'test@example.com',
@@ -195,7 +227,6 @@ If you received this email, your email service is configured correctly!`,
       console.log(`   • In sandbox mode, both sender and recipient must be verified`);
       console.log(`   • Monitor your sending quota and rate limits`);
     }
-
   } catch (error: any) {
     console.error(`${colors.red}❌ Failed to send test email:${colors.reset}`);
     console.error(`   Error: ${error.message}\n`);

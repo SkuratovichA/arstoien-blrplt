@@ -1,8 +1,8 @@
+import { IS_PUBLIC_KEY } from '@modules/auth/decorators';
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthGuard } from '@nestjs/passport';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { IS_PUBLIC_KEY } from '@modules/auth/decorators';
+import { AuthGuard } from '@nestjs/passport';
 
 /**
  * GraphQL authentication guard using JWT

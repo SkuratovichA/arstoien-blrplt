@@ -26,13 +26,17 @@ async function createAdmin() {
 
   if (!email) {
     console.error('❌ Error: ADMIN_EMAIL environment variable is required');
-    console.log('Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! yarn create:admin');
+    console.log(
+      'Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! yarn create:admin'
+    );
     process.exit(1);
   }
 
   if (!password) {
     console.error('❌ Error: ADMIN_PASSWORD environment variable is required');
-    console.log('Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! yarn create:admin');
+    console.log(
+      'Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! yarn create:admin'
+    );
     process.exit(1);
   }
 

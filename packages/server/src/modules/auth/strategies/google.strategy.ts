@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, Profile, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
+import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { AuthService } from '../auth.service';
 
 @Injectable()

@@ -1,15 +1,15 @@
-import { useTranslation } from 'react-i18next';
 import { useQuery } from '@apollo/client/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
+import { useTranslation } from 'react-i18next';
 import {
-  LineChart,
+  CartesianGrid,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
 } from 'recharts';
 import { USER_GROWTH_STATS_QUERY } from '@/graphql/admin.graphql';
 

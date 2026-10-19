@@ -1,18 +1,31 @@
-import { forwardRef, Inject, Injectable, Logger, Optional, UnauthorizedException, } from '@nestjs/common';
-import { AdminService } from '../admin/admin.service';
-import { JwtService } from '@nestjs/jwt';
+import { PubSubService } from '@common/pubsub/pubsub.service';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  Optional,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { AuthProvider, User, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { Effect } from 'effect';
-
+import {
+  ConflictError,
+  DatabaseError,
+  promiseToEffect,
+  runEffect,
+  UnauthorizedError,
+  ValidationError,
+} from '@/common/effect';
 import { PrismaService } from '@/prisma/prisma.service';
-import { UserService } from '../user/user.service';
+import { AdminService } from '../admin/admin.service';
 import { EmailService } from '../notification/email.service';
 import { RefreshTokenService } from '../refresh-token/refresh-token.service';
+import { UserService } from '../user/user.service';
 import { OtpService } from './otp.service';
-import { AuthProvider, User, UserStatus } from '@prisma/client';
-import { ConflictError, DatabaseError, promiseToEffect, runEffect, UnauthorizedError, ValidationError, } from '@/common/effect';
-import { PubSubService } from '@common/pubsub/pubsub.service';
 
 export interface JwtPayload {
   sub: string;
@@ -926,7 +939,9 @@ export class AuthService {
   /**
    * Request OTP login - sends OTP code to user's email
    */
-  requestOtpLogin(email: string): Effect.Effect<
+  requestOtpLogin(
+    email: string
+  ): Effect.Effect<
     { success: boolean; message: string },
     ValidationError | UnauthorizedError | DatabaseError,
     never
@@ -977,9 +992,7 @@ export class AuthService {
       );
 
       // Send OTP email
-      yield* promiseToEffect(() =>
-        self.emailService.sendOtpEmail(user.email, otpResult.code)
-      );
+      yield* promiseToEffect(() => self.emailService.sendOtpEmail(user.email, otpResult.code));
 
       self.logger.log(`OTP sent to: ${email}`);
 
@@ -1024,7 +1037,9 @@ export class AuthService {
 
       if (!isValid) {
         self.logger.warn(`OTP verification failed: invalid code for user: ${user.id}`);
-        return yield* Effect.fail(new UnauthorizedError({ message: 'Invalid or expired OTP code' }));
+        return yield* Effect.fail(
+          new UnauthorizedError({ message: 'Invalid or expired OTP code' })
+        );
       }
 
       // Check user status

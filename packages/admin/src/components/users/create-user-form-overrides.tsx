@@ -1,13 +1,12 @@
-import React, { forwardRef } from 'react';
-import type { ComponentPaletteOverrides } from '@arstoien/former';
 import type {
-  TextInputProps,
+  ComponentPaletteOverrides,
+  ErrorMessageProps,
+  FieldDescriptionProps,
+  FieldLabelProps,
   PasswordInputProps,
   SelectProps,
-  ErrorMessageProps,
-  FieldLabelProps,
-  FieldDescriptionProps,
   SubmitButtonProps,
+  TextInputProps,
 } from '@arstoien/former';
 import {
   Button,
@@ -19,7 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@arstoien/shared-ui';
-import { type CreateUserFormData, createUserSchema } from './create-user-form-schema';
+import type React from 'react';
+import { forwardRef } from 'react';
+import type { CreateUserFormData } from './create-user-form-schema';
+import { createUserSchema } from './create-user-form-schema';
 
 /**
  * Component overrides for create user form

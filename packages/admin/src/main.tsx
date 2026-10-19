@@ -1,8 +1,8 @@
+import { ApolloProvider } from '@apollo/client/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { RouterProvider, createRouter } from '@tanstack/react-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ApolloProvider } from '@apollo/client/react';
 import { apolloClient } from '@/lib/apollo-client';
 import '@/lib/i18n';
 import '@/styles/globals.css';

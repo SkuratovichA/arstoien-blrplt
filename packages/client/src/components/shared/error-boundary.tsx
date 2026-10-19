@@ -1,6 +1,6 @@
+import { Button } from '@arstoien/shared-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@arstoien/shared-ui';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;

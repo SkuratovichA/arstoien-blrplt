@@ -1,19 +1,19 @@
-import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { CurrentUser, Roles } from '@modules/auth/decorators';
 import { Logger, UseGuards } from '@nestjs/common';
-import { Effect } from 'effect';
-import { UserService } from './user.service';
-import { AuthService } from '../auth/auth.service';
-import { PrismaService } from '@/prisma/prisma.service';
+import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Prisma, User, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { UserObjectType } from './dto/user.object-type';
-import { UpdateProfileInputType } from './dto/update-profile.input-type';
-import { ChangePasswordInputType } from './dto/change-password.input-type';
-import { BasicResponse } from './dto/basic-response.dto';
-import { DeleteAccountInputType } from './dto/delete-account.input-type';
+import { Effect } from 'effect';
+import { PrismaService } from '@/prisma/prisma.service';
+import { AuthService } from '../auth/auth.service';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { CurrentUser, Roles } from '@modules/auth/decorators';
+import { BasicResponse } from './dto/basic-response.dto';
+import { ChangePasswordInputType } from './dto/change-password.input-type';
+import { DeleteAccountInputType } from './dto/delete-account.input-type';
+import { UpdateProfileInputType } from './dto/update-profile.input-type';
+import { UserObjectType } from './dto/user.object-type';
+import { UserService } from './user.service';
 
 @Resolver(() => UserObjectType)
 export class UserResolver {
@@ -80,16 +80,16 @@ export class UserResolver {
   @UseGuards(GqlAuthGuard)
   async updateProfile(
     @CurrentUser() user: User,
-    @Args('input') input: UpdateProfileInputType,
+    @Args('input') input: UpdateProfileInputType
   ): Promise<UserObjectType> {
     this.logger.debug(`Updating profile for user: ${user.id}`);
 
-    const updatedUser = await Effect.runPromise(
-      this._userService.updateUser(user.id, input)
-    ).catch((error) => {
-      this.logger.error('Failed to update user profile:', error);
-      throw error;
-    });
+    const updatedUser = await Effect.runPromise(this._userService.updateUser(user.id, input)).catch(
+      (error) => {
+        this.logger.error('Failed to update user profile:', error);
+        throw error;
+      }
+    );
 
     return updatedUser as UserObjectType;
   }
@@ -100,7 +100,7 @@ export class UserResolver {
   @UseGuards(GqlAuthGuard)
   async changePassword(
     @CurrentUser() user: User,
-    @Args('input') input: ChangePasswordInputType,
+    @Args('input') input: ChangePasswordInputType
   ): Promise<BasicResponse> {
     this.logger.log(`Password change requested for user: ${user.id}`);
 
@@ -136,9 +136,7 @@ export class UserResolver {
       const newPasswordHash = await bcrypt.hash(input.newPassword, 10);
 
       // Update password
-      await Effect.runPromise(
-        this._userService.updatePassword(user.id, newPasswordHash)
-      );
+      await Effect.runPromise(this._userService.updatePassword(user.id, newPasswordHash));
 
       this.logger.log(`Password changed successfully for user: ${user.id}`);
       return {
@@ -160,7 +158,7 @@ export class UserResolver {
   @UseGuards(GqlAuthGuard)
   async deleteAccount(
     @CurrentUser() user: User,
-    @Args('input') input: DeleteAccountInputType,
+    @Args('input') input: DeleteAccountInputType
   ): Promise<BasicResponse> {
     this.logger.log(`Account deletion requested for user: ${user.id}`);
 
@@ -187,10 +185,7 @@ export class UserResolver {
           };
         }
 
-        const isPasswordValid = await bcrypt.compare(
-          input.password,
-          userWithPassword.passwordHash
-        );
+        const isPasswordValid = await bcrypt.compare(input.password, userWithPassword.passwordHash);
 
         if (!isPasswordValid) {
           this.logger.warn(`Invalid password for account deletion: ${user.id}`);

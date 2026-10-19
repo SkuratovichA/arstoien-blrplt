@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@arstoien/shared-ui';
+import { useTranslation } from 'react-i18next';
 
 interface UserFiltersProps {
   filters: {

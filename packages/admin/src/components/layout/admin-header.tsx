@@ -1,8 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { useMutation } from '@apollo/client/react';
-import { useApolloClient } from '@apollo/client/react';
-import { useAuthStore } from '@/lib/auth-store';
+import { useApolloClient, useMutation } from '@apollo/client/react';
 import {
   Avatar,
   AvatarFallback,
@@ -15,9 +11,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@arstoien/shared-ui';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { LogOut, Settings, User } from 'lucide-react';
-import { LOGOUT_MUTATION } from '@/graphql/admin.graphql';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { LOGOUT_MUTATION } from '@/graphql/admin.graphql';
+import { useAuthStore } from '@/lib/auth-store';
 
 export function AdminHeader() {
   const { t, i18n } = useTranslation();

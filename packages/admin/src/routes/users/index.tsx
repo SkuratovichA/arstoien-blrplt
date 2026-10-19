@@ -1,14 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
 import { useMutation, useQuery } from '@apollo/client/react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { requireAuth } from '@/lib/auth-guard';
-import { BULK_UPDATE_OTP_MUTATION, USERS_QUERY } from '@/graphql/users.graphql';
-import { AdminLayout } from '@/components/layout/admin-layout';
-import { UserTable } from '@/components/users/user-table';
-import { UserFilters } from '@/components/users/user-filters';
-import { Loading } from '@/components/shared/loading';
-import { AddUserModal } from '@/components/users/add-user-modal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +16,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@arstoien/shared-ui';
+import { createFileRoute } from '@tanstack/react-router';
 import { MoreHorizontal, Shield, ShieldOff } from 'lucide-react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { Loading } from '@/components/shared/loading';
+import { AddUserModal } from '@/components/users/add-user-modal';
+import { UserFilters } from '@/components/users/user-filters';
+import { UserTable } from '@/components/users/user-table';
+import { BULK_UPDATE_OTP_MUTATION, USERS_QUERY } from '@/graphql/users.graphql';
+import { requireAuth } from '@/lib/auth-guard';
 
 export const Route = createFileRoute('/users/')({
   beforeLoad: () => requireAuth(),

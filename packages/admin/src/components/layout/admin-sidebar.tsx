@@ -1,7 +1,7 @@
-import { Link } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { cn } from '@arstoien/shared-ui';
-import { LayoutDashboard, Users, UserCheck, FileText, Settings, Bell, User } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { Bell, FileText, LayoutDashboard, Settings, User, UserCheck, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const navigation = [
   {

@@ -1,30 +1,30 @@
+import type { Logger } from '@nestjs/common';
 import { Effect, pipe } from 'effect';
-import type { PrismaService } from '@/prisma/prisma.service';
 import type { DatabaseError, ValidationError } from '@/common/effect';
 import { NotFoundError, promiseToEffect } from '@/common/effect';
-import type { Logger } from '@nestjs/common';
+import type { PrismaService } from '@/prisma/prisma.service';
 
 /**
  * Base type for Prisma delegates
  */
 type PrismaDelegate = {
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   findUnique: (...args: any) => any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   findFirst: (...args: any) => any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   findMany: (...args: any) => any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   create: (...args: any) => any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   update: (...args: any) => any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   upsert: (...args: any) => any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete: (...args: any) => any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deleteMany: (...args: any) => any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   count: (...args: any) => any;
 };
 

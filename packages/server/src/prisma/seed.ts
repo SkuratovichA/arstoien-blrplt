@@ -54,7 +54,9 @@ async function main() {
     });
 
     // eslint-disable-next-line no-console
-    console.log(`✅ ${userData.role.padEnd(12)} | ${userData.email.padEnd(25)} | Password: ${userData.password}`);
+    console.log(
+      `✅ ${userData.role.padEnd(12)} | ${userData.email.padEnd(25)} | Password: ${userData.password}`
+    );
   }
 
   // eslint-disable-next-line no-console

@@ -1,6 +1,3 @@
-import { useTranslation } from 'react-i18next';
-import { Link } from '@tanstack/react-router';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import {
   Avatar,
   AvatarFallback,
@@ -10,8 +7,11 @@ import {
   Card,
   CardContent,
 } from '@arstoien/shared-ui';
-import { DataTable } from '@/components/shared/data-table';
+import { Link } from '@tanstack/react-router';
+import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { DataTable } from '@/components/shared/data-table';
 
 interface User {
   id: string;

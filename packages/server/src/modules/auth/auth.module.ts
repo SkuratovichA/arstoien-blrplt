@@ -1,23 +1,22 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-
-import { AuthService } from './auth.service';
-import { AuthResolver } from './auth.resolver';
+import { PrismaModule } from '@prisma/prisma.module';
+import { AdminModule } from '../admin/admin.module';
+import { NotificationModule } from '../notification/notification.module';
+import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
+import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
+import { AuthResolver } from './auth.resolver';
+import { AuthService } from './auth.service';
+import { PermissionsGuard } from './guards/permissions.guard';
+import { RolesGuard } from './guards/roles.guard';
 import { OtpService } from './otp.service';
+import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
-import { GoogleStrategy } from './strategies/google.strategy';
-import { PermissionsGuard } from './guards/permissions.guard';
-import { RolesGuard } from './guards/roles.guard';
-import { UserModule } from '../user/user.module';
-import { NotificationModule } from '../notification/notification.module';
-import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
-import { AdminModule } from '../admin/admin.module';
-import { PrismaModule } from '@prisma/prisma.module';
 
 @Module({
   imports: [

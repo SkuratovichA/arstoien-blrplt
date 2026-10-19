@@ -1,9 +1,9 @@
-import { Module, forwardRef } from '@nestjs/common';
-import { AdminService } from './admin.service';
-import { AdminResolver } from './admin.resolver';
-import { NotificationModule } from '@modules/notification/notification.module';
 import { AuthModule } from '@modules/auth/auth.module';
+import { NotificationModule } from '@modules/notification/notification.module';
 import { SettingsModule } from '@modules/settings/settings.module';
+import { forwardRef, Module } from '@nestjs/common';
+import { AdminResolver } from './admin.resolver';
+import { AdminService } from './admin.service';
 
 @Module({
   imports: [NotificationModule, forwardRef(() => AuthModule), SettingsModule],

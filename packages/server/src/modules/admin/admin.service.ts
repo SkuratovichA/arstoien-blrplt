@@ -1,18 +1,18 @@
+import { PubSubEvents, PubSubService } from '@common/pubsub/pubsub.service';
+import { AuthService } from '@modules/auth/auth.service';
+import { EmailService } from '@modules/notification/email.service';
+import { SettingsService } from '@modules/settings/settings.service';
 import {
   BadRequestException,
-  Injectable,
-  NotFoundException,
   forwardRef,
   Inject,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
+import { AuditLog, User, UserStatus } from '@prisma/client';
 import { PrismaService } from '@prisma/prisma.service';
 import { Effect } from 'effect';
-import { AuditLog, User, UserStatus } from '@prisma/client';
-import { EmailService } from '@modules/notification/email.service';
 import { runEffect } from '@/common/effect';
-import { AuthService } from '@modules/auth/auth.service';
-import { PubSubService, PubSubEvents } from '@common/pubsub/pubsub.service';
-import { SettingsService } from '@modules/settings/settings.service';
 
 @Injectable()
 export class AdminService {

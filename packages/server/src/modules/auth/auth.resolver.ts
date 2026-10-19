@@ -1,24 +1,24 @@
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { appConfig } from '@config/app.config';
 import { Inject, Logger, UseGuards } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { User } from '@prisma/client';
 import { Request } from 'express';
+import { runEffect } from '@/common/effect';
+import { PrismaService } from '@/prisma/prisma.service';
+import { BasicResponse } from '../user/dto/basic-response.dto';
 import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators';
 import { AuthResponse } from './dto/auth-response.dto';
+import { ForgotPasswordInput } from './dto/forgot-password.input';
 import { LoginInput } from './dto/login.input';
 import { RegisterInput } from './dto/register.input';
-import { RegisterWithPasswordInput } from './dto/register-with-password.input';
-import { SetPasswordInput } from './dto/set-password.input';
 import { RegisterResponse } from './dto/register-response.dto';
-import { SetPasswordWithTokenInput } from './dto/set-password-with-token.input';
-import { ForgotPasswordInput } from './dto/forgot-password.input';
+import { RegisterWithPasswordInput } from './dto/register-with-password.input';
 import { ResetPasswordInput } from './dto/reset-password.input';
-import { ConfigType } from '@nestjs/config';
-import { appConfig } from '@config/app.config';
-import { runEffect } from '@/common/effect';
-import { BasicResponse } from '../user/dto/basic-response.dto';
+import { SetPasswordInput } from './dto/set-password.input';
+import { SetPasswordWithTokenInput } from './dto/set-password-with-token.input';
 import { GqlAuthGuard } from './guards/gql-auth.guard';
-import { CurrentUser } from './decorators';
-import { User } from '@prisma/client';
-import { PrismaService } from '@/prisma/prisma.service';
 
 @Resolver()
 export class AuthResolver {
@@ -139,16 +139,9 @@ export class AuthResolver {
     description:
       'User registration with personal details and optional company ICO. Admin approval required.',
   })
-  async register(
-    @Args('input') input: RegisterInput
-  ): Promise<RegisterResponse> {
+  async register(@Args('input') input: RegisterInput): Promise<RegisterResponse> {
     return runEffect(
-      this.authService.register(
-        input.email,
-        input.firstName,
-        input.lastName,
-        input.phone
-      )
+      this.authService.register(input.email, input.firstName, input.lastName, input.phone)
     );
   }
 

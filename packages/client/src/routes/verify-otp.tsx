@@ -1,28 +1,32 @@
-import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useMutation } from '@apollo/client/react';
-import { AuthLayout } from '../components/layout/auth-layout';
-import { Button } from '@arstoien/shared-ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
 import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
+  Input,
 } from '@arstoien/shared-ui';
-import { Input } from '@arstoien/shared-ui';
-import { VERIFY_OTP_LOGIN, REQUEST_OTP_LOGIN } from '../graphql/auth.graphql.ts';
-import { useAuthStore } from '../lib/auth-store';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, Link, useNavigate, useSearch } from '@tanstack/react-router';
+import { useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
-import { useState, useEffect, useRef } from 'react';
-import { Link } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { AuthLayout } from '../components/layout/auth-layout';
+import { REQUEST_OTP_LOGIN, VERIFY_OTP_LOGIN } from '../graphql/auth.graphql.ts';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireGuest } from '../lib/auth-guard';
+import { useAuthStore } from '../lib/auth-store';
 
 export const Route = createFileRoute('/verify-otp')({
   beforeLoad: ({ context }) => {

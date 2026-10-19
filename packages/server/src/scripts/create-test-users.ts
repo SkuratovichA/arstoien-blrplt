@@ -13,9 +13,9 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
-const basePwd: string | undefined = process.env.BASE_PWD
+const basePwd: string | undefined = process.env.BASE_PWD;
 if (!basePwd) {
-  throw new Error('Base password should be specified')
+  throw new Error('Base password should be specified');
 }
 
 interface TestUser {
@@ -74,7 +74,7 @@ async function createTestUsers() {
   if (process.env.NODE_ENV === 'production') {
     console.warn('⚠️  WARNING: You are about to create test users in PRODUCTION!');
     console.warn('This is typically not recommended. Press Ctrl+C to cancel.\n');
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 
   try {
@@ -108,10 +108,12 @@ async function createTestUsers() {
         },
       });
 
-      const roleEmoji = userData.role === 'SUPER_ADMIN' ? '👑' :
-                        userData.role === 'MODERATOR' ? '🛡️' : '👤';
+      const roleEmoji =
+        userData.role === 'SUPER_ADMIN' ? '👑' : userData.role === 'MODERATOR' ? '🛡️' : '👤';
 
-      console.log(`║ ${roleEmoji} ${userData.role.padEnd(12)} │ ${userData.email.padEnd(25)} │ ${userData.password.padEnd(15)} ║`);
+      console.log(
+        `║ ${roleEmoji} ${userData.role.padEnd(12)} │ ${userData.email.padEnd(25)} │ ${userData.password.padEnd(15)} ║`
+      );
     }
 
     console.log('╚════════════════════════════════════════════════════════════════════╝');

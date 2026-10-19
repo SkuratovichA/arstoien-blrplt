@@ -1,13 +1,14 @@
-import { ApolloClient, ApolloLink, InMemoryCache, split, gql, Observable } from '@apollo/client';
+import { ApolloClient, ApolloLink, gql, InMemoryCache, Observable, split } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { ErrorLink, onError } from '@apollo/client/link/error';
-import { env } from './env';
-import { useAuthStore } from './auth-store';
-import toast from 'react-hot-toast';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { getMainDefinition } from '@apollo/client/utilities';
 import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs';
 import { createClient } from 'graphql-ws';
-import { getMainDefinition } from '@apollo/client/utilities';
+import toast from 'react-hot-toast';
+import { useAuthStore } from './auth-store';
+import { env } from './env';
+
 import ErrorHandlerOptions = ErrorLink.ErrorHandlerOptions;
 
 const authLink = setContext((_, { headers }) => {

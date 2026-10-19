@@ -1,8 +1,8 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Redlock, { Lock } from 'redlock';
+import { Data, Effect, pipe } from 'effect';
 import Redis from 'ioredis';
-import { Effect, Data, pipe } from 'effect';
+import Redlock, { Lock } from 'redlock';
 import { BusinessLogicError } from '../effect/errors';
 
 /**
@@ -102,9 +102,7 @@ export class LockService implements OnModuleDestroy {
         console.warn('Failed to release lock:', error);
         return undefined;
       },
-    }).pipe(
-      Effect.catchAll(() => Effect.succeed(undefined))
-    );
+    }).pipe(Effect.catchAll(() => Effect.succeed(undefined)));
   }
 
   /**
@@ -121,12 +119,7 @@ export class LockService implements OnModuleDestroy {
   ): Effect.Effect<A, E | LockAcquisitionError, R> {
     return pipe(
       this.acquireEffect(resource, ttl),
-      Effect.flatMap(lock =>
-        pipe(
-          fn,
-          Effect.ensuring(this.releaseEffect(lock))
-        )
-      )
+      Effect.flatMap((lock) => pipe(fn, Effect.ensuring(this.releaseEffect(lock))))
     );
   }
 

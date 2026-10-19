@@ -1,7 +1,7 @@
 import { createRouter } from '@tanstack/react-router';
-import { routeTree } from './routeTree.gen';
 import type { AuthGuardContext } from './lib/auth-guard';
 import { useAuthStore } from './lib/auth-store';
+import { routeTree } from './routeTree.gen';
 
 export const router = createRouter({
   routeTree,

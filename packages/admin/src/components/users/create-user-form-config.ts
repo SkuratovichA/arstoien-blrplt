@@ -1,5 +1,6 @@
 import { defineStep } from '@arstoien/former';
-import { type CreateUserFormData, createUserSchema } from './create-user-form-schema';
+import type { CreateUserFormData } from './create-user-form-schema';
+import { createUserSchema } from './create-user-form-schema';
 
 interface FormConfigOptions {
   t: (key: string) => string;

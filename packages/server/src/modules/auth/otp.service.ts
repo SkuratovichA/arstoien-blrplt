@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
-import { Effect } from 'effect';
 import * as crypto from 'crypto';
+import { Effect } from 'effect';
+import { PrismaService } from '@/prisma/prisma.service';
 
 interface OtpGenerationResult {
   code: string;
@@ -117,9 +117,7 @@ export class OtpService {
       // Check rate limit
       if (!self.checkRateLimit(email)) {
         const remainingTime = self.ATTEMPT_WINDOW_MINUTES;
-        throw new Error(
-          `Too many OTP requests. Please try again in ${remainingTime} minutes.`
-        );
+        throw new Error(`Too many OTP requests. Please try again in ${remainingTime} minutes.`);
       }
 
       // Record this attempt

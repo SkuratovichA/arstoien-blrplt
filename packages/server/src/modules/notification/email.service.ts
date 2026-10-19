@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Effect } from 'effect';
-import { ExternalApiError } from '../../common/effect';
-import * as nodemailer from 'nodemailer';
-import * as handlebars from 'handlebars';
 import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as handlebars from 'handlebars';
+import * as nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import * as path from 'path';
+import { ExternalApiError } from '../../common/effect';
 
 @Injectable()
 export class EmailService {
@@ -23,12 +23,16 @@ export class EmailService {
 
     if (!emailConfig?.host) {
       this.logger.warn('Email configuration not found. Email notifications will be disabled.');
-      this.logger.warn('Please set SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS environment variables.');
+      this.logger.warn(
+        'Please set SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS environment variables.'
+      );
       return;
     }
 
     this.logger.log('Initializing email transporter...');
-    this.logger.log(`Email configuration: host=${emailConfig.host}, port=${emailConfig.port}, from=${emailConfig.from}`);
+    this.logger.log(
+      `Email configuration: host=${emailConfig.host}, port=${emailConfig.port}, from=${emailConfig.from}`
+    );
     this.logger.log(`Authentication: ${emailConfig.user ? 'configured' : 'not configured'}`);
 
     const transportConfig: SMTPTransport.Options = {
@@ -44,7 +48,9 @@ export class EmailService {
         pass: emailConfig.pass,
       };
     } else {
-      this.logger.warn('SMTP authentication not configured. This may cause issues with some email providers.');
+      this.logger.warn(
+        'SMTP authentication not configured. This may cause issues with some email providers.'
+      );
     }
 
     this.transporter = nodemailer.createTransport(transportConfig);
@@ -53,7 +59,9 @@ export class EmailService {
     this.transporter
       .verify()
       .then(() => {
-        this.logger.log(`✅ Email transporter verified and ready: ${emailConfig.host}:${emailConfig.port}`);
+        this.logger.log(
+          `✅ Email transporter verified and ready: ${emailConfig.host}:${emailConfig.port}`
+        );
         this.logger.log(`✅ Emails will be sent from: ${emailConfig.from}`);
       })
       .catch((err) => {
@@ -62,13 +70,19 @@ export class EmailService {
 
         // Log specific error details to help with debugging
         if (err.code === 'ECONNREFUSED') {
-          this.logger.error(`Cannot connect to SMTP server at ${emailConfig.host}:${emailConfig.port}`);
-          this.logger.error('Possible causes: Wrong host/port, firewall blocking, or server not running.');
+          this.logger.error(
+            `Cannot connect to SMTP server at ${emailConfig.host}:${emailConfig.port}`
+          );
+          this.logger.error(
+            'Possible causes: Wrong host/port, firewall blocking, or server not running.'
+          );
         } else if (err.code === 'EAUTH' || err.responseCode === 535) {
           this.logger.error('SMTP authentication failed.');
           this.logger.error('Please verify SMTP_USER and SMTP_PASS environment variables.');
           if (emailConfig.host.includes('amazonaws.com')) {
-            this.logger.error('For AWS SES: Ensure you are using SMTP credentials (not IAM credentials).');
+            this.logger.error(
+              'For AWS SES: Ensure you are using SMTP credentials (not IAM credentials).'
+            );
           }
         }
       });
@@ -121,13 +135,13 @@ export class EmailService {
       this.logger.log(`Verification email sent to ${email}`);
     } catch (error: any) {
       // Always log the full error for debugging
-      this.logger.error(`Failed to send verification email to ${email}: ${error?.message || error}`);
+      this.logger.error(
+        `Failed to send verification email to ${email}: ${error?.message || error}`
+      );
 
       // In development, log the link so developers can still test
       if (process.env.NODE_ENV !== 'production') {
-        this.logger.warn(
-          `Development mode: Verification link for ${email}: ${verificationLink}`
-        );
+        this.logger.warn(`Development mode: Verification link for ${email}: ${verificationLink}`);
         return;
       }
 
@@ -217,7 +231,9 @@ export class EmailService {
   ): Effect.Effect<void, ExternalApiError, never> {
     const isDevelopment = process.env.NODE_ENV !== 'production';
 
-    this.logger.debug(`sendTemplatedEmail called: to=${to}, subject=${subject}, template=${templateName}`);
+    this.logger.debug(
+      `sendTemplatedEmail called: to=${to}, subject=${subject}, template=${templateName}`
+    );
 
     const effect = Effect.tryPromise({
       try: async () => {
@@ -245,13 +261,17 @@ export class EmailService {
         };
 
         this.logger.debug(`Attempting to send email via SMTP to ${to} with subject: ${subject}`);
-        this.logger.debug(`SMTP Host: ${this.configService.get('app.email.host')}:${this.configService.get('app.email.port')}`);
+        this.logger.debug(
+          `SMTP Host: ${this.configService.get('app.email.host')}:${this.configService.get('app.email.port')}`
+        );
 
         // Send email
         const result = await this.transporter.sendMail(mailOptions);
 
         this.logger.log(`Email successfully sent to ${to}: ${subject}`);
-        this.logger.debug(`SMTP Response - MessageId: ${result.messageId}, Response: ${JSON.stringify(result.response)}, Accepted: ${JSON.stringify(result.accepted)}, Rejected: ${JSON.stringify(result.rejected)}`);
+        this.logger.debug(
+          `SMTP Response - MessageId: ${result.messageId}, Response: ${JSON.stringify(result.response)}, Accepted: ${JSON.stringify(result.accepted)}, Rejected: ${JSON.stringify(result.rejected)}`
+        );
       },
       catch: (error: any) => {
         // Enhanced error logging for AWS SES and SMTP errors
@@ -263,15 +283,21 @@ export class EmailService {
 
           // Common AWS SES error codes
           if (error.code === 'MessageRejected') {
-            this.logger.error('AWS SES rejected the message. Check if the sender email is verified.');
+            this.logger.error(
+              'AWS SES rejected the message. Check if the sender email is verified.'
+            );
           } else if (error.code === 'SendingQuotaExceeded') {
             this.logger.error('AWS SES sending quota exceeded.');
           } else if (error.code === 'MaxSendingRateExceeded') {
             this.logger.error('AWS SES maximum sending rate exceeded.');
           } else if (error.code === 'ECONNREFUSED') {
-            this.logger.error(`Cannot connect to SMTP server at ${this.configService.get('app.email.host')}:${this.configService.get('app.email.port')}`);
+            this.logger.error(
+              `Cannot connect to SMTP server at ${this.configService.get('app.email.host')}:${this.configService.get('app.email.port')}`
+            );
           } else if (error.code === 'EAUTH') {
-            this.logger.error('SMTP authentication failed. Check SMTP_USER and SMTP_PASS environment variables.');
+            this.logger.error(
+              'SMTP authentication failed. Check SMTP_USER and SMTP_PASS environment variables.'
+            );
           }
         }
 
@@ -395,7 +421,9 @@ export class EmailService {
         `,
       };
 
-      const fallbackHtml = fallbackTemplates[templateName] || `
+      const fallbackHtml =
+        fallbackTemplates[templateName] ||
+        `
         <html>
           <body>
             <h2>Email Notification</h2>

@@ -1,6 +1,6 @@
-import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@arstoien/shared-ui';
-import { Users, UserCheck, TrendingUp } from 'lucide-react';
+import { TrendingUp, UserCheck, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface StatsCardsProps {
   stats?: {

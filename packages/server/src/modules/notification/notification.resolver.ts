@@ -1,14 +1,14 @@
-import { Args, Mutation, Query, Resolver, Subscription, ID, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { PubSub } from 'graphql-subscriptions';
-import { NotificationService } from './notification.service';
-import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { Notification } from './entities/notification.entity';
-import { NotificationStatus, NotificationType } from '@/common/graphql/enums';
-import { NotificationFiltersInputType } from './dto/notification-filters.input-type';
-import { runEffect } from '@/common/effect';
+import { Args, ID, Int, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { User } from '@prisma/client';
+import { PubSub } from 'graphql-subscriptions';
+import { runEffect } from '@/common/effect';
+import { NotificationStatus, NotificationType } from '@/common/graphql/enums';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
+import { NotificationFiltersInputType } from './dto/notification-filters.input-type';
+import { Notification } from './entities/notification.entity';
+import { NotificationService } from './notification.service';
 
 const pubSub = new PubSub();
 const NOTIFICATION_ADDED = 'notificationAdded';
@@ -20,9 +20,15 @@ export class NotificationResolver {
   /**
    * Transform Prisma notification to GraphQL Notification
    */
-  private transformNotification(
-    notification: { id: string; type: string; title: string; message: string; readAt: Date | null; createdAt: Date; userId: string }
-  ): Notification {
+  private transformNotification(notification: {
+    id: string;
+    type: string;
+    title: string;
+    message: string;
+    readAt: Date | null;
+    createdAt: Date;
+    userId: string;
+  }): Notification {
     return {
       ...notification,
       type: notification.type as NotificationType,
@@ -36,7 +42,15 @@ export class NotificationResolver {
    * Transform array of Prisma notifications to GraphQL Notifications
    */
   private transformNotifications(
-    notifications: Array<{ id: string; type: string; title: string; message: string; readAt: Date | null; createdAt: Date; userId: string }>
+    notifications: Array<{
+      id: string;
+      type: string;
+      title: string;
+      message: string;
+      readAt: Date | null;
+      createdAt: Date;
+      userId: string;
+    }>
   ): Notification[] {
     return notifications.map((n) => this.transformNotification(n));
   }

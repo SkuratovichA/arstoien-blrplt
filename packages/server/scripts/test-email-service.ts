@@ -25,8 +25,8 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { EmailService } from '../src/modules/notification/email.service';
 import { Effect } from 'effect';
+import { EmailService } from '../src/modules/notification/email.service';
 
 const testType = process.argv[2] || 'all';
 const recipientEmail = process.argv[3] || 'test@example.com';
@@ -76,9 +76,13 @@ async function testAdminNotification(emailService: EmailService, email: string) 
   try {
     const effect = emailService.sendAdminNewUserNotification(email, testData);
     await Effect.runPromise(effect);
-    console.log(`${colors.green}✅ Admin notification sent successfully to ${email}${colors.reset}`);
+    console.log(
+      `${colors.green}✅ Admin notification sent successfully to ${email}${colors.reset}`
+    );
   } catch (error: any) {
-    console.error(`${colors.red}❌ Failed to send admin notification: ${error?.message || error}${colors.reset}`);
+    console.error(
+      `${colors.red}❌ Failed to send admin notification: ${error?.message || error}${colors.reset}`
+    );
     throw error;
   }
 }
@@ -90,9 +94,13 @@ async function testVerificationEmail(emailService: EmailService, email: string) 
 
   try {
     await emailService.sendVerificationEmail(email, verificationLink);
-    console.log(`${colors.green}✅ Verification email sent successfully to ${email}${colors.reset}`);
+    console.log(
+      `${colors.green}✅ Verification email sent successfully to ${email}${colors.reset}`
+    );
   } catch (error: any) {
-    console.error(`${colors.red}❌ Failed to send verification email: ${error?.message || error}${colors.reset}`);
+    console.error(
+      `${colors.red}❌ Failed to send verification email: ${error?.message || error}${colors.reset}`
+    );
     throw error;
   }
 }
@@ -106,7 +114,9 @@ async function testOtpEmail(emailService: EmailService, email: string) {
     await emailService.sendOtpEmail(email, otpCode);
     console.log(`${colors.green}✅ OTP email sent successfully to ${email}${colors.reset}`);
   } catch (error: any) {
-    console.error(`${colors.red}❌ Failed to send OTP email: ${error?.message || error}${colors.reset}`);
+    console.error(
+      `${colors.red}❌ Failed to send OTP email: ${error?.message || error}${colors.reset}`
+    );
     throw error;
   }
 }
@@ -118,9 +128,13 @@ async function testPasswordResetEmail(emailService: EmailService, email: string)
 
   try {
     await emailService.sendPasswordResetEmail(email, resetLink);
-    console.log(`${colors.green}✅ Password reset email sent successfully to ${email}${colors.reset}`);
+    console.log(
+      `${colors.green}✅ Password reset email sent successfully to ${email}${colors.reset}`
+    );
   } catch (error: any) {
-    console.error(`${colors.red}❌ Failed to send password reset email: ${error?.message || error}${colors.reset}`);
+    console.error(
+      `${colors.red}❌ Failed to send password reset email: ${error?.message || error}${colors.reset}`
+    );
     throw error;
   }
 }
@@ -136,19 +150,29 @@ async function testUserVerifiedEmail(emailService: EmailService, email: string) 
   try {
     const effect = emailService.sendUserVerifiedEmail(email, testData);
     await Effect.runPromise(effect);
-    console.log(`${colors.green}✅ User verified email sent successfully to ${email}${colors.reset}`);
+    console.log(
+      `${colors.green}✅ User verified email sent successfully to ${email}${colors.reset}`
+    );
   } catch (error: any) {
-    console.error(`${colors.red}❌ Failed to send user verified email: ${error?.message || error}${colors.reset}`);
+    console.error(
+      `${colors.red}❌ Failed to send user verified email: ${error?.message || error}${colors.reset}`
+    );
     throw error;
   }
 }
 
 async function main() {
-  console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+  console.log(
+    `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`
+  );
   console.log(`${colors.magenta}           EMAIL SERVICE CLASS TEST${colors.reset}`);
-  console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`);
+  console.log(
+    `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}\n`
+  );
 
-  console.log(`Environment: ${colors.magenta}${process.env.NODE_ENV || 'development'}${colors.reset}`);
+  console.log(
+    `Environment: ${colors.magenta}${process.env.NODE_ENV || 'development'}${colors.reset}`
+  );
   console.log(`Test Type: ${colors.magenta}${testType}${colors.reset}`);
   console.log(`Recipient: ${colors.magenta}${recipientEmail}${colors.reset}`);
 
@@ -159,16 +183,22 @@ async function main() {
     emailService = await createEmailService();
     console.log(`${colors.green}✅ Email service initialized${colors.reset}`);
   } catch (error: any) {
-    console.error(`${colors.red}❌ Failed to initialize email service: ${error?.message || error}${colors.reset}`);
+    console.error(
+      `${colors.red}❌ Failed to initialize email service: ${error?.message || error}${colors.reset}`
+    );
     process.exit(1);
   }
 
   // Wait a moment for the transporter to verify
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
-  console.log(`\n${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+  console.log(
+    `\n${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`
+  );
   console.log(`${colors.yellow}Running Email Tests${colors.reset}`);
-  console.log(`${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+  console.log(
+    `${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`
+  );
 
   const errors: string[] = [];
 
@@ -194,7 +224,7 @@ async function main() {
         await testUserVerifiedEmail(emailService, recipientEmail);
         break;
 
-      case 'all':
+      case 'all': {
         // Test all email types
         const tests = [
           () => testAdminNotification(emailService, recipientEmail),
@@ -212,6 +242,7 @@ async function main() {
           }
         }
         break;
+      }
 
       default:
         console.error(`${colors.red}Invalid test type: ${testType}${colors.reset}`);
@@ -219,12 +250,16 @@ async function main() {
         process.exit(1);
     }
 
-    console.log(`\n${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+    console.log(
+      `\n${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`
+    );
 
     if (errors.length > 0) {
       console.log(`${colors.red}❌ Some tests failed:${colors.reset}`);
       errors.forEach((error) => console.log(`   - ${error}`));
-      console.log(`\n${colors.yellow}Check the logs above for detailed error messages.${colors.reset}`);
+      console.log(
+        `\n${colors.yellow}Check the logs above for detailed error messages.${colors.reset}`
+      );
     } else {
       console.log(`${colors.green}🎉 All email tests completed successfully!${colors.reset}`);
 
@@ -233,7 +268,6 @@ async function main() {
       console.log(`2. Review the server logs for detailed SMTP communication`);
       console.log(`3. If using AWS SES, check the SES console for delivery status`);
     }
-
   } catch (error: any) {
     console.error(`\n${colors.red}Test failed with error:${colors.reset}`);
     console.error(error);

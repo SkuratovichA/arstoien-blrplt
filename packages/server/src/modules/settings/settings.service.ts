@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Effect } from 'effect';
-import { PrismaService } from '@/prisma/prisma.service';
-import { DatabaseError, promiseToEffect, ValidationError } from '@/common/effect';
 import { SystemSettings } from '@prisma/client';
+import { Effect } from 'effect';
+import { DatabaseError, promiseToEffect, ValidationError } from '@/common/effect';
+import { PrismaService } from '@/prisma/prisma.service';
 import { UpdateSystemSettingsInputType } from './dto';
 
 @Injectable()
@@ -19,9 +19,7 @@ export class SettingsService {
     const self = this;
     return Effect.gen(function* () {
       // Try to get existing settings
-      const existing = yield* promiseToEffect(() =>
-        self.prisma.systemSettings.findFirst()
-      );
+      const existing = yield* promiseToEffect(() => self.prisma.systemSettings.findFirst());
 
       if (existing) {
         return existing;

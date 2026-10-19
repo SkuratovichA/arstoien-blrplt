@@ -1,9 +1,9 @@
-import { RouterProvider } from '@tanstack/react-router';
-import { router, useRouterContext } from './router';
-import { useEffect } from 'react';
 import { useQuery } from '@apollo/client/react';
+import { RouterProvider } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { CURRENT_USER_QUERY } from './graphql/auth.graphql';
 import { useAuthStore } from './lib/auth-store';
+import { router, useRouterContext } from './router';
 
 export function App() {
   const context = useRouterContext();

@@ -1,11 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { AuthLayout } from '@components/layout';
 import {
   Button,
   Card,
@@ -21,10 +14,17 @@ import {
   FormMessage,
   PasswordInput,
 } from '@arstoien/shared-ui';
-import { CheckCircle } from 'lucide-react';
+import { AuthLayout } from '@components/layout';
 import { SET_PASSWORD_WITH_TOKEN } from '@graphql/auth.graphql.ts';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuthStore } from '@lib/auth-store.ts';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
 
 export const Route = createFileRoute('/auth/set-password')({
   component: SetPassword,

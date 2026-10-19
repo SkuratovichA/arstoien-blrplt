@@ -1,15 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery } from '@apollo/client/react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { requireAuth } from '@/lib/auth-guard';
-import { DELETE_USER_MUTATION, UPDATE_USER_MUTATION, USER_QUERY } from '@/graphql/users.graphql';
-import { USER_AUDIT_LOGS_QUERY } from '@/graphql/audit.graphql';
-import { AdminLayout } from '@/components/layout/admin-layout';
-import { Loading } from '@/components/shared/loading';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,7 +34,18 @@ import {
   TabsList,
   TabsTrigger,
 } from '@arstoien/shared-ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Trash2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { Loading } from '@/components/shared/loading';
+import { USER_AUDIT_LOGS_QUERY } from '@/graphql/audit.graphql';
+import { DELETE_USER_MUTATION, UPDATE_USER_MUTATION, USER_QUERY } from '@/graphql/users.graphql';
+import { requireAuth } from '@/lib/auth-guard';
 
 const userSchema = z.object({
   firstName: z.string().min(1),

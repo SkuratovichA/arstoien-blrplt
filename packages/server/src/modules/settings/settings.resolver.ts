@@ -1,13 +1,13 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
-import { SettingsService } from './settings.service';
-import { SystemSettingsObjectType, UpdateSystemSettingsInputType } from './dto';
+import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
+import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { GqlAuthGuard } from '@modules/auth/guards/gql-auth.guard';
 import { RolesGuard } from '@modules/auth/guards/roles.guard';
-import { Roles } from '@modules/auth/decorators/roles.decorator';
-import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
-import { UserRole, User } from '@prisma/client';
+import { UseGuards } from '@nestjs/common';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { User, UserRole } from '@prisma/client';
 import { runEffect } from '@/common/effect';
+import { SystemSettingsObjectType, UpdateSystemSettingsInputType } from './dto';
+import { SettingsService } from './settings.service';
 
 @Resolver(() => SystemSettingsObjectType)
 export class SettingsResolver {

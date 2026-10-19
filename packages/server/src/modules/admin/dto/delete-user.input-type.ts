@@ -1,5 +1,5 @@
-import { InputType, Field } from '@nestjs/graphql';
-import { IsString, IsNotEmpty, IsOptional, IsBoolean } from 'class-validator';
+import { Field, InputType } from '@nestjs/graphql';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 @InputType()
 export class DeleteUserInput {

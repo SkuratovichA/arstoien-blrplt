@@ -1,12 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@apollo/client/react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { requireAdminRole } from '@/lib/auth-guard';
-import { SYSTEM_SETTINGS_QUERY, UPDATE_SETTINGS_MUTATION } from '@/graphql/settings.graphql';
-import { AdminLayout } from '@/components/layout/admin-layout';
-import { Loading } from '@/components/shared/loading';
+import { useMutation, useQuery } from '@apollo/client/react';
 import {
   Button,
   Card,
@@ -23,6 +15,14 @@ import {
   Input,
   Switch,
 } from '@arstoien/shared-ui';
+import { createFileRoute } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { Loading } from '@/components/shared/loading';
+import { SYSTEM_SETTINGS_QUERY, UPDATE_SETTINGS_MUTATION } from '@/graphql/settings.graphql';
+import { requireAdminRole } from '@/lib/auth-guard';
 
 export const Route = createFileRoute('/settings')({
   beforeLoad: () => requireAdminRole(),

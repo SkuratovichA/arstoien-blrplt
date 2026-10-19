@@ -1,24 +1,29 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useMutation } from '@apollo/client/react';
-import { AuthLayout } from '../components/layout/auth-layout';
-import { Button } from '@arstoien/shared-ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
 import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  PasswordInput,
 } from '@arstoien/shared-ui';
-import { PasswordInput } from '@arstoien/shared-ui';
-import { RESET_PASSWORD } from '../graphql/auth.graphql';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { AuthLayout } from '../components/layout/auth-layout';
+import { RESET_PASSWORD } from '../graphql/auth.graphql';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireGuest } from '../lib/auth-guard';
 
 export const Route = createFileRoute('/reset-password')({
   beforeLoad: ({ context }) => {

@@ -1,8 +1,5 @@
-import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { useMutation } from '@apollo/client/react';
 import { Former } from '@arstoien/former';
-import { AuthLayout } from '../components/layout/auth-layout';
 import {
   Card,
   CardContent,
@@ -11,14 +8,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@arstoien/shared-ui';
-import { REGISTER } from '../graphql/auth.graphql.ts';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import toast from 'react-hot-toast';
-import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
+import { useTranslation } from 'react-i18next';
 import { createFormComponentOverrides } from '../components/forms/form-component-overrides';
-import {
-  createRegisterFormConfig,
-  type RegisterFormData,
-} from '../components/forms/register-form-config';
+import type { RegisterFormData } from '../components/forms/register-form-config';
+import { createRegisterFormConfig } from '../components/forms/register-form-config';
+import { AuthLayout } from '../components/layout/auth-layout';
+import { REGISTER } from '../graphql/auth.graphql.ts';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireGuest } from '../lib/auth-guard';
 
 export const Route = createFileRoute('/register')({
   beforeLoad: ({ context }) => {

@@ -1,9 +1,10 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@arstoien/shared-ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '../components/layout/main-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@arstoien/shared-ui';
-import { useAuthStore, isEmailVerified } from '../lib/auth-store';
-import { requireAuth, requireEmailVerified, type AuthGuardContext } from '../lib/auth-guard';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireAuth, requireEmailVerified } from '../lib/auth-guard';
+import { isEmailVerified, useAuthStore } from '../lib/auth-store';
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: ({ context }) => {

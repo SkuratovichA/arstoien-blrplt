@@ -1,8 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { useMutation } from '@apollo/client/react';
 import { Former } from '@arstoien/former';
-import { MainLayout } from '@components/layout';
 import {
   Button,
   Card,
@@ -12,19 +9,19 @@ import {
   CardTitle,
   Input,
 } from '@arstoien/shared-ui';
-import { CHANGE_PASSWORD, DELETE_ACCOUNT, UPDATE_PROFILE } from '../graphql/user.graphql';
-import { useAuthStore } from '../lib/auth-store';
+import { MainLayout } from '@components/layout';
+import { createFileRoute } from '@tanstack/react-router';
 import toast from 'react-hot-toast';
-import { type AuthGuardContext, requireAuth, requireEmailVerified } from '../lib/auth-guard';
+import { useTranslation } from 'react-i18next';
 import { createFormComponentOverrides } from '../components/forms/form-component-overrides';
-import {
-  createProfileUpdateFormConfig,
-  type ProfileUpdateFormData,
-} from '../components/forms/profile-form-config';
-import {
-  createPasswordChangeFormConfig,
-  type PasswordChangeFormData,
-} from '../components/forms/password-form-config';
+import type { PasswordChangeFormData } from '../components/forms/password-form-config';
+import { createPasswordChangeFormConfig } from '../components/forms/password-form-config';
+import type { ProfileUpdateFormData } from '../components/forms/profile-form-config';
+import { createProfileUpdateFormConfig } from '../components/forms/profile-form-config';
+import { CHANGE_PASSWORD, DELETE_ACCOUNT, UPDATE_PROFILE } from '../graphql/user.graphql';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireAuth, requireEmailVerified } from '../lib/auth-guard';
+import { useAuthStore } from '../lib/auth-store';
 
 export const Route = createFileRoute('/profile')({
   beforeLoad: ({ context }) => {

@@ -1,28 +1,26 @@
+import { CommonModule } from '@common/common.module';
+// Common
+import { PubSubModule } from '@common/pubsub/pubsub.module';
+import { DateScalar } from '@common/scalars/date.scalar';
+// Config
+import { AppConfig, appConfig } from '@config/app.config';
+import { AdminModule } from '@modules/admin/admin.module';
+import { AuthModule } from '@modules/auth/auth.module';
+import { HealthModule } from '@modules/health/health.module';
+import { NotificationModule } from '@modules/notification/notification.module';
+import { SchedulerModule } from '@modules/scheduler/scheduler.module';
+import { SettingsModule } from '@modules/settings/settings.module';
+import { UserModule } from '@modules/user/user.module';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { ThrottlerModule } from '@nestjs/throttler';
 import { JwtService } from '@nestjs/jwt';
-import { Request, Response } from 'express';
-
-// Config
-import { appConfig, AppConfig } from '@config/app.config';
+import { ThrottlerModule } from '@nestjs/throttler';
 // Modules
 import { PrismaModule } from '@prisma/prisma.module';
 import { PrismaService } from '@prisma/prisma.service';
-import { AuthModule } from '@modules/auth/auth.module';
-import { UserModule } from '@modules/user/user.module';
-import { NotificationModule } from '@modules/notification/notification.module';
-import { AdminModule } from '@modules/admin/admin.module';
-import { SchedulerModule } from '@modules/scheduler/scheduler.module';
-import { SettingsModule } from '@modules/settings/settings.module';
-import { HealthModule } from '@modules/health/health.module';
-
-// Common
-import { PubSubModule } from '@common/pubsub/pubsub.module';
-import { CommonModule } from '@common/common.module';
-import { DateScalar } from '@common/scalars/date.scalar';
+import { Request, Response } from 'express';
 
 // Import to ensure all GraphQL enums are registered
 import '@/common/graphql';

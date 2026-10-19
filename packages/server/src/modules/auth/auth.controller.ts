@@ -1,10 +1,21 @@
-import { Body, Controller, ForbiddenException, Get, Logger, Post, Query, Req, Res, UseGuards, } from '@nestjs/common';
-import { Request, Response } from 'express';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Logger,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { User } from '@prisma/client';
+import { Request, Response } from 'express';
+import { AuthService } from './auth.service';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { AuthService } from './auth.service';
-import { User } from '@prisma/client';
 
 /**
  * AuthController - REST endpoints for authentication

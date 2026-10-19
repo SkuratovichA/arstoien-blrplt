@@ -1,16 +1,38 @@
-import { Args, Context, ID, Int, Mutation, Query, Resolver, Subscription, } from '@nestjs/graphql';
-import { Logger, UseGuards } from '@nestjs/common';
-import { Action, CurrentUser, Permissions, RequireAuditLogAccess, RequireStatisticsAccess, Resource, } from '@modules/auth/decorators';
-import { AdminService } from './admin.service';
-import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
-import { PermissionsGuard } from '../auth/guards/permissions.guard';
-import { AuditLog, Prisma, User } from '@prisma/client';
-import { AdminPendingCountsType, AdminStatsType, ApproveUserInput, AuditLogObjectType, BulkUpdateOtpInput, BulkUpdateResultType, CreateUserInput, DeleteUserInput, RecentActivityType, RejectUserInput, UpdateUserInput, UpdateUserStatusInput, UserGrowthDataPoint, UserGrowthStatsType, } from '@modules/admin/dto';
-import { UserObjectType } from '@modules/user/dto/user.object-type';
-import { Effect } from 'effect';
 import { PubSubEvents, PubSubService } from '@common/pubsub/pubsub.service';
+import {
+  AdminPendingCountsType,
+  AdminStatsType,
+  ApproveUserInput,
+  AuditLogObjectType,
+  BulkUpdateOtpInput,
+  BulkUpdateResultType,
+  CreateUserInput,
+  DeleteUserInput,
+  RecentActivityType,
+  RejectUserInput,
+  UpdateUserInput,
+  UpdateUserStatusInput,
+  UserGrowthDataPoint,
+  UserGrowthStatsType,
+} from '@modules/admin/dto';
+import {
+  Action,
+  CurrentUser,
+  Permissions,
+  RequireAuditLogAccess,
+  RequireStatisticsAccess,
+  Resource,
+} from '@modules/auth/decorators';
+import { UserObjectType } from '@modules/user/dto/user.object-type';
+import { Logger, UseGuards } from '@nestjs/common';
+import { Args, Context, ID, Int, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { AuditLog, Prisma, User } from '@prisma/client';
 import { PrismaService } from '@prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { Effect } from 'effect';
+import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { AdminService } from './admin.service';
 
 @Resolver()
 export class AdminResolver {
@@ -113,27 +135,41 @@ export class AdminResolver {
       periodEnd.setMonth(periodEnd.getMonth() + 1);
 
       // Count users created up to this period (cumulative)
-      const usersUpToPeriod = users.filter(u =>
-        new Date(u.createdAt) < periodEnd
-      );
+      const usersUpToPeriod = users.filter((u) => new Date(u.createdAt) < periodEnd);
 
       // Count new users in this specific period
-      const newUsersInPeriod = users.filter(u => {
+      const newUsersInPeriod = users.filter((u) => {
         const createdAt = new Date(u.createdAt);
         return createdAt >= periodStart && createdAt < periodEnd;
       });
 
       // Count active users (not suspended, blocked, or deleted)
-      const activeUsersInPeriod = usersUpToPeriod.filter(u =>
-        u.status === 'ACTIVE' || u.status === 'PENDING_APPROVAL' || u.status === 'FRESHLY_CREATED_REQUIRES_PASSWORD'
+      const activeUsersInPeriod = usersUpToPeriod.filter(
+        (u) =>
+          u.status === 'ACTIVE' ||
+          u.status === 'PENDING_APPROVAL' ||
+          u.status === 'FRESHLY_CREATED_REQUIRES_PASSWORD'
       );
 
       // Count pending users
-      const pendingUsersInPeriod = usersUpToPeriod.filter(u =>
-        u.status === 'PENDING_APPROVAL' || u.status === 'FRESHLY_CREATED_REQUIRES_PASSWORD'
+      const pendingUsersInPeriod = usersUpToPeriod.filter(
+        (u) => u.status === 'PENDING_APPROVAL' || u.status === 'FRESHLY_CREATED_REQUIRES_PASSWORD'
       );
 
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       const periodLabel = `${monthNames[periodStart.getMonth()]}`;
 
       dataPoints.push({
@@ -243,13 +279,16 @@ export class AdminResolver {
     });
 
     // Fetch user emails for audit logs with userIds
-    const userIds = auditLogs.filter(log => log.userId).map(log => log.userId) as string[];
-    const users = userIds.length > 0 ? await this.prisma.user.findMany({
-      where: { id: { in: userIds } },
-      select: { id: true, email: true },
-    }) : [];
+    const userIds = auditLogs.filter((log) => log.userId).map((log) => log.userId) as string[];
+    const users =
+      userIds.length > 0
+        ? await this.prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: { id: true, email: true },
+          })
+        : [];
 
-    const userMap = new Map(users.map(u => [u.id, u.email]));
+    const userMap = new Map(users.map((u) => [u.id, u.email]));
 
     return auditLogs.map((log) => {
       // Create a more descriptive message based on the action
@@ -506,9 +545,15 @@ export class AdminResolver {
         changedFields.status = { from: currentUserData.status, to: input.status };
       }
 
-      if (input.otpAuthEnabled !== undefined && input.otpAuthEnabled !== currentUserData.otpAuthEnabled) {
+      if (
+        input.otpAuthEnabled !== undefined &&
+        input.otpAuthEnabled !== currentUserData.otpAuthEnabled
+      ) {
         updateData.otpAuthEnabled = input.otpAuthEnabled;
-        changedFields.otpAuthEnabled = { from: currentUserData.otpAuthEnabled, to: input.otpAuthEnabled };
+        changedFields.otpAuthEnabled = {
+          from: currentUserData.otpAuthEnabled,
+          to: input.otpAuthEnabled,
+        };
       }
 
       // Only update if there are changes
@@ -633,7 +678,9 @@ export class AdminResolver {
         });
       }
 
-      this.logger.log(`User deleted successfully: ${input.userId} (${input.hardDelete ? 'hard' : 'soft'})`);
+      this.logger.log(
+        `User deleted successfully: ${input.userId} (${input.hardDelete ? 'hard' : 'soft'})`
+      );
       return deletedUser;
     } catch (error) {
       this.logger.error(`Failed to delete user: ${input.userId}`, error);
@@ -678,7 +725,9 @@ export class AdminResolver {
         },
       });
 
-      this.logger.log(`Bulk OTP update: ${result.count} users updated to otpAuthEnabled=${input.enabled} by ${currentUser.email}`);
+      this.logger.log(
+        `Bulk OTP update: ${result.count} users updated to otpAuthEnabled=${input.enabled} by ${currentUser.email}`
+      );
 
       return {
         updated: result.count,

@@ -1,9 +1,9 @@
-import { ApolloClient, InMemoryCache, ApolloLink, split } from '@apollo/client';
+import { ApolloClient, ApolloLink, InMemoryCache, split } from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { getMainDefinition } from '@apollo/client/utilities';
-import { onError } from '@apollo/client/link/error';
-import { createClient } from 'graphql-ws';
 import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs';
+import { createClient } from 'graphql-ws';
 import { env } from './env';
 
 const httpLink = new UploadHttpLink({

@@ -1,8 +1,8 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { Toaster } from 'react-hot-toast';
-import { useAuthStore } from '../lib/auth-store';
 import type { AuthGuardContext } from '../lib/auth-guard';
+import { useAuthStore } from '../lib/auth-store';
 
 export const Route = createRootRoute({
   beforeLoad: (): AuthGuardContext => {

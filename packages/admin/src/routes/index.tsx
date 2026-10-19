@@ -1,13 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@apollo/client/react';
-import { useTranslation } from 'react-i18next';
-import { requireAuth } from '@/lib/auth-guard';
-import { DASHBOARD_STATS_QUERY, RECENT_ACTIVITY_QUERY } from '@/graphql/admin.graphql';
-import { AdminLayout } from '@/components/layout/admin-layout';
-import { StatsCards } from '@/components/dashboard/stats-cards';
-import { Charts } from '@/components/dashboard/charts';
-import { Loading } from '@/components/shared/loading';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
+import { createFileRoute } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
+import { Charts } from '@/components/dashboard/charts';
+import { StatsCards } from '@/components/dashboard/stats-cards';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { Loading } from '@/components/shared/loading';
+import { DASHBOARD_STATS_QUERY, RECENT_ACTIVITY_QUERY } from '@/graphql/admin.graphql';
+import { requireAuth } from '@/lib/auth-guard';
 
 export const Route = createFileRoute('/')({
   beforeLoad: () => requireAuth(),

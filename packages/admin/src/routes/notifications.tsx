@@ -1,16 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@apollo/client/react';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { requireAuth } from '@/lib/auth-guard';
-import { NOTIFICATIONS_QUERY, DELETE_NOTIFICATION_MUTATION } from '@/graphql/settings.graphql';
-import { AdminLayout } from '@/components/layout/admin-layout';
-import { Loading } from '@/components/shared/loading';
+import { useMutation, useQuery } from '@apollo/client/react';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -36,9 +26,19 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
-  Badge,
 } from '@arstoien/shared-ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute } from '@tanstack/react-router';
 import { Plus, Send, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { Loading } from '@/components/shared/loading';
+import { DELETE_NOTIFICATION_MUTATION, NOTIFICATIONS_QUERY } from '@/graphql/settings.graphql';
+import { requireAuth } from '@/lib/auth-guard';
 
 const notificationSchema = z.object({
   title: z.string().min(1),

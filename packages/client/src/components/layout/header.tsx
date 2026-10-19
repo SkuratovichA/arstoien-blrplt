@@ -1,11 +1,11 @@
-import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useApolloClient, useMutation } from '@apollo/client/react';
 import { Button } from '@arstoien/shared-ui';
-import { useAuthStore } from '@lib/auth-store';
-import { useMutation, useApolloClient } from '@apollo/client/react';
 import { LOGOUT } from '@graphql/auth.graphql';
-import toast from 'react-hot-toast';
+import { useAuthStore } from '@lib/auth-store';
 import { env } from '@lib/env';
+import { Link, useNavigate } from '@tanstack/react-router';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export function Header() {
   const { t } = useTranslation();

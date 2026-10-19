@@ -1,14 +1,21 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { useMutation } from '@apollo/client/react';
-import { MainLayout } from '../components/layout/main-layout';
-import { Button } from '@arstoien/shared-ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
-import { VERIFY_EMAIL, RESEND_VERIFICATION_EMAIL } from '../graphql/auth.graphql';
-import { useAuthStore, isEmailVerified } from '../lib/auth-store';
-import toast from 'react-hot-toast';
-import { requireAuth, type AuthGuardContext } from '../lib/auth-guard';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@arstoien/shared-ui';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { MainLayout } from '../components/layout/main-layout';
+import { RESEND_VERIFICATION_EMAIL, VERIFY_EMAIL } from '../graphql/auth.graphql';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireAuth } from '../lib/auth-guard';
+import { isEmailVerified, useAuthStore } from '../lib/auth-store';
 
 export const Route = createFileRoute('/verify-email')({
   beforeLoad: ({ context }) => {

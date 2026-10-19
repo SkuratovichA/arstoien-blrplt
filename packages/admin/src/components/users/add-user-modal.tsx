@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { useTranslation } from 'react-i18next';
 import { Former } from '@arstoien/former';
 import {
   Button,
@@ -11,12 +9,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@arstoien/shared-ui';
-import toast from 'react-hot-toast';
 import { Plus } from 'lucide-react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { CREATE_USER_MUTATION } from '@/graphql/users.graphql';
 import { createUserFormConfig } from './create-user-form-config';
-import { type CreateUserFormData } from './create-user-form-schema';
 import { createUserFormOverrides } from './create-user-form-overrides';
+import type { CreateUserFormData } from './create-user-form-schema';
 
 interface AddUserModalProps {
   onUserCreated?: () => void;

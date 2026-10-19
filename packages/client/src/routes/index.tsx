@@ -1,7 +1,7 @@
+import { Button } from '@arstoien/shared-ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '../components/layout/main-layout';
-import { Button } from '@arstoien/shared-ui';
 import { useAuthStore } from '../lib/auth-store';
 
 export const Route = createFileRoute('/')({

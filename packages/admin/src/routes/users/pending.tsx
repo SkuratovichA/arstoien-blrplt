@@ -1,26 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@apollo/client/react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { requireAuth } from '@/lib/auth-guard';
+import { useMutation, useQuery } from '@apollo/client/react';
 import {
-  PENDING_USERS_QUERY,
-  APPROVE_USER_MUTATION,
-  REJECT_USER_MUTATION,
-} from '@/graphql/users.graphql';
-import { AdminLayout } from '@/components/layout/admin-layout';
-import { Loading } from '@/components/shared/loading';
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -30,9 +9,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Textarea,
 } from '@arstoien/shared-ui';
+import { createFileRoute } from '@tanstack/react-router';
 import { Check, X } from 'lucide-react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { Loading } from '@/components/shared/loading';
+import {
+  APPROVE_USER_MUTATION,
+  PENDING_USERS_QUERY,
+  REJECT_USER_MUTATION,
+} from '@/graphql/users.graphql';
+import { requireAuth } from '@/lib/auth-guard';
 
 export const Route = createFileRoute('/users/pending')({
   beforeLoad: () => requireAuth(),
