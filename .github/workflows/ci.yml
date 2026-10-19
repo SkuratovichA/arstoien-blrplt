@@ -1,5 +1,5 @@
 # =============================================================================
-# CI Workflow - Lint, Type Check, and Test
+# CI Workflow - Biome, Type Check, Test and Build
 # =============================================================================
 # Runs on all pull requests and pushes to main
 # Must pass before merging
@@ -16,64 +16,26 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  NODE_VERSION: '26'
-  PNPM_VERSION: '12.14.0'
+permissions:
+  contents: read
 
 jobs:
   # ===========================================================================
-  # Lint Check
+  # Biome: formatting, lint rules and import order in one pass
   # ===========================================================================
-  lint:
-    name: Lint
+  biome:
+    name: Biome
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
+      - name: Set up the workspace
+        uses: ./.github/actions/setup
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run ESLint
-        run: pnpm lint:check
-
-  # ===========================================================================
-  # Prettier Check
-  # ===========================================================================
-  prettier:
-    name: Prettier
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run Prettier check
-        run: pnpm prettier:check
+      - name: Run Biome
+        run: pnpm run ci
 
   # ===========================================================================
   # Type Check
@@ -81,76 +43,17 @@ jobs:
   typecheck:
     name: TypeScript
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
+      - name: Set up the workspace
+        uses: ./.github/actions/setup
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm --filter @blrplt/server db:generate
-
+      # The server script generates the Prisma client first
       - name: Run TypeScript check
         run: pnpm typecheck
-
-  # ===========================================================================
-  # Build Check
-  # ===========================================================================
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm --filter @blrplt/server db:generate
-
-      - name: Generate Routes types for client
-        run: pnpm --filter @blrplt/client generate:routes
-        env:
-          CI: true
-
-#      - name: Generate GraphQL types for admin
-#        run: pnpm --filter @blrplt/admin codegen
-#        env:
-#          CI: true
-#
-      - name: Build all packages
-        run: pnpm build
-        env:
-          # Client environment variables
-          VITE_API_URL: https://api.example.com
-          VITE_WS_URL: wss://api.example.com
-          VITE_APP_NAME: Blrplt
-          # Admin environment variables
-          VITE_GRAPHQL_URL: https://api.example.com/graphql
 
   # ===========================================================================
   # Tests
@@ -158,65 +61,37 @@ jobs:
   test:
     name: Tests
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
+      - name: Set up the workspace
+        uses: ./.github/actions/setup
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm --filter @blrplt/server db:generate
-
-      - name: Run database migrations
-        run: pnpm --filter @blrplt/server db:push
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
-
+      # No spec talks to Postgres or Redis, so the job starts neither
       - name: Run tests
         run: pnpm test
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
-          REDIS_URL: redis://localhost:6379
-          JWT_SECRET: test-jwt-secret
-          JWT_REFRESH_SECRET: test-jwt-refresh-secret
           NODE_ENV: test
+
+  # ===========================================================================
+  # Build Check
+  # ===========================================================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up the workspace
+        uses: ./.github/actions/setup
+
+      # GitHub sets CI=true, which makes the GraphQL codegen of the client and the admin read the committed schema.graphql instead of asking a running server
+      - name: Build all packages
+        run: pnpm build
 
   # ===========================================================================
   # All checks must pass
@@ -224,17 +99,17 @@ jobs:
   ci-success:
     name: CI Success
     runs-on: ubuntu-latest
-    needs: [lint, prettier, typecheck, build, test]
+    needs: [biome, typecheck, test, build]
     if: always()
     steps:
       - name: Check all jobs passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
-          if [[ "${{ needs.lint.result }}" != "success" ]] || \
-             [[ "${{ needs.prettier.result }}" != "success" ]] || \
-             [[ "${{ needs.typecheck.result }}" != "success" ]] || \
-             [[ "${{ needs.build.result }}" != "success" ]] || \
-             [[ "${{ needs.test.result }}" != "success" ]]; then
-            echo "One or more CI jobs failed"
-            exit 1
-          fi
+          for result in $RESULTS; do
+            if [[ "$result" != "success" ]]; then
+              echo "One or more CI jobs did not succeed: $RESULTS"
+              exit 1
+            fi
+          done
           echo "All CI jobs passed!"
