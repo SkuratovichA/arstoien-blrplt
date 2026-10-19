@@ -15,7 +15,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { MoreHorizontal, Shield, ShieldOff } from 'lucide-react';
 import { useState } from 'react';

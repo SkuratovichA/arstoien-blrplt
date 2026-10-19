@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@arstoien/shared-ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@blrplt/ui';
 import { TrendingUp, UserCheck, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 

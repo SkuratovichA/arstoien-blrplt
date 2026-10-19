@@ -23,7 +23,7 @@ Production-ready full-stack boilerplate with authentication, user management, an
 - User growth analytics with charts
 
 ### Technical Features
-- Radix UI components via @arstoien/shared-ui
+- Radix UI components from the in-repo `@blrplt/ui` workspace package
 - Internationalization (Czech, English, Slovak)
 - Currency selection (backend only)
 - Responsive design
@@ -50,9 +50,8 @@ Production-ready full-stack boilerplate with authentication, user management, an
 - **TanStack Router** - File-based routing
 - **Apollo Client** - GraphQL client
 - **Tailwind CSS** - Styling
-- **@arstoien/shared-ui** - Component library
-- **@arstoien/former** - Form library
-- **React Hook Form** - Form handling
+- **@blrplt/ui** - Component library (Radix UI + Tailwind, a workspace package in `packages/ui`)
+- **React Hook Form + Zod** - Forms and validation
 - **Zustand** - State management
 - **i18next** - Internationalization
 - **react-hot-toast** - Notifications
@@ -72,7 +71,8 @@ arstoien-blrplt/
 ├── packages/
 │   ├── server/         # NestJS backend
 │   ├── client/         # React client app
-│   └── admin/          # React admin panel
+│   ├── admin/          # React admin panel
+│   └── ui/             # Shared React components (@blrplt/ui)
 ├── docker-compose.yml  # Development services
 ├── package.json        # Root workspace config
 └── init.sql           # Database initialization
@@ -642,12 +642,14 @@ subscription AdminPendingCountsChanged {
 }
 ```
 
-## Project Dependencies
+## Workspace Packages
 
-### NPM Packages
-- **@arstoien/devtools** - ESLint and Prettier configurations
-- **@arstoien/shared-ui** - Component library (Radix UI + Tailwind)
-- **@arstoien/former** - Form library with dynamic forms
+- **@blrplt/server** - NestJS API
+- **@blrplt/client** - React client app
+- **@blrplt/admin** - React admin panel
+- **@blrplt/ui** - React components (Radix UI + Tailwind) shared by the client and the admin panel
+
+Everything the template needs lives in this repository, so `pnpm install` works without a registry token.
 
 ## Contributing
 

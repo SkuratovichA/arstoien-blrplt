@@ -19,7 +19,7 @@ import {
   CardHeader,
   CardTitle,
   Textarea,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { Check, X } from 'lucide-react';
 import { useState } from 'react';

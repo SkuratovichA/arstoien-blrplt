@@ -162,7 +162,6 @@ After `terraform apply`, add these secrets to your repo:
 | Secret | Value (from terraform output) |
 |--------|-------------------------------|
 | `AWS_ROLE_ARN` | Your IAM role ARN |
-| `NPM_TOKEN` | Your npm token |
 | `ECR_REPOSITORY` | `blrplt-server` |
 | `APPRUNNER_SERVICE_ARN` | From terraform output |
 | `CLIENT_S3_BUCKET` | From terraform output |

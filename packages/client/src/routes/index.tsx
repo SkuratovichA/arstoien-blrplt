@@ -1,4 +1,4 @@
-import { Button } from '@arstoien/shared-ui';
+import { Button } from '@blrplt/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '../components/layout/main-layout';

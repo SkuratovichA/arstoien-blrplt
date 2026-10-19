@@ -1,5 +1,5 @@
 import { useApolloClient, useMutation } from '@apollo/client/react';
-import { Button } from '@arstoien/shared-ui';
+import { Button } from '@blrplt/ui';
 import { LOGOUT } from '@graphql/auth.graphql';
 import { useAuthStore } from '@lib/auth-store';
 import { env } from '@lib/env';

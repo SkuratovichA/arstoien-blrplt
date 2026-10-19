@@ -1,19 +1,10 @@
 import { useMutation } from '@apollo/client/react';
-import { Former } from '@arstoien/former';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@arstoien/shared-ui';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@blrplt/ui';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { createFormComponentOverrides } from '../components/forms/form-component-overrides';
-import type { RegisterFormData } from '../components/forms/register-form-config';
-import { createRegisterFormConfig } from '../components/forms/register-form-config';
+import { RegisterForm } from '../components/forms/register-form';
+import type { RegisterFormData } from '../components/forms/register-form-schema';
 import { AuthLayout } from '../components/layout/auth-layout';
 import { REGISTER } from '../graphql/auth.graphql.ts';
 import type { AuthGuardContext } from '../lib/auth-guard';
@@ -48,15 +39,6 @@ function Register() {
     }
   };
 
-  // Create form configuration
-  const formConfig = createRegisterFormConfig({
-    t,
-    onSubmit,
-  });
-
-  // Create component overrides
-  const componentOverrides = createFormComponentOverrides<RegisterFormData>(t);
-
   return (
     <AuthLayout>
       <Card>
@@ -65,7 +47,7 @@ function Register() {
           <CardDescription>{t('Create a new account')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Former<RegisterFormData> config={formConfig} componentOverrides={componentOverrides} />
+          <RegisterForm onSubmit={onSubmit} />
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-muted-foreground text-sm">

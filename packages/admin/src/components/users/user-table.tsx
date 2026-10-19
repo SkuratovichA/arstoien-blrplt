@@ -1,12 +1,4 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  Badge,
-  Button,
-  Card,
-  CardContent,
-} from '@arstoien/shared-ui';
+import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, CardContent } from '@blrplt/ui';
 import { Link } from '@tanstack/react-router';
 import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';

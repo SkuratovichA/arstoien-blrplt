@@ -14,7 +14,7 @@ import {
   FormLabel,
   Input,
   Switch,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';

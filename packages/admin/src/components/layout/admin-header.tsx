@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { LogOut, Settings, User } from 'lucide-react';
 import toast from 'react-hot-toast';

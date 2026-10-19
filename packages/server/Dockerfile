@@ -18,11 +18,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/server/package.json ./packages/server/
 COPY packages/client/package.json ./packages/client/
 COPY packages/admin/package.json ./packages/admin/
-
-# Copy .npmrc for private packages
-COPY .npmrc ./
-ARG NPM_TOKEN
-ENV NPM_TOKEN=$NPM_TOKEN
+COPY packages/ui/package.json ./packages/ui/
 
 # Install all dependencies with shamefully-hoist for flat node_modules structure
 RUN pnpm install --frozen-lockfile --shamefully-hoist

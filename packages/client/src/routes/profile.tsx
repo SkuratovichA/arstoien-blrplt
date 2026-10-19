@@ -1,5 +1,4 @@
 import { useMutation } from '@apollo/client/react';
-import { Former } from '@arstoien/former';
 import {
   Button,
   Card,
@@ -8,16 +7,15 @@ import {
   CardHeader,
   CardTitle,
   Input,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { MainLayout } from '@components/layout';
 import { createFileRoute } from '@tanstack/react-router';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { createFormComponentOverrides } from '../components/forms/form-component-overrides';
-import type { PasswordChangeFormData } from '../components/forms/password-form-config';
-import { createPasswordChangeFormConfig } from '../components/forms/password-form-config';
-import type { ProfileUpdateFormData } from '../components/forms/profile-form-config';
-import { createProfileUpdateFormConfig } from '../components/forms/profile-form-config';
+import { PasswordChangeForm } from '../components/forms/password-form';
+import type { PasswordChangeFormData } from '../components/forms/password-form-schema';
+import { ProfileUpdateForm } from '../components/forms/profile-form';
+import type { ProfileUpdateFormData } from '../components/forms/profile-form-schema';
 import { CHANGE_PASSWORD, DELETE_ACCOUNT, UPDATE_PROFILE } from '../graphql/user.graphql';
 import type { AuthGuardContext } from '../lib/auth-guard';
 import { requireAuth, requireEmailVerified } from '../lib/auth-guard';
@@ -108,25 +106,6 @@ function Profile() {
     }
   };
 
-  // Create form configurations
-  const profileFormConfig = createProfileUpdateFormConfig({
-    t,
-    onSubmit: onProfileSubmit,
-    initialValues: {
-      firstName: user?.firstName ?? '',
-      lastName: user?.lastName ?? '',
-    },
-  });
-
-  const passwordFormConfig = createPasswordChangeFormConfig({
-    t,
-    onSubmit: onPasswordSubmit,
-  });
-
-  // Create component overrides for each form
-  const profileOverrides = createFormComponentOverrides<ProfileUpdateFormData>(t);
-  const passwordOverrides = createFormComponentOverrides<PasswordChangeFormData>(t);
-
   return (
     <MainLayout>
       <div className="container mx-auto max-w-4xl px-4 py-8">
@@ -151,9 +130,9 @@ function Profile() {
                 <Input id="profile-email" value={user?.email} disabled className="mt-2" />
               </div>
 
-              <Former<ProfileUpdateFormData>
-                config={profileFormConfig}
-                componentOverrides={profileOverrides}
+              <ProfileUpdateForm
+                initialValues={{ firstName: user?.firstName ?? '', lastName: user?.lastName ?? '' }}
+                onSubmit={onProfileSubmit}
               />
             </CardContent>
           </Card>
@@ -167,10 +146,7 @@ function Profile() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Former<PasswordChangeFormData>
-                config={passwordFormConfig}
-                componentOverrides={passwordOverrides}
-              />
+              <PasswordChangeForm onSubmit={onPasswordSubmit} />
             </CardContent>
           </Card>
 

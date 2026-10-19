@@ -2,11 +2,7 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
   darkMode: ['class'],
-  content: [
-    './index.html',
-    './src/**/*.{ts,tsx}',
-    './node_modules/@arstoien/shared-ui/dist/**/*.{js,mjs,cjs}',
-  ],
+  content: ['./index.html', './src/**/*.{ts,tsx}', '../ui/src/**/*.{ts,tsx}'],
   theme: {
     container: {
       center: true,

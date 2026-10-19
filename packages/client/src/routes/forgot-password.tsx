@@ -14,7 +14,7 @@ import {
   FormLabel,
   FormMessage,
   Input,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';

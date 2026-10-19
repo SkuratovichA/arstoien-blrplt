@@ -1,4 +1,4 @@
-import { Button } from '@arstoien/shared-ui';
+import { Button } from '@blrplt/ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 

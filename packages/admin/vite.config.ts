@@ -1,27 +1,41 @@
 import path from 'node:path';
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [
     react(),
-    TanStackRouterVite({
-      routesDirectory: './src/routes',
-      generatedRouteTree: './src/routeTree.gen.ts',
-      ignore: ['**/components/**'],
-    }),
+    // The router plugin regenerates routeTree.gen.ts, which tests must not touch
+    ...(process.env.VITEST
+      ? []
+      : [
+          TanStackRouterVite({
+            routesDirectory: './src/routes',
+            generatedRouteTree: './src/routeTree.gen.ts',
+            ignore: ['**/components/**'],
+          }),
+        ]),
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@components': path.resolve(__dirname, './src/components'),
-      '@pages': path.resolve(__dirname, './src/pages'),
-      '@hooks': path.resolve(__dirname, './src/hooks'),
-      '@utils': path.resolve(__dirname, './src/utils'),
-      '@lib': path.resolve(__dirname, './src/lib'),
-      '@graphql': path.resolve(__dirname, './src/graphql'),
-      '@features': path.resolve(__dirname, './src/features'),
+      '@': path.resolve(import.meta.dirname, './src'),
+      '@components': path.resolve(import.meta.dirname, './src/components'),
+      '@pages': path.resolve(import.meta.dirname, './src/pages'),
+      '@hooks': path.resolve(import.meta.dirname, './src/hooks'),
+      '@utils': path.resolve(import.meta.dirname, './src/utils'),
+      '@lib': path.resolve(import.meta.dirname, './src/lib'),
+      '@graphql': path.resolve(import.meta.dirname, './src/graphql'),
+      '@features': path.resolve(import.meta.dirname, './src/features'),
+    },
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/gql/**', 'src/routeTree.gen.ts'],
     },
   },
   server: {

@@ -22,18 +22,17 @@ Main user-facing application.
 - TanStack Router (file-based routing)
 - Apollo GraphQL Client
 - Tailwind CSS
-- @arstoien/shared-ui (component library)
-- @arstoien/former (form library)
-- React Hook Form
+- @blrplt/ui (component library, the `packages/ui` workspace package)
+- React Hook Form and Zod (forms and validation)
 - Zustand (state management)
 - i18next (internationalization)
 - react-hot-toast (notifications)
 
 ## Getting Started
 
-1. Install dependencies:
+1. Install dependencies from the repository root:
 ```bash
-yarn install
+pnpm install
 ```
 
 2. Set up environment variables:
@@ -43,7 +42,7 @@ cp .env.example .env
 
 3. Run development server:
 ```bash
-yarn dev
+pnpm dev
 ```
 
 ## Available Routes
@@ -61,13 +60,12 @@ yarn dev
 
 ## Available Scripts
 
-- `yarn dev` - Start development server
-- `yarn build` - Build for production
-- `yarn preview` - Preview production build
-- `yarn typecheck` - Run TypeScript type checking
-- `yarn lint:check` - Check linting
-- `yarn lint:fix` - Fix linting issues
-- `yarn prettier:check` - Check formatting
-- `yarn prettier:fix` - Fix formatting
-- `yarn codegen` - Generate GraphQL types
-- `yarn i18n` - Extract i18n strings
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production (runs `pnpm codegen` first, which reads the schema from the running API on http://localhost:4000/graphql, or from the committed `schema.graphql` when `CI` is set)
+- `pnpm preview` - Preview production build
+- `pnpm typecheck` - Run TypeScript type checking
+- `pnpm test` - Run the Vitest suite (`pnpm test:watch` to watch, `pnpm test:cov` for coverage)
+- `pnpm check` - Lint and check formatting with Biome (`pnpm check:fix` writes the fixes)
+- `pnpm ci` - The Biome check CI runs, which fails on warnings
+- `pnpm codegen` - Generate GraphQL types
+- `pnpm i18n` - Extract i18n strings

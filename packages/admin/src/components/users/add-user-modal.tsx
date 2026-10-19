@@ -1,5 +1,4 @@
 import { useMutation } from '@apollo/client/react';
-import { Former } from '@arstoien/former';
 import {
   Button,
   Dialog,
@@ -8,14 +7,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { CREATE_USER_MUTATION } from '@/graphql/users.graphql';
-import { createUserFormConfig } from './create-user-form-config';
-import { createUserFormOverrides } from './create-user-form-overrides';
+import { CreateUserForm } from './create-user-form';
 import type { CreateUserFormData } from './create-user-form-schema';
 
 interface AddUserModalProps {
@@ -35,9 +33,9 @@ export function AddUserModal({ onUserCreated }: AddUserModalProps) {
             email: data.email,
             firstName: data.firstName,
             lastName: data.lastName,
-            phone: data.phone ?? undefined,
+            phone: data.phone || undefined,
             role: data.role,
-            password: data.password ?? undefined,
+            password: data.password || undefined,
           },
         },
       });
@@ -52,16 +50,8 @@ export function AddUserModal({ onUserCreated }: AddUserModalProps) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to create user. Please try again.';
       toast.error(t(errorMessage));
-      throw error;
     }
   };
-
-  const formConfig = createUserFormConfig({
-    t,
-    onSubmit: handleSubmit,
-  });
-
-  const formOverrides = createUserFormOverrides(t);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -79,7 +69,7 @@ export function AddUserModal({ onUserCreated }: AddUserModalProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4">
-          <Former config={formConfig} componentOverrides={formOverrides} />
+          <CreateUserForm onSubmit={handleSubmit} />
         </div>
       </DialogContent>
     </Dialog>

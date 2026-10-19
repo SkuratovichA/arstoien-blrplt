@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute } from '@tanstack/react-router';
 import { Plus, Send, Trash2 } from 'lucide-react';

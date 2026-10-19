@@ -1,5 +1,4 @@
 import { useLazyQuery, useMutation } from '@apollo/client/react';
-import { tryCatch } from '@arstoien/former';
 import {
   Button,
   Card,
@@ -16,7 +15,7 @@ import {
   FormMessage,
   Input,
   PasswordInput,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { AuthLayout } from '@components/layout';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
@@ -67,43 +66,39 @@ function Login() {
     const email = form.getValues('email');
     if (!email) return;
 
-    const [, error] = await tryCatch(
-      (async () => {
-        // Check if OTP is enabled for this email
-        const result = await checkOtpEnabled({ variables: { email } });
+    try {
+      // Check if OTP is enabled for this email
+      const result = await checkOtpEnabled({ variables: { email } });
 
-        if (result.error) {
-          console.error('OTP check GraphQL error:', result.error);
-          throw result.error;
-        }
+      if (result.error) {
+        console.error('OTP check GraphQL error:', result.error);
+        throw result.error;
+      }
 
-        if (result.data?.isOtpEnabled) {
-          // OTP is enabled, request OTP code
-          const otpResult = await requestOtpLogin({
-            variables: { email },
+      if (result.data?.isOtpEnabled) {
+        // OTP is enabled, request OTP code
+        const otpResult = await requestOtpLogin({
+          variables: { email },
+        });
+
+        if (otpResult.data?.requestOtpLogin?.success) {
+          toast.success(t('OTP code sent to your email'));
+          // Navigate to OTP verification page
+          navigate({
+            to: '/verify-otp',
+            search: { email },
           });
-
-          if (otpResult.data?.requestOtpLogin?.success) {
-            toast.success(t('OTP code sent to your email'));
-            // Navigate to OTP verification page
-            navigate({
-              to: '/verify-otp',
-              search: { email },
-            });
-          } else {
-            const errorMsg = otpResult.data?.requestOtpLogin?.message ?? t('Failed to send OTP');
-            toast.error(errorMsg);
-            throw new Error(errorMsg);
-          }
         } else {
-          // OTP is not enabled, show password field
-          setShowPassword(true);
-          setEmailEntered(true);
+          const errorMsg = otpResult.data?.requestOtpLogin?.message ?? t('Failed to send OTP');
+          toast.error(errorMsg);
+          throw new Error(errorMsg);
         }
-      })()
-    );
-
-    if (error) {
+      } else {
+        // OTP is not enabled, show password field
+        setShowPassword(true);
+        setEmailEntered(true);
+      }
+    } catch (error) {
       console.error('Email check error details:', error);
       // Show error to user but still allow password login as fallback
       toast.error(t('Could not check OTP status. Defaulting to password login.'));

@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@arstoien/shared-ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@blrplt/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '../components/layout/main-layout';

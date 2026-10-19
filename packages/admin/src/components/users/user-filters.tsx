@@ -10,7 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { useTranslation } from 'react-i18next';
 
 interface UserFiltersProps {

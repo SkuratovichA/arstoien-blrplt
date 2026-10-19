@@ -1,12 +1,5 @@
 import { useMutation } from '@apollo/client/react';
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@arstoien/shared-ui';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@blrplt/ui';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';

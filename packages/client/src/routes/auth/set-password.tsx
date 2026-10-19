@@ -13,7 +13,7 @@ import {
   FormLabel,
   FormMessage,
   PasswordInput,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { AuthLayout } from '@components/layout';
 import { SET_PASSWORD_WITH_TOKEN } from '@graphql/auth.graphql.ts';
 import { zodResolver } from '@hookform/resolvers/zod';

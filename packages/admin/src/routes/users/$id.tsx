@@ -33,7 +33,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Trash2 } from 'lucide-react';

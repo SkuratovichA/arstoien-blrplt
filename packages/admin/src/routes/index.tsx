@@ -1,5 +1,5 @@
 import { useQuery } from '@apollo/client/react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@blrplt/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { Charts } from '@/components/dashboard/charts';
