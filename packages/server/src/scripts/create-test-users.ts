@@ -4,7 +4,7 @@
  * Script to create test users for development/testing
  *
  * Usage:
- *   yarn create:test-users
+ *   pnpm create:test-users
  *
  * This will create several test users with different roles
  */

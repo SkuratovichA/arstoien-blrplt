@@ -36,9 +36,10 @@ Production-ready full-stack boilerplate with authentication, user management, an
 ## Tech Stack
 
 ### Backend
-- **NestJS** - Node.js framework
-- **Prisma** - ORM for PostgreSQL
-- **Apollo GraphQL** - API layer
+- **NestJS 12** - Node.js framework, running as native ES modules
+- **Prisma 7** - ORM for PostgreSQL (`prisma-client` generator and the `pg` driver adapter)
+- **Apollo Server 5** - GraphQL API layer, on Express 5
+- **Effect 4** - Typed errors, the OTP flow and the schema-validated environment
 - **Redis** - Caching and pub/sub
 - **Passport.js** - Authentication
 - **Nodemailer** - Email service
@@ -61,8 +62,11 @@ Production-ready full-stack boilerplate with authentication, user management, an
 - **PostgreSQL 15** - Primary database
 - **Redis 7** - Cache and sessions
 - **Docker** - Containerization
-- **pnpm** - Package management
+- **Node.js 26** - Runtime for the server and for every tool
+- **pnpm 12** - Package management, with a shared dependency catalog in `pnpm-workspace.yaml`
 - **TypeScript 7** - Type safety with the native compiler; the server is compiled by `tsc` itself, so it uses relative imports and no path aliases
+- **Biome** - Formatting and linting in one tool (`biome.json` at the root)
+- **Vitest** - Unit tests in every package
 
 ## Project Structure
 
@@ -82,8 +86,8 @@ arstoien-blrplt/
 
 ### Prerequisites
 
-- Node.js 22+
-- pnpm 9.14.2
+- Node.js 26+
+- pnpm 12 (the root `package.json` pins the exact version in `packageManager`)
 - Docker & Docker Compose
 - PostgreSQL 15 (or use Docker)
 - Redis 7 (or use Docker)
@@ -98,10 +102,8 @@ cd arstoien-blrplt
 
 2. **Install pnpm**
 ```bash
-corepack enable
-corepack prepare pnpm@9.14.2 --activate
-# Or install globally
-npm install -g pnpm
+# Node.js 25 and later no longer bundle Corepack, so take the pinned version from npm
+npm install --global pnpm@12.14.0
 ```
 
 3. **Install dependencies**
@@ -126,14 +128,14 @@ cp packages/admin/.env.example packages/admin/.env
 
 6. **Setup database**
 ```bash
-# Generate Prisma client
-pnpm --filter @blrplt/server prisma generate
+# Generate Prisma client (build, test and typecheck of the server do this on their own)
+pnpm db:generate
 
 # Run migrations
-pnpm --filter @blrplt/server prisma migrate dev
+pnpm db:migrate
 
 # Seed database (optional)
-pnpm --filter @blrplt/server prisma db seed
+pnpm db:seed
 ```
 
 7. **Start development servers**
@@ -201,20 +203,23 @@ VITE_WS_URL=ws://localhost:4000/graphql
 ### Root Level
 - `pnpm dev` - Start all services in development
 - `pnpm build` - Build all packages
-- `pnpm test` - Run all tests
+- `pnpm test` - Run all tests with Vitest
 - `pnpm typecheck` - TypeScript checking
-- `pnpm lint:check` - Check linting
-- `pnpm lint:fix` - Fix linting issues
-- `pnpm prettier:check` - Check formatting
-- `pnpm prettier:fix` - Fix formatting
+- `pnpm check` - Biome: check formatting, lint rules and import order
+- `pnpm check:fix` - Biome: apply the fixes
+- `pnpm lint` - Biome: lint rules only
+- `pnpm format` - Biome: write the formatting
+- `pnpm run ci` - The Biome check that CI runs (read-only, warnings count as errors)
 
 ### Database
+- `pnpm db:generate` - Generate the Prisma client
 - `pnpm db:migrate` - Run migrations
+- `pnpm db:migrate:prod` - Apply the migrations in production
 - `pnpm db:push` - Push schema changes
 - `pnpm db:seed` - Seed database
 - `pnpm db:studio` - Open Prisma Studio
-- `pnpm create:admin` - Create admin user (requires env vars)
-- `pnpm create:test-users` - Create test users for development
+- `pnpm --filter @blrplt/server create:admin` - Create admin user (requires env vars)
+- `pnpm --filter @blrplt/server create:test-users` - Create test users for development
 
 ### Code Generation
 - `pnpm codegen` - Generate GraphQL types
@@ -357,7 +362,7 @@ aws apprunner update-service \
   --source-configuration '{
     "ImageRepository": {
       "ImageConfiguration": {
-        "StartCommand": "sh -c \"npx prisma migrate deploy && node src/scripts/create-admin.js && npm start\""
+        "StartCommand": "sh -c \"./node_modules/.bin/prisma migrate deploy && node dist/scripts/create-admin.js && node dist/main.js\""
       }
     }
   }'
@@ -367,7 +372,7 @@ aws apprunner update-service \
 
 1. **Make changes** to code
 2. **Run type checking**: `pnpm typecheck`
-3. **Run linting**: `pnpm lint:check`
+3. **Check formatting and lint rules**: `pnpm run ci` (`pnpm check:fix` applies the fixes)
 4. **Run tests**: `pnpm test`
 5. **Generate types** (if GraphQL changed): `pnpm codegen`
 6. **Run migrations** (if schema changed): `pnpm db:migrate`
@@ -411,20 +416,17 @@ aws apprunner update-service \
 ## Deployment
 
 ### Docker Deployment
-```bash
-# Build images
-docker build -t blrplt-server ./packages/server
-docker build -t blrplt-client ./packages/client
-docker build -t blrplt-admin ./packages/admin
 
-# Run with docker-compose
-docker-compose -f docker-compose.production.yml up
+The server image is built from the repository root, because the pnpm workspace and the lockfile live there. The container creates the database if needed, pushes the schema and starts `node dist/main.js`; the client and the admin panel are static builds.
+
+```bash
+docker build -f packages/server/Dockerfile -t blrplt-server .
 ```
 
 ### Manual Deployment
 ```bash
 # Build all packages
-yarn build
+pnpm build
 
 # Server
 cd packages/server
@@ -650,6 +652,10 @@ subscription AdminPendingCountsChanged {
 - **@blrplt/ui** - React components (Radix UI + Tailwind) shared by the client and the admin panel
 
 Everything the template needs lives in this repository, so `pnpm install` works without a registry token.
+
+## Tooling Migration
+
+Earlier versions of this template linted with ESLint, formatted with Prettier and tested with Jest. Biome now does the first two jobs from the single `biome.json` at the root (`pnpm check`, `pnpm check:fix`), and Vitest runs the tests of every package (`pnpm test`). Nothing in the repository configures the old tools any more, and the generated files (the route trees and `src/gql`) are skipped by Biome. The one remaining mention is the dependency `@testing-library/jest-dom`: the name belongs to the DOM matchers package, and its `/vitest` entry point is what the test setup of the client, the admin panel and `@blrplt/ui` imports.
 
 ## Contributing
 

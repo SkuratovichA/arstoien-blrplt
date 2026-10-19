@@ -57,28 +57,32 @@ NestJS backend with GraphQL API, authentication, and user management.
 
 ## Tech Stack
 
-- **NestJS** - Framework
-- **Prisma** - ORM
-- **Apollo GraphQL** - API layer
+- **NestJS 12** - Framework, running as native ES modules on Node.js 26
+- **Prisma 7** - ORM (`prisma-client` generator, `pg` driver adapter)
+- **Apollo Server 5** - API layer, on Express 5
 - **PostgreSQL** - Database
 - **Redis** - Caching and pub/sub
 - **Passport.js** - Authentication strategies
 - **Nodemailer** - Email service
 - **AWS SDK v3** - S3/MinIO file storage
-- **Effect-TS** - Functional programming
+- **Effect 4** - Typed errors, the OTP flow and the environment schema
 - **bcrypt** - Password hashing
 - **Handlebars** - Email templates
+- **Vitest** - Tests
+- **Biome** - Formatting and linting
 
 ## Getting Started
 
+The commands run from the repository root; `pnpm --filter @blrplt/server <script>` runs a script of this package from anywhere.
+
 1. Install dependencies:
 ```bash
-yarn install
+pnpm install
 ```
 
 2. Set up environment variables:
 ```bash
-cp .env.example .env
+cp packages/server/.env.example packages/server/.env
 ```
 
 3. Start PostgreSQL and Redis (via Docker):
@@ -88,17 +92,17 @@ docker-compose up -d postgres redis
 
 4. Run database migrations:
 ```bash
-yarn prisma migrate dev
+pnpm db:migrate
 ```
 
 5. Seed database (creates admin user and system settings):
 ```bash
-yarn prisma db seed
+pnpm db:seed
 ```
 
 6. Run development server:
 ```bash
-yarn dev
+pnpm --filter @blrplt/server dev
 ```
 
 The server will run on http://localhost:4000
@@ -107,24 +111,28 @@ GraphQL Playground: http://localhost:4000/graphql
 
 ## Available Scripts
 
-- `yarn dev` - Start development server
-- `yarn build` - Build for production
-- `yarn start:prod` - Run production build
-- `yarn typecheck` - Run TypeScript type checking
-- `yarn lint:check` - Check linting
-- `yarn lint:fix` - Fix linting issues
-- `yarn prettier:check` - Check formatting
-- `yarn prettier:fix` - Fix formatting
-- `yarn test` - Run tests
-- `yarn test:e2e` - Run end-to-end tests
+Run from `packages/server`, or with `pnpm --filter @blrplt/server <script>`:
+
+- `pnpm dev` - Build, then recompile on change with `tsc --watch` and restart with `node --watch`
+- `pnpm build` - Generate the Prisma client and compile into `dist` for production
+- `pnpm start:prod` - Run the production build
+- `pnpm typecheck` - Run TypeScript type checking
+- `pnpm check` - Biome: check formatting, lint rules and import order
+- `pnpm check:fix` - Biome: apply the fixes
+- `pnpm test` - Run the Vitest tests
+- `pnpm test:watch` - Run the tests on every change
+- `pnpm test:cov` - Run the tests with coverage
+- `pnpm create:admin` - Create an admin user from `ADMIN_EMAIL` and `ADMIN_PASSWORD`
+- `pnpm create:test-users` - Create test users for development (needs `BASE_PWD`)
 
 ## Database Scripts
 
-- `yarn prisma generate` - Generate Prisma client
-- `yarn prisma migrate dev` - Run migrations (dev)
-- `yarn prisma migrate deploy` - Run migrations (production)
-- `yarn prisma db seed` - Seed database
-- `yarn prisma studio` - Open Prisma Studio
+- `pnpm db:generate` - Generate the Prisma client (build, test and typecheck do it on their own)
+- `pnpm db:migrate` - Run migrations (dev)
+- `pnpm db:migrate:prod` - Run migrations (production)
+- `pnpm db:push` - Push the schema without a migration
+- `pnpm db:seed` - Seed database
+- `pnpm db:studio` - Open Prisma Studio
 
 ## Project Structure
 
@@ -143,12 +151,11 @@ src/
 │   ├── settings/        # System settings
 │   ├── notification/    # Email and notifications
 │   └── refresh-token/   # Token management
-├── prisma/
-│   ├── schema.prisma    # Database schema
-│   ├── migrations/      # Database migrations
-│   └── seed.ts          # Database seeding
+├── config/              # Environment schema (validated at start) and app config
 └── main.ts              # Application entry point
 ```
+
+The database schema, the migrations and the seed live next to `src`, in `prisma/`, and `prisma.config.ts` tells the Prisma CLI where they are.
 
 ## Authentication Flow
 
@@ -168,14 +175,14 @@ src/
 6. Rate limited: 3 attempts per 15 minutes
 
 ### Token Management
-- Access tokens: configurable expiration (default 15m)
+- Access tokens: configurable expiration (default 7d)
 - Refresh tokens: 90-day expiration, stored in database
 - Tokens stored in httpOnly cookies + Authorization header support
 - Refresh mutation for token renewal
 
 ## Environment Variables
 
-See `.env.example` for all available variables.
+See `.env.example` for all available variables. The server decodes its environment with an Effect schema when it starts (`src/config/env.schema.ts`): a missing `DATABASE_URL`, `JWT_SECRET` or `JWT_REFRESH_SECRET`, or a port that is not a number between 1 and 65535, stops the start with one message that lists every problem. An empty value counts as unset.
 
 Key variables:
 - `DATABASE_URL` - PostgreSQL connection string

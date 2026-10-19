@@ -4,7 +4,7 @@
  * Script to create an admin user from environment variables
  *
  * Usage:
- *   ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! yarn create:admin
+ *   ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! pnpm create:admin
  *
  * Required environment variables:
  *   - ADMIN_EMAIL: Email for the admin user
@@ -27,7 +27,7 @@ async function createAdmin() {
   if (!email) {
     console.error('❌ Error: ADMIN_EMAIL environment variable is required');
     console.log(
-      'Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! yarn create:admin'
+      'Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! pnpm create:admin'
     );
     process.exit(1);
   }
@@ -35,7 +35,7 @@ async function createAdmin() {
   if (!password) {
     console.error('❌ Error: ADMIN_PASSWORD environment variable is required');
     console.log(
-      'Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! yarn create:admin'
+      'Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! pnpm create:admin'
     );
     process.exit(1);
   }
