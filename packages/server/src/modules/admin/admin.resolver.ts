@@ -1,10 +1,10 @@
 import { BadRequestException, Logger, UseGuards } from '@nestjs/common';
 import { Args, Context, ID, Int, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { AuditLog, Prisma, User, UserRole, UserStatus } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { Effect } from 'effect';
-import { PubSubEvents, PubSubService } from '../../common/pubsub/pubsub.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PubSubEvents, PubSubService } from '../../common/pubsub/pubsub.service.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
 import {
   Action,
   CurrentUser,
@@ -12,11 +12,11 @@ import {
   RequireAuditLogAccess,
   RequireStatisticsAccess,
   Resource,
-} from '../auth/decorators';
-import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
-import { PermissionsGuard } from '../auth/guards/permissions.guard';
-import { UserObjectType } from '../user/dto/user.object-type';
-import { AdminService } from './admin.service';
+} from '../auth/decorators/index.js';
+import { GqlAuthGuard } from '../auth/guards/gql-auth.guard.js';
+import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
+import { UserObjectType } from '../user/dto/user.object-type.js';
+import { AdminService } from './admin.service.js';
 import {
   AdminPendingCountsType,
   AdminStatsType,
@@ -32,7 +32,7 @@ import {
   UpdateUserStatusInput,
   UserGrowthDataPoint,
   UserGrowthStatsType,
-} from './dto';
+} from './dto/index.js';
 
 function isEnumValue<TEnum extends Record<string, string>>(
   enumObject: TEnum,

@@ -3,22 +3,22 @@ import { ConfigType } from '@nestjs/config';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { User } from '@prisma/client';
 import { Request } from 'express';
-import { runEffect } from '../../common/effect';
-import { appConfig } from '../../config/app.config';
-import { PrismaService } from '../../prisma/prisma.service';
-import { BasicResponse } from '../user/dto/basic-response.dto';
-import { AuthService } from './auth.service';
-import { CurrentUser } from './decorators';
-import { AuthResponse } from './dto/auth-response.dto';
-import { ForgotPasswordInput } from './dto/forgot-password.input';
-import { LoginInput } from './dto/login.input';
-import { RegisterInput } from './dto/register.input';
-import { RegisterResponse } from './dto/register-response.dto';
-import { RegisterWithPasswordInput } from './dto/register-with-password.input';
-import { ResetPasswordInput } from './dto/reset-password.input';
-import { SetPasswordInput } from './dto/set-password.input';
-import { SetPasswordWithTokenInput } from './dto/set-password-with-token.input';
-import { GqlAuthGuard } from './guards/gql-auth.guard';
+import { runEffect } from '../../common/effect/index.js';
+import { appConfig } from '../../config/app.config.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { BasicResponse } from '../user/dto/basic-response.dto.js';
+import { AuthService } from './auth.service.js';
+import { CurrentUser } from './decorators/index.js';
+import { AuthResponse } from './dto/auth-response.dto.js';
+import { ForgotPasswordInput } from './dto/forgot-password.input.js';
+import { LoginInput } from './dto/login.input.js';
+import { RegisterInput } from './dto/register.input.js';
+import { RegisterResponse } from './dto/register-response.dto.js';
+import { RegisterWithPasswordInput } from './dto/register-with-password.input.js';
+import { ResetPasswordInput } from './dto/reset-password.input.js';
+import { SetPasswordInput } from './dto/set-password.input.js';
+import { SetPasswordWithTokenInput } from './dto/set-password-with-token.input.js';
+import { GqlAuthGuard } from './guards/gql-auth.guard.js';
 
 @Resolver()
 export class AuthResolver {

@@ -1,8 +1,8 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { PrismaService } from '../../prisma/prisma.service';
-import { HealthController } from './health.controller';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { HealthController } from './health.controller.js';
 
 describe('GET /health', () => {
   const prisma = { $queryRaw: vi.fn<() => Promise<unknown>>() };

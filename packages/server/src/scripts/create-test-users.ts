@@ -10,7 +10,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 const basePwd: string | undefined = process.env.BASE_PWD;

@@ -5,22 +5,22 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { Request, Response } from 'express';
-import { CommonModule } from './common/common.module';
-import { PubSubModule } from './common/pubsub/pubsub.module';
-import { DateScalar } from './common/scalars/date.scalar';
-import { AppConfig, appConfig } from './config/app.config';
-import { AdminModule } from './modules/admin/admin.module';
-import { AuthModule } from './modules/auth/auth.module';
-import { HealthModule } from './modules/health/health.module';
-import { NotificationModule } from './modules/notification/notification.module';
-import { SchedulerModule } from './modules/scheduler/scheduler.module';
-import { SettingsModule } from './modules/settings/settings.module';
-import { UserModule } from './modules/user/user.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { PrismaService } from './prisma/prisma.service';
+import { CommonModule } from './common/common.module.js';
+import { PubSubModule } from './common/pubsub/pubsub.module.js';
+import { DateScalar } from './common/scalars/date.scalar.js';
+import { AppConfig, appConfig } from './config/app.config.js';
+import { AdminModule } from './modules/admin/admin.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { HealthModule } from './modules/health/health.module.js';
+import { NotificationModule } from './modules/notification/notification.module.js';
+import { SchedulerModule } from './modules/scheduler/scheduler.module.js';
+import { SettingsModule } from './modules/settings/settings.module.js';
+import { UserModule } from './modules/user/user.module.js';
+import { PrismaModule } from './prisma/prisma.module.js';
+import { PrismaService } from './prisma/prisma.service.js';
 
 // Import to ensure all GraphQL enums are registered
-import './common/graphql';
+import './common/graphql/index.js';
 
 const graphqlContextLogger = new Logger('GraphQLContext');
 

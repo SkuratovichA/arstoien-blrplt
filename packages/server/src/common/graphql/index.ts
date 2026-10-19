@@ -3,4 +3,4 @@
  *
  * Import this module to ensure all GraphQL enums are registered
  */
-export * from './enums';
+export * from './enums/index.js';

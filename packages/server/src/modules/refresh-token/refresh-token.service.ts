@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RefreshToken, User } from '@prisma/client';
 import { Effect } from 'effect';
-import { DatabaseError } from '../../common/effect';
-import { PrismaService } from '../../prisma/prisma.service';
+import { DatabaseError } from '../../common/effect/index.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
 
 type RefreshTokenWithUser = RefreshToken & { user: User };
 

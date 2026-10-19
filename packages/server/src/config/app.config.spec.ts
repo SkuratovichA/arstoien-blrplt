@@ -1,4 +1,4 @@
-import { getCorsUrls } from './app.config';
+import { getCorsUrls } from './app.config.js';
 
 describe('getCorsUrls', () => {
   it.each(['local', 'development'])('allows the local dev servers in %s', (environment) => {

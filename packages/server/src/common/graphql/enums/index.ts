@@ -12,5 +12,5 @@
  */
 
 // Export all enums
-export * from './notification.enums';
-export * from './user.enums';
+export * from './notification.enums.js';
+export * from './user.enums.js';

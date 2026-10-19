@@ -2,14 +2,15 @@
   "name": "@blrplt/server",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "engines": {
     "node": ">=26.0.0"
   },
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
     "dev": "pnpm build && (tsc -p tsconfig.build.json --watch --preserveWatchOutput & node --watch dist/main.js)",
-    "start": "node dist/main",
-    "start:prod": "node dist/main",
+    "start": "node dist/main.js",
+    "start:prod": "node dist/main.js",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "ci": "biome ci --error-on-warnings .",

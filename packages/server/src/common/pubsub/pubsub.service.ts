@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 export enum PubSubEvents {
   // Notification events

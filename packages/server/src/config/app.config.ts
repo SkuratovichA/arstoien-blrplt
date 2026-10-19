@@ -12,7 +12,7 @@ import type {
   S3Config,
   SentryConfig,
   UploadConfig,
-} from './config-types';
+} from './config-types.js';
 
 export type AppConfig = {
   environment: string;

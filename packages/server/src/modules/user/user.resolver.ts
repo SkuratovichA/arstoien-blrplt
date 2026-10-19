@@ -1,18 +1,18 @@
 import { Logger, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Prisma, User, UserRole } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { Effect } from 'effect';
-import { PrismaService } from '../../prisma/prisma.service';
-import { CurrentUser, Roles } from '../auth/decorators';
-import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { BasicResponse } from './dto/basic-response.dto';
-import { ChangePasswordInputType } from './dto/change-password.input-type';
-import { DeleteAccountInputType } from './dto/delete-account.input-type';
-import { UpdateProfileInputType } from './dto/update-profile.input-type';
-import { UserObjectType } from './dto/user.object-type';
-import { UserService } from './user.service';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { CurrentUser, Roles } from '../auth/decorators/index.js';
+import { GqlAuthGuard } from '../auth/guards/gql-auth.guard.js';
+import { RolesGuard } from '../auth/guards/roles.guard.js';
+import { BasicResponse } from './dto/basic-response.dto.js';
+import { ChangePasswordInputType } from './dto/change-password.input-type.js';
+import { DeleteAccountInputType } from './dto/delete-account.input-type.js';
+import { UpdateProfileInputType } from './dto/update-profile.input-type.js';
+import { UserObjectType } from './dto/user.object-type.js';
+import { UserService } from './user.service.js';
 
 @Resolver(() => UserObjectType)
 export class UserResolver {

@@ -2,7 +2,12 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { UserRole } from '@prisma/client';
-import { Action, PERMISSIONS_KEY, Permission, Resource } from '../decorators/permissions.decorator';
+import {
+  Action,
+  PERMISSIONS_KEY,
+  Permission,
+  Resource,
+} from '../decorators/permissions.decorator.js';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {

@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SystemSettings } from '@prisma/client';
 import { Effect } from 'effect';
-import { DatabaseError, promiseToEffect, ValidationError } from '../../common/effect';
-import { PrismaService } from '../../prisma/prisma.service';
-import { UpdateSystemSettingsInputType } from './dto';
+import { DatabaseError, promiseToEffect, ValidationError } from '../../common/effect/index.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { UpdateSystemSettingsInputType } from './dto/index.js';
 
 @Injectable()
 export class SettingsService {

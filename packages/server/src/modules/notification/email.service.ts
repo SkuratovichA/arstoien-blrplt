@@ -3,11 +3,11 @@ import * as path from 'node:path';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Effect } from 'effect';
-import * as handlebars from 'handlebars';
-import * as nodemailer from 'nodemailer';
-import type SMTPConnection from 'nodemailer/lib/smtp-connection';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import { ExternalApiError } from '../../common/effect';
+import handlebars from 'handlebars';
+import nodemailer, { type Transporter } from 'nodemailer';
+import type SMTPConnection from 'nodemailer/lib/smtp-connection/index.js';
+import type SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
+import { ExternalApiError } from '../../common/effect/index.js';
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -16,7 +16,7 @@ function errorMessage(error: unknown): string {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter | null = null;
+  private transporter: Transporter | null = null;
   private templateCache: Map<string, HandlebarsTemplateDelegate> = new Map();
 
   constructor(private readonly configService: ConfigService) {
@@ -349,20 +349,8 @@ export class EmailService {
       return cached;
     }
 
-    // Load template file
-    // In development: src/modules/notification/templates
-    // In production (built): dist/modules/notification/templates
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    const basePath = isDevelopment ? 'src' : 'dist';
-
-    const templatePath = path.join(
-      process.cwd(),
-      basePath,
-      'modules',
-      'notification',
-      'templates',
-      `${templateName}.hbs`
-    );
+    // The templates sit next to this file: in src for tsx and Vitest, in dist for the compiled build (scripts/copy-assets.mjs copies them there)
+    const templatePath = path.join(import.meta.dirname, 'templates', `${templateName}.hbs`);
 
     try {
       const templateContent = await fs.readFile(templatePath, 'utf-8');

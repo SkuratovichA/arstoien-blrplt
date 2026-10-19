@@ -7,12 +7,12 @@ import {
   NotFoundError,
   promiseToEffect,
   ValidationError,
-} from '../../common/effect';
-import { NotificationType } from '../../common/graphql/enums';
-import { CrudService } from '../../common/services';
-import { PrismaService } from '../../prisma/prisma.service';
-import { NotificationFiltersInputType } from './dto/notification-filters.input-type';
-import { EmailService } from './email.service';
+} from '../../common/effect/index.js';
+import { NotificationType } from '../../common/graphql/enums/index.js';
+import { CrudService } from '../../common/services/index.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { NotificationFiltersInputType } from './dto/notification-filters.input-type.js';
+import { EmailService } from './email.service.js';
 
 type Notification = {
   id: string;

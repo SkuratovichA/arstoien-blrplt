@@ -9,7 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthProvider, User, UserStatus } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { Effect } from 'effect';
 import {
   ConflictError,
@@ -18,13 +18,14 @@ import {
   runEffect,
   UnauthorizedError,
   ValidationError,
-} from '../../common/effect';
-import { PrismaService } from '../../prisma/prisma.service';
-import { AdminService } from '../admin/admin.service';
-import { EmailService } from '../notification/email.service';
-import { RefreshTokenService } from '../refresh-token/refresh-token.service';
-import { UserService } from '../user/user.service';
-import { OtpService } from './otp.service';
+} from '../../common/effect/index.js';
+import type { Relation } from '../../common/types/relation.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { AdminService } from '../admin/admin.service.js';
+import { EmailService } from '../notification/email.service.js';
+import { RefreshTokenService } from '../refresh-token/refresh-token.service.js';
+import { UserService } from '../user/user.service.js';
+import { OtpService } from './otp.service.js';
 
 export interface JwtPayload {
   sub: string;
@@ -52,7 +53,7 @@ export class AuthService {
     private otpService: OtpService,
     @Optional()
     @Inject(forwardRef(() => AdminService))
-    private adminService: AdminService | null
+    private adminService: Relation<AdminService> | null
   ) {}
 
   validateUser(

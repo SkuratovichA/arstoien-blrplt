@@ -1,2 +1,2 @@
-export * from './effect-adapter';
-export * from './errors';
+export * from './effect-adapter.js';
+export * from './errors.js';

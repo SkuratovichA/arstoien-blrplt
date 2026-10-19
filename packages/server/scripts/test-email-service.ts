@@ -26,7 +26,7 @@ import 'reflect-metadata';
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { Effect } from 'effect';
-import { EmailService } from '../src/modules/notification/email.service';
+import { EmailService } from '../src/modules/notification/email.service.js';
 
 const testType = process.argv[2] || 'all';
 const recipientEmail = process.argv[3] || 'test@example.com';
@@ -49,7 +49,7 @@ async function createEmailService() {
   // Create a minimal module for testing
   const { Module } = await import('@nestjs/common');
   const { ConfigModule } = await import('@nestjs/config');
-  const { appConfig } = await import('../src/config/app.config');
+  const { appConfig } = await import('../src/config/app.config.js');
 
   @Module({
     imports: [

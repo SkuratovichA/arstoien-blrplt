@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { NotificationModule } from '../notification/notification.module';
-import { SchedulerService } from './scheduler.service';
+import { NotificationModule } from '../notification/notification.module.js';
+import { SchedulerService } from './scheduler.service.js';
 
 /**
  * SchedulerModule - Background jobs for auction lifecycle

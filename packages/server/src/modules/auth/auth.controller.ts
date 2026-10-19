@@ -13,9 +13,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
 import { Request, Response } from 'express';
-import { AuthService } from './auth.service';
-import { GoogleAuthGuard } from './guards/google-auth.guard';
-import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { AuthService } from './auth.service.js';
+import { GoogleAuthGuard } from './guards/google-auth.guard.js';
+import { RefreshTokenGuard } from './guards/refresh-token.guard.js';
 
 /**
  * AuthController - REST endpoints for authentication

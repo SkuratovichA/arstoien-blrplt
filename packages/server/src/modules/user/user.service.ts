@@ -6,9 +6,9 @@ import {
   NotFoundError,
   promiseToEffect,
   ValidationError,
-} from '../../common/effect';
-import { CrudService } from '../../common/services';
-import { PrismaService } from '../../prisma/prisma.service';
+} from '../../common/effect/index.js';
+import { CrudService } from '../../common/services/index.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
 
 // User type removed - using User directly
 

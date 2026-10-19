@@ -10,7 +10,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { imageSize } from 'image-size';
-import { AppConfig } from '../../config/app.config';
+import { AppConfig } from '../../config/app.config.js';
 
 export interface UploadResult {
   key: string;

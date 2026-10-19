@@ -4,7 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { graphqlUploadExpress } from 'graphql-upload-ts';
-import { AppModule } from './app.module';
+import { AppModule } from './app.module.js';
 
 const logger = new Logger('Bootstrap');
 

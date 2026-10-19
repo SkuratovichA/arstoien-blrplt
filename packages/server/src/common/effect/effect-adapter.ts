@@ -18,7 +18,7 @@ import {
   NotFoundError,
   UnauthorizedError,
   ValidationError,
-} from './errors';
+} from './errors.js';
 
 /**
  * Convert Effect errors to NestJS HTTP exceptions
