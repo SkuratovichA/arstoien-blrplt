@@ -1,7 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { User, UserRole } from '@prisma/client';
 import { runEffect } from '../../common/effect/index.js';
+import { User, UserRole } from '../../generated/prisma/client.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard.js';

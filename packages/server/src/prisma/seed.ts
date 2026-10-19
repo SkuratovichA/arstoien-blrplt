@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { createScriptPrismaClient } from './prisma-client.factory.js';
 
-const prisma = new PrismaClient();
+const prisma = createScriptPrismaClient();
 
 async function main() {
   // eslint-disable-next-line no-console

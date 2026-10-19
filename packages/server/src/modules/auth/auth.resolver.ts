@@ -1,10 +1,10 @@
 import { Inject, Logger, UseGuards } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { User } from '@prisma/client';
 import { Request } from 'express';
 import { runEffect } from '../../common/effect/index.js';
 import { appConfig } from '../../config/app.config.js';
+import { User } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { BasicResponse } from '../user/dto/basic-response.dto.js';
 import { AuthService } from './auth.service.js';

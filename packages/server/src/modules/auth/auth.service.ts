@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { AuthProvider, User, UserStatus } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { Effect } from 'effect';
 import {
@@ -20,6 +19,7 @@ import {
   ValidationError,
 } from '../../common/effect/index.js';
 import type { Relation } from '../../common/types/relation.js';
+import { AuthProvider, User, UserStatus } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AdminService } from '../admin/admin.service.js';
 import { EmailService } from '../notification/email.service.js';

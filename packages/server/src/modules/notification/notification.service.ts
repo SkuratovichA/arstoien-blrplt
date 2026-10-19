@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { Effect } from 'effect';
 import {
   DatabaseError,
@@ -10,6 +9,7 @@ import {
 } from '../../common/effect/index.js';
 import { NotificationType } from '../../common/graphql/enums/index.js';
 import { CrudService } from '../../common/services/index.js';
+import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { NotificationFiltersInputType } from './dto/notification-filters.input-type.js';
 import { EmailService } from './email.service.js';

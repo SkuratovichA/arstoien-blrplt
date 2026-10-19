@@ -12,10 +12,10 @@
  *   - DATABASE_URL: Database connection string
  */
 
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { createScriptPrismaClient } from '../prisma/prisma-client.factory.js';
 
-const prisma = new PrismaClient();
+const prisma = createScriptPrismaClient();
 
 async function createAdmin() {
   // Validate environment variables

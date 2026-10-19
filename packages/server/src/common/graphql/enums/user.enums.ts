@@ -1,5 +1,5 @@
 import { registerEnumType } from '@nestjs/graphql';
-import { AuthProvider, UserRole, UserStatus } from '@prisma/client';
+import { AuthProvider, UserRole, UserStatus } from '../../../generated/prisma/client.js';
 
 // Re-export Prisma enums
 export { AuthProvider, UserRole, UserStatus };

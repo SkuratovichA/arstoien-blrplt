@@ -1,9 +1,9 @@
 import { BadRequestException, Logger, UseGuards } from '@nestjs/common';
 import { Args, Context, ID, Int, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
-import { AuditLog, Prisma, User, UserRole, UserStatus } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { Effect } from 'effect';
 import { PubSubEvents, PubSubService } from '../../common/pubsub/pubsub.service.js';
+import { AuditLog, Prisma, User, UserRole, UserStatus } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import {
   Action,

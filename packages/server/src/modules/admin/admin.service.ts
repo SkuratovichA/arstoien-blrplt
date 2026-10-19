@@ -5,11 +5,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AuditLog, User, UserStatus } from '@prisma/client';
 import { Effect } from 'effect';
 import { runEffect } from '../../common/effect/index.js';
 import { PubSubEvents, PubSubService } from '../../common/pubsub/pubsub.service.js';
 import type { Relation } from '../../common/types/relation.js';
+import { AuditLog, User, UserStatus } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AuthService } from '../auth/auth.service.js';
 import { EmailService } from '../notification/email.service.js';

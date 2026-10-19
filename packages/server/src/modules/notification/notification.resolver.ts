@@ -1,9 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Int, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
-import { User } from '@prisma/client';
 import { PubSub } from 'graphql-subscriptions';
 import { runEffect } from '../../common/effect/index.js';
 import { NotificationStatus, NotificationType } from '../../common/graphql/enums/index.js';
+import { User } from '../../generated/prisma/client.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard.js';
 import { NotificationFiltersInputType } from './dto/notification-filters.input-type.js';

@@ -11,8 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { User } from '@prisma/client';
 import { Request, Response } from 'express';
+import { User } from '../../generated/prisma/client.js';
 import { AuthService } from './auth.service.js';
 import { GoogleAuthGuard } from './guards/google-auth.guard.js';
 import { RefreshTokenGuard } from './guards/refresh-token.guard.js';

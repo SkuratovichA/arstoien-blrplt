@@ -6,7 +6,7 @@ import {
   type User,
   UserRole,
   UserStatus,
-} from '@prisma/client';
+} from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { SettingsResolver } from './settings.resolver.js';
 import { SettingsService } from './settings.service.js';

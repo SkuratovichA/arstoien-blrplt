@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma, User, UserRole } from '@prisma/client';
 import { Effect } from 'effect';
 import {
   DatabaseError,
@@ -8,6 +7,7 @@ import {
   ValidationError,
 } from '../../common/effect/index.js';
 import { CrudService } from '../../common/services/index.js';
+import { Prisma, User, UserRole } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 // User type removed - using User directly

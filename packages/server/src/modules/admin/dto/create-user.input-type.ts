@@ -1,6 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { UserRole } from '@prisma/client';
 import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { UserRole } from '../../../generated/prisma/client.js';
 
 @InputType()
 export class CreateUserInput {

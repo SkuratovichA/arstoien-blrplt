@@ -9,10 +9,10 @@
  * This will create several test users with different roles
  */
 
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { createScriptPrismaClient } from '../prisma/prisma-client.factory.js';
 
-const prisma = new PrismaClient();
+const prisma = createScriptPrismaClient();
 const basePwd: string | undefined = process.env.BASE_PWD;
 if (!basePwd) {
   throw new Error('Base password should be specified');
