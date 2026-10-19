@@ -6,7 +6,7 @@ module.exports = {
   createOldCatalogs: false,
   keepRemoved: false,
   defaultNamespace: 'translation',
-  defaultValue: (locale, namespace, key) => key,
+  defaultValue: (_locale, _namespace, key) => key,
   indentation: 2,
   lineEnding: 'auto',
   keySeparator: '.',

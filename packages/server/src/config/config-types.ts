@@ -18,8 +18,8 @@ export type JwtConfig = {
 };
 
 export type GoogleOAuthConfig = {
-  clientId: string;
-  clientSecret: string;
+  clientId?: string;
+  clientSecret?: string;
   callbackUrl: string;
 };
 

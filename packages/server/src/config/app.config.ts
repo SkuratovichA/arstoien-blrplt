@@ -39,6 +39,14 @@ export type AppConfig = {
   };
 };
 
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
 export function getCorsUrls(environment: string): string | string[] {
   if (environment === 'local' || environment === 'development') {
     return [
@@ -128,7 +136,7 @@ export const appConfig = registerAs('app', (): AppConfig => {
 
     // Database
     database: {
-      url: process.env.DATABASE_URL!,
+      url: requireEnv('DATABASE_URL'),
     },
 
     // Redis
@@ -138,16 +146,16 @@ export const appConfig = registerAs('app', (): AppConfig => {
 
     // JWT
     jwt: {
-      secret: process.env.JWT_SECRET!,
-      refreshSecret: process.env.JWT_REFRESH_SECRET!,
+      secret: requireEnv('JWT_SECRET'),
+      refreshSecret: requireEnv('JWT_REFRESH_SECRET'),
       expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
       refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '90d',
     },
 
     // Google OAuth
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackUrl: process.env.GOOGLE_CALLBACK_URL ?? 'http://localhost:4000/auth/google/callback',
     },
 
@@ -159,8 +167,8 @@ export const appConfig = registerAs('app', (): AppConfig => {
     // S3 / MinIO
     s3: {
       endpoint: process.env.S3_ENDPOINT ?? 'http://localhost:9000',
-      accessKey: process.env.S3_ACCESS_KEY!,
-      secretKey: process.env.S3_SECRET_KEY!,
+      accessKey: process.env.S3_ACCESS_KEY ?? '',
+      secretKey: process.env.S3_SECRET_KEY ?? '',
       bucket: process.env.S3_BUCKET ?? 'blrplt-uploads',
       region: process.env.S3_REGION ?? 'us-east-1',
     },

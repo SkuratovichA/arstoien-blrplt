@@ -142,10 +142,13 @@ function Profile() {
 
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                <label
+                  htmlFor="profile-email"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
                   {t('Email')}
                 </label>
-                <Input value={user?.email} disabled className="mt-2" />
+                <Input id="profile-email" value={user?.email} disabled className="mt-2" />
               </div>
 
               <Former<ProfileUpdateFormData>

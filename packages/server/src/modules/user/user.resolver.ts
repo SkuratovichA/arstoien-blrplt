@@ -5,7 +5,6 @@ import { Prisma, User, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { Effect } from 'effect';
 import { PrismaService } from '@/prisma/prisma.service';
-import { AuthService } from '../auth/auth.service';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { BasicResponse } from './dto/basic-response.dto';
@@ -21,7 +20,6 @@ export class UserResolver {
 
   constructor(
     private _userService: UserService,
-    private authService: AuthService,
     private prisma: PrismaService
   ) {}
 
@@ -110,7 +108,7 @@ export class UserResolver {
         where: { id: user.id },
       });
 
-      if (!userWithPassword || !userWithPassword.passwordHash) {
+      if (!userWithPassword?.passwordHash) {
         this.logger.error(`User not found or no password set: ${user.id}`);
         return {
           success: false,

@@ -16,13 +16,13 @@ export function Footer() {
             })}
           </p>
           <div className="text-muted-foreground flex gap-6 text-sm">
-            <a href="#" className="hover:text-foreground">
+            <a href="/privacy" className="hover:text-foreground">
               {t('Privacy')}
             </a>
-            <a href="#" className="hover:text-foreground">
+            <a href="/terms" className="hover:text-foreground">
               {t('Terms')}
             </a>
-            <a href="#" className="hover:text-foreground">
+            <a href="/contact" className="hover:text-foreground">
               {t('Contact')}
             </a>
           </div>

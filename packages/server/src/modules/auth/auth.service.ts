@@ -1,4 +1,3 @@
-import { PubSubService } from '@common/pubsub/pubsub.service';
 import {
   forwardRef,
   Inject,
@@ -51,7 +50,6 @@ export class AuthService {
     private emailService: EmailService,
     private refreshTokenService: RefreshTokenService,
     private otpService: OtpService,
-    private pubSubService: PubSubService,
     @Optional()
     @Inject(forwardRef(() => AdminService))
     private adminService: AdminService | null
@@ -71,14 +69,13 @@ export class AuthService {
         onSuccess: (user) => user,
       });
 
-      if (!user || !user.passwordHash) {
+      const passwordHash = user?.passwordHash;
+      if (!passwordHash) {
         self.logger.debug(`User not found or no password hash: ${email}`);
         return null;
       }
 
-      const isPasswordValid = yield* promiseToEffect(() =>
-        bcrypt.compare(password, user.passwordHash!)
-      );
+      const isPasswordValid = yield* promiseToEffect(() => bcrypt.compare(password, passwordHash));
 
       if (!isPasswordValid) {
         self.logger.debug(`Invalid password for user: ${email}`);
@@ -530,7 +527,8 @@ export class AuthService {
         onSuccess: (user) => user,
       });
 
-      if (!user || !user.passwordHash) {
+      const passwordHash = user?.passwordHash;
+      if (!passwordHash) {
         return yield* Effect.fail(
           new ValidationError({
             message: 'User not found or no password set',
@@ -540,7 +538,7 @@ export class AuthService {
       }
 
       const isPasswordValid = yield* promiseToEffect(() =>
-        bcrypt.compare(oldPassword, user.passwordHash!)
+        bcrypt.compare(oldPassword, passwordHash)
       );
 
       if (!isPasswordValid) {
@@ -816,7 +814,7 @@ export class AuthService {
         })
       );
 
-      if (!verificationToken || verificationToken.type !== 'PASSWORD_RESET') {
+      if (verificationToken?.type !== 'PASSWORD_RESET') {
         self.logger.warn('Invalid password reset token');
         return yield* Effect.fail(
           new ValidationError({

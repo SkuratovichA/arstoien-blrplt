@@ -1,8 +1,6 @@
 import { CommonModule } from '@common/common.module';
-// Common
 import { PubSubModule } from '@common/pubsub/pubsub.module';
 import { DateScalar } from '@common/scalars/date.scalar';
-// Config
 import { AppConfig, appConfig } from '@config/app.config';
 import { AdminModule } from '@modules/admin/admin.module';
 import { AuthModule } from '@modules/auth/auth.module';
@@ -12,18 +10,19 @@ import { SchedulerModule } from '@modules/scheduler/scheduler.module';
 import { SettingsModule } from '@modules/settings/settings.module';
 import { UserModule } from '@modules/user/user.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
-// Modules
 import { PrismaModule } from '@prisma/prisma.module';
 import { PrismaService } from '@prisma/prisma.service';
 import { Request, Response } from 'express';
 
 // Import to ensure all GraphQL enums are registered
 import '@/common/graphql';
+
+const graphqlContextLogger = new Logger('GraphQLContext');
 
 interface GraphQLContext {
   req: Request & {
@@ -91,7 +90,7 @@ interface GraphQLContext {
 
             // For regular queries/mutations - try to authenticate from JWT token
             const authHeader = req?.headers?.authorization;
-            if (authHeader && authHeader.startsWith('Bearer ')) {
+            if (authHeader?.startsWith('Bearer ')) {
               const token = authHeader.substring(7);
 
               try {
@@ -109,7 +108,7 @@ interface GraphQLContext {
                   if (user) {
                     // Attach user to request
                     req.user = user;
-                    console.log(`[GraphQL Context] Authenticated user: ${user.id} (${user.email})`);
+                    graphqlContextLogger.debug(`Authenticated user: ${user.id} (${user.email})`);
                   }
                 }
               } catch (error) {

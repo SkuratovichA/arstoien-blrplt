@@ -1,10 +1,12 @@
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { graphqlUploadExpress } from 'graphql-upload-ts';
 import { AppModule } from './app.module';
+
+const logger = new Logger('Bootstrap');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,7 +20,7 @@ async function bootstrap() {
     maxFileSize: configService.get('app.upload.maxFileSize') ?? 10 * 1024 * 1024, // 10MB
     maxFiles: configService.get('app.upload.maxFiles') ?? 30,
   };
-  console.log('🔧 Configuring upload middleware with options:', uploadOptions);
+  logger.log(`Configuring upload middleware with options: ${JSON.stringify(uploadOptions)}`);
   app.use(graphqlUploadExpress(uploadOptions));
 
   // Session middleware (required for OAuth state)
@@ -70,8 +72,8 @@ async function bootstrap() {
 
   const port = configService.get('PORT') ?? 4000;
   await app.listen(port);
-  console.log(`🚀 Server running on http://localhost:${port}`);
-  console.log(`🚀 GraphQL Playground: http://localhost:${port}/graphql`);
+  logger.log(`Server running on http://localhost:${port}`);
+  logger.log(`GraphQL endpoint: http://localhost:${port}/graphql`);
 }
 
 bootstrap().catch((error) => {

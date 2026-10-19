@@ -1,12 +1,17 @@
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Effect } from 'effect';
-import * as fs from 'fs/promises';
 import * as handlebars from 'handlebars';
 import * as nodemailer from 'nodemailer';
+import type SMTPConnection from 'nodemailer/lib/smtp-connection';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import * as path from 'path';
 import { ExternalApiError } from '../../common/effect';
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 @Injectable()
 export class EmailService {
@@ -133,11 +138,9 @@ export class EmailService {
       // Execute the effect and convert to Promise
       await Effect.runPromise(effect);
       this.logger.log(`Verification email sent to ${email}`);
-    } catch (error: any) {
+    } catch (error) {
       // Always log the full error for debugging
-      this.logger.error(
-        `Failed to send verification email to ${email}: ${error?.message || error}`
-      );
+      this.logger.error(`Failed to send verification email to ${email}: ${errorMessage(error)}`);
 
       // In development, log the link so developers can still test
       if (process.env.NODE_ENV !== 'production') {
@@ -169,9 +172,9 @@ export class EmailService {
       // Execute the effect and convert to Promise
       await Effect.runPromise(effect);
       this.logger.log(`OTP email sent to ${email}`);
-    } catch (error: any) {
+    } catch (error) {
       // Always log the full error for debugging
-      this.logger.error(`Failed to send OTP email to ${email}: ${error?.message || error}`);
+      this.logger.error(`Failed to send OTP email to ${email}: ${errorMessage(error)}`);
 
       // In development, log the code so developers can still test
       if (process.env.NODE_ENV !== 'production') {
@@ -273,28 +276,32 @@ export class EmailService {
           `SMTP Response - MessageId: ${result.messageId}, Response: ${JSON.stringify(result.response)}, Accepted: ${JSON.stringify(result.accepted)}, Rejected: ${JSON.stringify(result.rejected)}`
         );
       },
-      catch: (error: any) => {
+      catch: (error: unknown) => {
+        const failure: SMTPConnection.SMTPError =
+          error instanceof Error ? error : new Error(String(error));
+        const { code, response } = failure;
+
         // Enhanced error logging for AWS SES and SMTP errors
-        this.logger.error(`Failed to send email to ${to}: ${error?.message || error}`);
+        this.logger.error(`Failed to send email to ${to}: ${failure.message}`);
 
         // Log specific AWS SES error details
-        if (error?.code) {
-          this.logger.error(`Error code: ${error.code}`);
+        if (code) {
+          this.logger.error(`Error code: ${code}`);
 
           // Common AWS SES error codes
-          if (error.code === 'MessageRejected') {
+          if (code === 'MessageRejected') {
             this.logger.error(
               'AWS SES rejected the message. Check if the sender email is verified.'
             );
-          } else if (error.code === 'SendingQuotaExceeded') {
+          } else if (code === 'SendingQuotaExceeded') {
             this.logger.error('AWS SES sending quota exceeded.');
-          } else if (error.code === 'MaxSendingRateExceeded') {
+          } else if (code === 'MaxSendingRateExceeded') {
             this.logger.error('AWS SES maximum sending rate exceeded.');
-          } else if (error.code === 'ECONNREFUSED') {
+          } else if (code === 'ECONNREFUSED') {
             this.logger.error(
               `Cannot connect to SMTP server at ${this.configService.get('app.email.host')}:${this.configService.get('app.email.port')}`
             );
-          } else if (error.code === 'EAUTH') {
+          } else if (code === 'EAUTH') {
             this.logger.error(
               'SMTP authentication failed. Check SMTP_USER and SMTP_PASS environment variables.'
             );
@@ -302,17 +309,17 @@ export class EmailService {
         }
 
         // Log the full error stack for debugging
-        if (error?.stack) {
-          this.logger.debug(`Error stack: ${error.stack}`);
+        if (failure.stack) {
+          this.logger.debug(`Error stack: ${failure.stack}`);
         }
 
         // Log response details if available
-        if (error?.response) {
-          this.logger.error(`SMTP Response: ${error.response}`);
+        if (response) {
+          this.logger.error(`SMTP Response: ${response}`);
         }
 
         return new ExternalApiError({
-          message: `Failed to send email: ${error?.message || 'Unknown error'}`,
+          message: `Failed to send email: ${failure.message || 'Unknown error'}`,
           service: 'Email',
           response: error,
         });
@@ -337,8 +344,9 @@ export class EmailService {
    */
   private async loadTemplate(templateName: string): Promise<HandlebarsTemplateDelegate> {
     // Check cache
-    if (this.templateCache.has(templateName)) {
-      return this.templateCache.get(templateName)!;
+    const cached = this.templateCache.get(templateName);
+    if (cached) {
+      return cached;
     }
 
     // Load template file
@@ -365,10 +373,10 @@ export class EmailService {
 
       this.logger.debug(`Successfully loaded email template: ${templateName}`);
       return template;
-    } catch (error: any) {
+    } catch (error) {
       this.logger.error(
         `Failed to load template ${templateName} from path: ${templatePath}`,
-        error?.message || error
+        errorMessage(error)
       );
 
       // Check if file exists

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -9,7 +10,6 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { AppConfig } from '@config/app.config';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'crypto';
 
 export interface UploadResult {
   key: string;
@@ -37,7 +37,7 @@ export class S3Service {
   private readonly maxFileSize: number;
 
   constructor(private configService: ConfigService) {
-    const appConfig = this.configService.get<AppConfig>('app')!;
+    const appConfig = this.configService.getOrThrow<AppConfig>('app');
     this.maxFileSize = appConfig.upload.maxFileSize;
     const s3Config = appConfig.s3;
 
@@ -335,6 +335,6 @@ export class S3Service {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / k ** i) * 100) / 100 + ' ' + sizes[i];
+    return `${Math.round((bytes / k ** i) * 100) / 100} ${sizes[i]}`;
   }
 }

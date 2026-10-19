@@ -76,7 +76,7 @@ export class AuthController {
     if (redirectUri) {
       // Validate redirect_uri against whitelist
       const allowedUris = this.configService.get<string[]>('app.allowedRedirectUris');
-      if (allowedUris && allowedUris.includes(redirectUri)) {
+      if (allowedUris?.includes(redirectUri)) {
         finalRedirectUrl = redirectUri;
       } else {
         this.logger.warn(`Redirect URI not in whitelist: ${redirectUri}`);
@@ -146,7 +146,6 @@ export class AuthController {
    */
   @Post('set-password')
   async setPasswordWithToken(
-    @Req() req: Request,
     @Res() res: Response,
     @Body() body: { token: string; password: string }
   ) {

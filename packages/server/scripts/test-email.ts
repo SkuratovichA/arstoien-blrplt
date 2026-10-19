@@ -15,7 +15,12 @@
 
 import 'dotenv/config';
 import * as nodemailer from 'nodemailer';
+import type SMTPConnection from 'nodemailer/lib/smtp-connection';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
+
+function toSmtpError(error: unknown): SMTPConnection.SMTPError {
+  return error instanceof Error ? error : new Error(String(error));
+}
 
 // Color codes for console output
 const colors = {
@@ -49,7 +54,7 @@ console.log(
   `   SMTP Secure: ${colors.magenta}${process.env.SMTP_SECURE || 'false'}${colors.reset}`
 );
 console.log(
-  `   SMTP User: ${colors.magenta}${process.env.SMTP_USER ? '***' + process.env.SMTP_USER.slice(-4) : 'Not set'}${colors.reset}`
+  `   SMTP User: ${colors.magenta}${process.env.SMTP_USER ? `***${process.env.SMTP_USER.slice(-4)}` : 'Not set'}${colors.reset}`
 );
 console.log(
   `   SMTP Pass: ${colors.magenta}${process.env.SMTP_PASS ? '****' : 'Not set'}${colors.reset}`
@@ -134,23 +139,24 @@ async function testEmailService() {
   try {
     await transporter.verify();
     console.log(`${colors.green}✅ SMTP connection verified successfully!${colors.reset}\n`);
-  } catch (error: any) {
+  } catch (error) {
+    const failure = toSmtpError(error);
     console.error(`${colors.red}❌ SMTP connection verification failed:${colors.reset}`);
-    console.error(`   Error: ${error.message}\n`);
+    console.error(`   Error: ${failure.message}\n`);
 
     // Provide specific troubleshooting for common errors
-    if (error.code === 'ECONNREFUSED') {
+    if (failure.code === 'ECONNREFUSED') {
       console.log(`${colors.yellow}💡 Troubleshooting tips:${colors.reset}`);
       console.log(`   • Check if the SMTP server is running`);
       console.log(`   • Verify the host and port are correct`);
       console.log(`   • Check firewall/security group rules`);
       console.log(`   • For AWS SES, ensure you're using the correct region\n`);
-    } else if (error.code === 'EAUTH' || error.responseCode === 535) {
+    } else if (failure.code === 'EAUTH' || failure.responseCode === 535) {
       console.log(`${colors.yellow}💡 Authentication failed. Check:${colors.reset}`);
       console.log(`   • SMTP username and password are correct`);
       console.log(`   • For AWS SES: Use SMTP credentials, not IAM credentials`);
       console.log(`   • Credentials might need to be base64 encoded\n`);
-    } else if (error.message.includes('self signed certificate')) {
+    } else if (failure.message.includes('self signed certificate')) {
       console.log(`${colors.yellow}💡 SSL/TLS issue detected:${colors.reset}`);
       console.log(`   • Try setting SMTP_SECURE=false for STARTTLS`);
       console.log(`   • Or add rejectUnauthorized: false to config (dev only)\n`);
@@ -227,21 +233,22 @@ If you received this email, your email service is configured correctly!`,
       console.log(`   • In sandbox mode, both sender and recipient must be verified`);
       console.log(`   • Monitor your sending quota and rate limits`);
     }
-  } catch (error: any) {
+  } catch (error) {
+    const failure = toSmtpError(error);
     console.error(`${colors.red}❌ Failed to send test email:${colors.reset}`);
-    console.error(`   Error: ${error.message}\n`);
+    console.error(`   Error: ${failure.message}\n`);
 
     // AWS SES specific error handling
-    if (error.code === 'MessageRejected') {
+    if (failure.code === 'MessageRejected') {
       console.log(`${colors.yellow}💡 AWS SES Message Rejected:${colors.reset}`);
       console.log(`   • Verify sender email address in SES console`);
       console.log(`   • If in sandbox, verify recipient email too`);
       console.log(`   • Check for suppression list issues\n`);
-    } else if (error.message.includes('Email address is not verified')) {
+    } else if (failure.message.includes('Email address is not verified')) {
       console.log(`${colors.yellow}💡 Email verification required:${colors.reset}`);
       console.log(`   • Verify the sender email in AWS SES console`);
       console.log(`   • In sandbox mode, verify recipient emails too\n`);
-    } else if (error.code === 'SendingQuotaExceeded') {
+    } else if (failure.code === 'SendingQuotaExceeded') {
       console.log(`${colors.yellow}💡 AWS SES quota exceeded:${colors.reset}`);
       console.log(`   • Check your daily sending quota in SES console`);
       console.log(`   • Request a quota increase if needed\n`);

@@ -5,27 +5,21 @@ import { NotFoundError, promiseToEffect } from '@/common/effect';
 import type { PrismaService } from '@/prisma/prisma.service';
 
 /**
- * Base type for Prisma delegates
+ * Structural constraint that every Prisma model delegate satisfies. Method syntax keeps the parameters
+ * bivariant, so a concrete delegate with its generic argument types is accepted, and `unknown` lets the
+ * base class pass arguments it assembled itself. The exact argument and result types come from TDelegate
+ * through Parameters<> and ReturnType<>, never from this constraint.
  */
 type PrismaDelegate = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  findUnique: (...args: any) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  findFirst: (...args: any) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  findMany: (...args: any) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  create: (...args: any) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  update: (...args: any) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  upsert: (...args: any) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  delete: (...args: any) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  deleteMany: (...args: any) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  count: (...args: any) => any;
+  findUnique(args: unknown): PromiseLike<unknown>;
+  findFirst(args: unknown): PromiseLike<unknown>;
+  findMany(args?: unknown): PromiseLike<unknown>;
+  create(args: unknown): PromiseLike<unknown>;
+  update(args: unknown): PromiseLike<unknown>;
+  upsert(args: unknown): PromiseLike<unknown>;
+  delete(args: unknown): PromiseLike<unknown>;
+  deleteMany(args?: unknown): PromiseLike<unknown>;
+  count(args?: unknown): PromiseLike<unknown>;
 };
 
 /**
@@ -67,6 +61,17 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
   protected abstract getDelegate(): TDelegate;
 
   /**
+   * Runs one delegate call as an Effect. The public methods promise the exact Prisma result type of
+   * TDelegate, which the compiler cannot derive from the structural PrismaDelegate constraint, so the
+   * result is narrowed to the type each method declares here and nowhere else.
+   */
+  private run<TResult>(
+    call: (delegate: TDelegate) => PromiseLike<unknown>
+  ): Effect.Effect<TResult, DatabaseError | ValidationError, never> {
+    return promiseToEffect(async () => (await call(this.getDelegate())) as TResult);
+  }
+
+  /**
    * Find entity by ID with full Prisma type inference
    *
    * @example
@@ -86,11 +91,11 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
     never
   > {
     return pipe(
-      promiseToEffect(() =>
-        this.getDelegate().findUnique({
+      this.run<Awaited<ReturnType<TDelegate['findUnique']>>>((delegate) =>
+        delegate.findUnique({
           where: { id },
           ...args,
-        } as TArgs)
+        })
       ),
       Effect.flatMap((entity) =>
         entity
@@ -132,11 +137,11 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
     never
   > {
     return pipe(
-      promiseToEffect(() =>
-        this.getDelegate().findUnique({
+      this.run<Awaited<ReturnType<TDelegate['findUnique']>>>((delegate) =>
+        delegate.findUnique({
           where,
           ...args,
-        } as TArgs)
+        })
       ),
       Effect.flatMap((entity) =>
         entity
@@ -166,7 +171,7 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
     DatabaseError | ValidationError,
     never
   > {
-    return promiseToEffect(() => this.getDelegate().findFirst(args));
+    return this.run((delegate) => delegate.findFirst(args));
   }
 
   /**
@@ -187,7 +192,7 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
     DatabaseError | ValidationError,
     never
   > {
-    return promiseToEffect(() => this.getDelegate().findMany(args));
+    return this.run((delegate) => delegate.findMany(args));
   }
 
   /**
@@ -196,7 +201,7 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
   count<TArgs extends Parameters<TDelegate['count']>[0]>(
     args?: TArgs
   ): Effect.Effect<number, DatabaseError | ValidationError, never> {
-    return promiseToEffect(() => this.getDelegate().count(args));
+    return this.run((delegate) => delegate.count(args));
   }
 
   /**
@@ -216,7 +221,7 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
     DatabaseError | ValidationError,
     never
   > {
-    return promiseToEffect(() => this.getDelegate().create(args));
+    return this.run((delegate) => delegate.create(args));
   }
 
   /**
@@ -237,11 +242,11 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
     DatabaseError | ValidationError,
     never
   > {
-    return promiseToEffect(() =>
-      this.getDelegate().update({
+    return this.run((delegate) =>
+      delegate.update({
         where: { id },
         ...args,
-      } as TArgs)
+      })
     );
   }
 
@@ -259,11 +264,11 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
     DatabaseError | ValidationError,
     never
   > {
-    return promiseToEffect(() =>
-      this.getDelegate().update({
+    return this.run((delegate) =>
+      delegate.update({
         where,
         ...args,
-      } as TArgs)
+      })
     );
   }
 
@@ -277,14 +282,14 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
     DatabaseError | ValidationError,
     never
   > {
-    return promiseToEffect(() => this.getDelegate().upsert(args));
+    return this.run((delegate) => delegate.upsert(args));
   }
 
   /**
    * Delete entity by ID
    */
   delete(id: string): Effect.Effect<void, DatabaseError | ValidationError, never> {
-    return promiseToEffect(() => this.getDelegate().delete({ where: { id } })).pipe(
+    return this.run((delegate) => delegate.delete({ where: { id } })).pipe(
       Effect.map(() => undefined)
     );
   }
@@ -296,9 +301,7 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
     TArgs extends Parameters<TDelegate['delete']>[0] & { where: unknown },
     TWhere extends TArgs['where'] = TArgs['where'],
   >(where: TWhere): Effect.Effect<void, DatabaseError | ValidationError, never> {
-    return promiseToEffect(() => this.getDelegate().delete({ where })).pipe(
-      Effect.map(() => undefined)
-    );
+    return this.run((delegate) => delegate.delete({ where })).pipe(Effect.map(() => undefined));
   }
 
   /**
@@ -307,7 +310,7 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
   deleteMany<TArgs extends Parameters<TDelegate['deleteMany']>[0]>(
     args?: TArgs
   ): Effect.Effect<{ count: number }, DatabaseError | ValidationError, never> {
-    return promiseToEffect(() => this.getDelegate().deleteMany(args));
+    return this.run((delegate) => delegate.deleteMany(args));
   }
 
   /**
@@ -327,8 +330,8 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
    * Only works if model has deletedAt field
    */
   softDelete(id: string): Effect.Effect<void, DatabaseError | ValidationError, never> {
-    return promiseToEffect(() =>
-      this.getDelegate().update({
+    return this.run((delegate) =>
+      delegate.update({
         where: { id },
         data: { deletedAt: new Date() },
       })
@@ -340,8 +343,8 @@ export abstract class CrudService<TDelegate extends PrismaDelegate> {
    * Only works if model has deletedAt field
    */
   restore(id: string): Effect.Effect<void, DatabaseError | ValidationError, never> {
-    return promiseToEffect(() =>
-      this.getDelegate().update({
+    return this.run((delegate) =>
+      delegate.update({
         where: { id },
         data: { deletedAt: null },
       })

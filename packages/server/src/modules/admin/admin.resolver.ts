@@ -24,15 +24,22 @@ import {
   Resource,
 } from '@modules/auth/decorators';
 import { UserObjectType } from '@modules/user/dto/user.object-type';
-import { Logger, UseGuards } from '@nestjs/common';
+import { BadRequestException, Logger, UseGuards } from '@nestjs/common';
 import { Args, Context, ID, Int, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
-import { AuditLog, Prisma, User } from '@prisma/client';
+import { AuditLog, Prisma, User, UserRole, UserStatus } from '@prisma/client';
 import { PrismaService } from '@prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Effect } from 'effect';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { AdminService } from './admin.service';
+
+function isEnumValue<TEnum extends Record<string, string>>(
+  enumObject: TEnum,
+  value: string
+): value is TEnum[keyof TEnum] {
+  return Object.values<string>(enumObject).includes(value);
+}
 
 @Resolver()
 export class AdminResolver {
@@ -233,15 +240,21 @@ export class AdminResolver {
     @Args('role', { nullable: true }) role?: string,
     @Args('search', { nullable: true }) search?: string
   ): Promise<User[]> {
-    const where: any = {};
+    const where: Prisma.UserWhereInput = {};
 
     // Add status filter
     if (status) {
+      if (!isEnumValue(UserStatus, status)) {
+        throw new BadRequestException(`Invalid status: ${status}`);
+      }
       where.status = status;
     }
 
     // Add role filter
     if (role) {
+      if (!isEnumValue(UserRole, role)) {
+        throw new BadRequestException(`Invalid role: ${role}`);
+      }
       where.role = role;
     }
 
@@ -333,7 +346,7 @@ export class AdminResolver {
     @Args('action', { nullable: true }) action?: string,
     @Args('entityType', { nullable: true }) entityType?: string
   ): Promise<AuditLog[]> {
-    const where: any = {
+    const where: Prisma.AuditLogWhereInput = {
       OR: [
         { userId }, // Actions performed by the user
         { entityId: userId, entityType: 'User' }, // Actions performed on the user
@@ -748,8 +761,8 @@ export class AdminResolver {
     name: 'adminPendingCountsChanged',
     description: 'Subscribe to real-time updates of pending users counts',
     filter: (
-      payload: AdminPendingCountsType,
-      variables: Record<string, unknown>,
+      _payload: AdminPendingCountsType,
+      _variables: Record<string, unknown>,
       context: Record<string, unknown>
     ): boolean => {
       // Only send to authenticated admin users

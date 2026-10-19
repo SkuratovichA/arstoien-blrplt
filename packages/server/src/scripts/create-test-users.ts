@@ -29,35 +29,35 @@ interface TestUser {
 const testUsers: TestUser[] = [
   {
     email: 'moderator@example.com',
-    password: basePwd + '_moderator123!',
+    password: `${basePwd}_moderator123!`,
     firstName: 'Moderator',
     lastName: 'Example',
     role: 'MODERATOR',
   },
   {
     email: 'john.doe@example.com',
-    password: basePwd + '_user123!',
+    password: `${basePwd}_user123!`,
     firstName: 'John',
     lastName: 'Doe',
     role: 'USER',
   },
   {
     email: 'jane.smith@example.com',
-    password: basePwd + '_user123!',
+    password: `${basePwd}_user123!`,
     firstName: 'Jane',
     lastName: 'Smith',
     role: 'USER',
   },
   {
     email: 'test.user@example.com',
-    password: basePwd + '_test123!',
+    password: `${basePwd}_test123!`,
     firstName: 'Test',
     lastName: 'User',
     role: 'USER',
   },
   {
     email: 'demo@example.com',
-    password: basePwd + '_demo123!',
+    password: `${basePwd}_demo123!`,
     firstName: 'Demo',
     lastName: 'Account',
     role: 'USER',
@@ -86,7 +86,7 @@ async function createTestUsers() {
     for (const userData of testUsers) {
       const passwordHash = await bcrypt.hash(userData.password, 10);
 
-      const user = await prisma.user.upsert({
+      await prisma.user.upsert({
         where: { email: userData.email },
         update: {
           passwordHash,

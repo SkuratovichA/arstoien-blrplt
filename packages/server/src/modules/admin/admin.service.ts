@@ -1,7 +1,6 @@
 import { PubSubEvents, PubSubService } from '@common/pubsub/pubsub.service';
 import { AuthService } from '@modules/auth/auth.service';
 import { EmailService } from '@modules/notification/email.service';
-import { SettingsService } from '@modules/settings/settings.service';
 import {
   BadRequestException,
   forwardRef,
@@ -21,8 +20,7 @@ export class AdminService {
     private emailService: EmailService,
     @Inject(forwardRef(() => AuthService))
     private authService: AuthService,
-    private pubSubService: PubSubService,
-    private settingsService: SettingsService
+    private pubSubService: PubSubService
   ) {}
 
   /**
@@ -45,11 +43,11 @@ export class AdminService {
       );
 
       if (!user) {
-        yield* _(Effect.fail(new NotFoundException('User not found')));
+        return yield* _(Effect.fail(new NotFoundException('User not found')));
       }
 
-      if (user!.status !== UserStatus.PENDING_APPROVAL) {
-        yield* _(Effect.fail(new BadRequestException('User is not pending approval')));
+      if (user.status !== UserStatus.PENDING_APPROVAL) {
+        return yield* _(Effect.fail(new BadRequestException('User is not pending approval')));
       }
 
       // When approved: PENDING_APPROVAL → FRESHLY_CREATED_REQUIRES_PASSWORD

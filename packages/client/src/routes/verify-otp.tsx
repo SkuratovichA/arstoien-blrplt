@@ -44,6 +44,8 @@ const otpSchema = z.object({
 
 type OtpFormData = z.infer<typeof otpSchema>;
 
+const OTP_SLOT_KEYS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'] as const;
+
 function VerifyOtp() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -218,9 +220,9 @@ function VerifyOtp() {
                     <FormLabel>{t('Verification Code')}</FormLabel>
                     <FormControl>
                       <div className="flex justify-center gap-2">
-                        {Array.from({ length: 6 }, (_, index) => (
+                        {OTP_SLOT_KEYS.map((slotKey, index) => (
                           <Input
-                            key={index}
+                            key={slotKey}
                             ref={(el) => {
                               inputRefs.current[index] = el;
                             }}

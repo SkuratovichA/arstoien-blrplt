@@ -1,9 +1,11 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Data, Effect, pipe } from 'effect';
 import Redis from 'ioredis';
 import Redlock, { Lock } from 'redlock';
 import { BusinessLogicError } from '../effect/errors';
+
+const lockLogger = new Logger('LockService');
 
 /**
  * Lock acquisition error
@@ -99,7 +101,7 @@ export class LockService implements OnModuleDestroy {
       try: () => lock.release(),
       catch: (error) => {
         // Lock may have already expired, log but don't throw
-        console.warn('Failed to release lock:', error);
+        lockLogger.warn(`Failed to release lock: ${String(error)}`);
         return undefined;
       },
     }).pipe(Effect.catchAll(() => Effect.succeed(undefined)));

@@ -209,7 +209,7 @@ export class AuthResolver {
         include: { user: true },
       });
 
-      if (!verificationToken || verificationToken.type !== 'EMAIL_VERIFICATION') {
+      if (verificationToken?.type !== 'EMAIL_VERIFICATION') {
         this.logger.warn('Invalid email verification token');
         return {
           success: false,

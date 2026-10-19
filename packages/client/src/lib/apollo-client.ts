@@ -24,11 +24,11 @@ const errorLink = onError((options) => {
   };
 
   if (graphQLErrors) {
-    graphQLErrors.forEach((error) =>
+    for (const error of graphQLErrors) {
       console.error(
         `[GraphQL error]: Message: ${error.message}, Location: ${error.locations}, Path: ${error.path}`
-      )
-    );
+      );
+    }
   }
 
   if (networkError) {

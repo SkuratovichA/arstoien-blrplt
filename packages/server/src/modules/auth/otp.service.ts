@@ -1,5 +1,5 @@
+import * as crypto from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
-import * as crypto from 'crypto';
 import { Effect } from 'effect';
 import { PrismaService } from '@/prisma/prisma.service';
 

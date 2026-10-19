@@ -83,7 +83,7 @@ async function createAdmin() {
     console.log('║           Admin User Created               ║');
     console.log('╠════════════════════════════════════════════╣');
     console.log(`║ Email: ${admin.email.padEnd(36)} ║`);
-    console.log(`║ Name: ${(admin.firstName + ' ' + admin.lastName).padEnd(37)} ║`);
+    console.log(`║ Name: ${(`${admin.firstName} ${admin.lastName}`).padEnd(37)} ║`);
     console.log(`║ Role: ${admin.role.padEnd(37)} ║`);
     console.log('╚════════════════════════════════════════════╝');
     console.log('\n🔑 You can now login with the provided credentials.');

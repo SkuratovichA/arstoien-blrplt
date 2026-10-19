@@ -41,6 +41,10 @@ const colors = {
   magenta: '\x1b[35m',
 };
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 async function createEmailService() {
   // Create a minimal module for testing
   const { Module } = await import('@nestjs/common');
@@ -79,9 +83,9 @@ async function testAdminNotification(emailService: EmailService, email: string) 
     console.log(
       `${colors.green}✅ Admin notification sent successfully to ${email}${colors.reset}`
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error(
-      `${colors.red}❌ Failed to send admin notification: ${error?.message || error}${colors.reset}`
+      `${colors.red}❌ Failed to send admin notification: ${errorMessage(error)}${colors.reset}`
     );
     throw error;
   }
@@ -97,9 +101,9 @@ async function testVerificationEmail(emailService: EmailService, email: string) 
     console.log(
       `${colors.green}✅ Verification email sent successfully to ${email}${colors.reset}`
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error(
-      `${colors.red}❌ Failed to send verification email: ${error?.message || error}${colors.reset}`
+      `${colors.red}❌ Failed to send verification email: ${errorMessage(error)}${colors.reset}`
     );
     throw error;
   }
@@ -113,9 +117,9 @@ async function testOtpEmail(emailService: EmailService, email: string) {
   try {
     await emailService.sendOtpEmail(email, otpCode);
     console.log(`${colors.green}✅ OTP email sent successfully to ${email}${colors.reset}`);
-  } catch (error: any) {
+  } catch (error) {
     console.error(
-      `${colors.red}❌ Failed to send OTP email: ${error?.message || error}${colors.reset}`
+      `${colors.red}❌ Failed to send OTP email: ${errorMessage(error)}${colors.reset}`
     );
     throw error;
   }
@@ -131,9 +135,9 @@ async function testPasswordResetEmail(emailService: EmailService, email: string)
     console.log(
       `${colors.green}✅ Password reset email sent successfully to ${email}${colors.reset}`
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error(
-      `${colors.red}❌ Failed to send password reset email: ${error?.message || error}${colors.reset}`
+      `${colors.red}❌ Failed to send password reset email: ${errorMessage(error)}${colors.reset}`
     );
     throw error;
   }
@@ -153,9 +157,9 @@ async function testUserVerifiedEmail(emailService: EmailService, email: string) 
     console.log(
       `${colors.green}✅ User verified email sent successfully to ${email}${colors.reset}`
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error(
-      `${colors.red}❌ Failed to send user verified email: ${error?.message || error}${colors.reset}`
+      `${colors.red}❌ Failed to send user verified email: ${errorMessage(error)}${colors.reset}`
     );
     throw error;
   }
@@ -182,9 +186,9 @@ async function main() {
   try {
     emailService = await createEmailService();
     console.log(`${colors.green}✅ Email service initialized${colors.reset}`);
-  } catch (error: any) {
+  } catch (error) {
     console.error(
-      `${colors.red}❌ Failed to initialize email service: ${error?.message || error}${colors.reset}`
+      `${colors.red}❌ Failed to initialize email service: ${errorMessage(error)}${colors.reset}`
     );
     process.exit(1);
   }
@@ -237,8 +241,8 @@ async function main() {
         for (const test of tests) {
           try {
             await test();
-          } catch (error: any) {
-            errors.push(error?.message || 'Unknown error');
+          } catch (error) {
+            errors.push(error instanceof Error ? error.message : 'Unknown error');
           }
         }
         break;
@@ -256,7 +260,9 @@ async function main() {
 
     if (errors.length > 0) {
       console.log(`${colors.red}❌ Some tests failed:${colors.reset}`);
-      errors.forEach((error) => console.log(`   - ${error}`));
+      for (const error of errors) {
+        console.log(`   - ${error}`);
+      }
       console.log(
         `\n${colors.yellow}Check the logs above for detailed error messages.${colors.reset}`
       );
@@ -268,7 +274,7 @@ async function main() {
       console.log(`2. Review the server logs for detailed SMTP communication`);
       console.log(`3. If using AWS SES, check the SES console for delivery status`);
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error(`\n${colors.red}Test failed with error:${colors.reset}`);
     console.error(error);
     process.exit(1);
