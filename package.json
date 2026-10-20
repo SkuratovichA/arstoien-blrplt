@@ -24,7 +24,6 @@
     "spec:generate": "node scripts/spec-scenarios.ts generate",
     "db:generate": "pnpm --filter @blrplt/server db:generate",
     "db:migrate": "pnpm --filter @blrplt/server db:migrate",
-    "db:migrate:prod": "pnpm --filter @blrplt/server db:migrate:prod",
     "db:push": "pnpm --filter @blrplt/server db:push",
     "db:seed": "pnpm --filter @blrplt/server db:seed",
     "db:studio": "pnpm --filter @blrplt/server db:studio",

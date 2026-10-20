@@ -5,9 +5,7 @@
 **/coverage
 .git
 .github
-infrastructure
 **/.env
 **/.env.*
 !**/.env.example
 .secrets
-GITHUB-SECRETS*.md

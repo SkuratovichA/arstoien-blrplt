@@ -129,7 +129,6 @@ Run from `packages/server`, or with `pnpm --filter @blrplt/server <script>`:
 
 - `pnpm db:generate` - Generate the Prisma client (build, test and typecheck do it on their own)
 - `pnpm db:migrate` - Run migrations (dev)
-- `pnpm db:migrate:prod` - Run migrations (production)
 - `pnpm db:push` - Push the schema without a migration
 - `pnpm db:seed` - Seed database
 - `pnpm db:studio` - Open Prisma Studio

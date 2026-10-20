@@ -34,8 +34,6 @@ lerna-debug.log*
 .env.production
 !.env.example
 .secrets
-GITHUB-SECRETS-EC2.md
-GITHUB-SECRETS*.md
 
 # IDE
 .idea/
@@ -50,16 +48,6 @@ GITHUB-SECRETS*.md
 # Prisma
 packages/server/prisma/*.db
 packages/server/prisma/*.db-journal
-
-# Terraform
-*.tfstate
-*.tfstate.*
-*.tfplan
-*.tfplan.out
-*.out
-.terraform/
-terraform.tfvars
-!terraform.tfvars.example
 
 # GitHub Actions local testing
 act

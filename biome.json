@@ -12,7 +12,6 @@
       "!!**/dist",
       "!!**/build",
       "!!**/coverage",
-      "!infrastructure",
       "!**/src/gql",
       "!**/routeTree.gen.ts",
       "!**/schema.graphql",

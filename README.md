@@ -225,7 +225,6 @@ VITE_WS_URL=ws://localhost:4000/graphql
 ### Database
 - `pnpm db:generate` - Generate the Prisma client
 - `pnpm db:migrate` - Run migrations
-- `pnpm db:migrate:prod` - Apply the migrations in production
 - `pnpm db:push` - Push schema changes
 - `pnpm db:seed` - Seed database
 - `pnpm db:studio` - Open Prisma Studio
@@ -236,69 +235,9 @@ VITE_WS_URL=ws://localhost:4000/graphql
 - `pnpm codegen` - Generate GraphQL types
 - `pnpm i18n` - Extract i18n strings
 
-## Production Database Setup
+## Admin and Test Users
 
-### Prerequisites
-- AWS CLI configured with proper credentials
-- Database connection details (from Terraform outputs)
-- Admin credentials ready
-
-### Step 1: Make RDS Database Accessible
-
-For security, production RDS databases are typically not publicly accessible. To connect:
-
-```bash
-# 1. Temporarily make RDS publicly accessible
-aws rds modify-db-instance \
-  --db-instance-identifier blrplt-postgres \
-  --publicly-accessible \
-  --apply-immediately \
-  --region eu-central-1
-
-# 2. Wait for the modification to complete
-aws rds wait db-instance-available \
-  --db-instance-identifier blrplt-postgres \
-  --region eu-central-1
-
-# 3. Add your IP to the security group
-MY_IP=$(curl -s ifconfig.me)
-echo "Your IP: $MY_IP"
-
-aws ec2 authorize-security-group-ingress \
-  --group-id <your-security-group-id> \
-  --protocol tcp \
-  --port 5432 \
-  --cidr $MY_IP/32 \
-  --region eu-central-1
-```
-
-### Step 2: Check Database Connection
-
-```bash
-# Export database URL (get from Terraform outputs or AWS console)
-export DATABASE_URL="postgresql://username:password@host:5432/database"
-
-# Test connection with psql
-psql $DATABASE_URL -c "SELECT version();"
-
-# Or check via the application
-cd packages/server
-pnpm db:studio  # Opens Prisma Studio to view data
-```
-
-### Step 3: Run Migrations
-
-```bash
-cd packages/server
-
-# Generate Prisma client
-pnpm db:generate
-
-# Run production migrations
-pnpm db:migrate:prod
-```
-
-### Step 4: Create Admin User
+### Create the Admin User
 
 The application requires an admin user to manage the system. Create one using environment variables:
 
@@ -316,9 +255,9 @@ export ADMIN_LAST_NAME="User"     # Optional
 pnpm create:admin
 ```
 
-### Step 5: Create Test Users (Development Only)
+### Create Test Users (Development Only)
 
-For development/staging environments, you can create test users:
+For development environments, you can create test users:
 
 ```bash
 cd packages/server
@@ -339,45 +278,6 @@ Test users created (passwords are BASE_PWD + suffix):
 - `demo@example.com` / `${BASE_PWD}_demo123!` (USER)
 
 ⚠️ **Warning**: Never run `create:test-users` in production!
-
-### Step 6: Secure Database Access
-
-After setup, always revert the security changes:
-
-```bash
-# 1. Make RDS private again
-aws rds modify-db-instance \
-  --db-instance-identifier blrplt-postgres \
-  --no-publicly-accessible \
-  --apply-immediately \
-  --region eu-central-1
-
-# 2. Remove your IP from security group
-aws ec2 revoke-security-group-ingress \
-  --group-id <your-security-group-id> \
-  --protocol tcp \
-  --port 5432 \
-  --cidr $MY_IP/32 \
-  --region eu-central-1
-```
-
-### Alternative: Connect via App Runner
-
-If direct connection is not possible, you can run commands through your App Runner service:
-
-```bash
-# Update App Runner start command temporarily
-aws apprunner update-service \
-  --service-arn <your-app-runner-arn> \
-  --region eu-central-1 \
-  --source-configuration '{
-    "ImageRepository": {
-      "ImageConfiguration": {
-        "StartCommand": "sh -c \"./node_modules/.bin/prisma migrate deploy && node dist/scripts/create-admin.js && node dist/main.js\""
-      }
-    }
-  }'
-```
 
 ## Development Workflow
 
@@ -477,32 +377,12 @@ Spec Gate is a workflow of its own and is not part of the `ci-success` job of `c
 4. User sets new password via link
 5. Can login with new password
 
-## Deployment
-
-### Docker Deployment
+## Docker Image
 
 The server image is built from the repository root, because the pnpm workspace and the lockfile live there. The container creates the database if needed, pushes the schema and starts `node dist/main.js`; the client and the admin panel are static builds.
 
 ```bash
 docker build -f packages/server/Dockerfile -t blrplt-server .
-```
-
-### Manual Deployment
-```bash
-# Build all packages
-pnpm build
-
-# Server
-cd packages/server
-node dist/main.js
-
-# Client (serve static files)
-cd packages/client
-npx serve -s dist
-
-# Admin (serve static files)
-cd packages/admin
-npx serve -s dist
 ```
 
 ## API Documentation
