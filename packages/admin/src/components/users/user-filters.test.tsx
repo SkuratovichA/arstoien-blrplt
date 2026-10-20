@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { USER_STATUSES } from '@/lib/user-status';
 import { UserFilters } from './user-filters';
 
 const noFilters = { search: '', role: undefined, status: undefined };
@@ -41,6 +42,14 @@ describe('UserFilters', () => {
 
     await pick(1, 'Banned');
     expect(onFiltersChange).toHaveBeenLastCalledWith({ ...noFilters, status: 'BLOCKED' });
+  });
+
+  it('offers every status of the server enum next to the choice of none', async () => {
+    render(<UserFilters filters={noFilters} onFiltersChange={vi.fn()} />);
+
+    await userEvent.setup().click(screen.getAllByRole('combobox')[1]);
+
+    expect(await screen.findAllByRole('option')).toHaveLength(USER_STATUSES.length + 1);
   });
 
   it('clears the status when "All Statuses" is picked instead of sending the word all', async () => {

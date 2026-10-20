@@ -4,6 +4,8 @@ import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/re
 import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DataTable } from '@/components/shared/data-table';
+import type { UserStatus } from '@/gql/graphql';
+import { USER_STATUS_VARIANT } from '@/lib/user-status';
 
 interface User {
   id: string;
@@ -11,7 +13,7 @@ interface User {
   firstName: string | null;
   lastName: string | null;
   role: string;
-  status: string;
+  status: UserStatus;
   avatar?: string | null;
   emailVerified: boolean;
   createdAt: string;
@@ -71,9 +73,7 @@ export function UserTable({ users, totalCount, pagination, onPaginationChange }:
       header: t('Status'),
       cell: (info) => {
         const status = info.getValue();
-        const variant =
-          status === 'ACTIVE' ? 'default' : status === 'PENDING' ? 'secondary' : 'destructive';
-        return <Badge variant={variant}>{status}</Badge>;
+        return <Badge variant={USER_STATUS_VARIANT[status]}>{status}</Badge>;
       },
     }),
     columnHelper.accessor('emailVerified', {

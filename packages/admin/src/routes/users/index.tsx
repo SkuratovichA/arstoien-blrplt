@@ -26,6 +26,7 @@ import { Loading } from '@/components/shared/loading';
 import { AddUserModal } from '@/components/users/add-user-modal';
 import { UserFilters } from '@/components/users/user-filters';
 import { UserTable } from '@/components/users/user-table';
+import type { UserStatus } from '@/gql/graphql';
 import { BULK_UPDATE_OTP_MUTATION, USERS_QUERY } from '@/graphql/users.graphql';
 import { requireAuth } from '@/lib/auth-guard';
 
@@ -72,7 +73,7 @@ function UsersPage() {
           lastName: string;
           phone?: string | null;
           role: string;
-          status: string;
+          status: UserStatus;
           createdAt: string;
           updatedAt: string;
         }>;

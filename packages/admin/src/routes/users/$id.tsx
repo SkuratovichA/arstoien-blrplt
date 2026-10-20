@@ -40,24 +40,14 @@ import { Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
 import { AdminLayout } from '@/components/layout/admin-layout';
 import { Loading } from '@/components/shared/loading';
+import type { EditUserFormValues } from '@/components/users/edit-user-form-schema';
+import { editUserSchema } from '@/components/users/edit-user-form-schema';
 import { USER_AUDIT_LOGS_QUERY } from '@/graphql/audit.graphql';
 import { DELETE_USER_MUTATION, UPDATE_USER_MUTATION, USER_QUERY } from '@/graphql/users.graphql';
 import { requireAuth } from '@/lib/auth-guard';
-
-const userSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.string().email(),
-  role: z.enum(['USER', 'MODERATOR', 'ADMIN']),
-  status: z.enum(['ACTIVE', 'PENDING', 'SUSPENDED', 'BANNED']),
-  phoneNumber: z.string().optional(),
-  otpAuthEnabled: z.boolean().optional(),
-});
-
-type UserFormValues = z.infer<typeof userSchema>;
+import { USER_STATUSES, useUserStatusLabel } from '@/lib/user-status';
 
 export const Route = createFileRoute('/users/$id')({
   beforeLoad: () => requireAuth(),
@@ -66,6 +56,7 @@ export const Route = createFileRoute('/users/$id')({
 
 function UserDetailPage() {
   const { t } = useTranslation();
+  const statusLabel = useUserStatusLabel();
   const { id } = Route.useParams();
   const navigate = useNavigate();
 
@@ -83,22 +74,22 @@ function UserDetailPage() {
   const user = data?.user;
   const auditLogs = auditData?.userAuditLogs ?? [];
 
-  const form = useForm<UserFormValues>({
-    resolver: zodResolver(userSchema),
+  const form = useForm<EditUserFormValues>({
+    resolver: zodResolver(editUserSchema),
     values: user
       ? {
           firstName: user.firstName ?? '',
           lastName: user.lastName ?? '',
           email: user.email,
           role: user.role as 'USER' | 'MODERATOR' | 'ADMIN',
-          status: user.status as 'ACTIVE' | 'PENDING' | 'SUSPENDED' | 'BANNED',
+          status: user.status,
           phoneNumber: user.phone ?? '',
           otpAuthEnabled: user.otpAuthEnabled ?? false,
         }
       : undefined,
   });
 
-  const onSubmit = async (values: UserFormValues) => {
+  const onSubmit = async (values: EditUserFormValues) => {
     try {
       await updateUser({
         variables: {
@@ -293,10 +284,11 @@ function UserDetailPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="ACTIVE">{t('Active')}</SelectItem>
-                                <SelectItem value="PENDING">{t('Pending')}</SelectItem>
-                                <SelectItem value="SUSPENDED">{t('Suspended')}</SelectItem>
-                                <SelectItem value="BANNED">{t('Banned')}</SelectItem>
+                                {USER_STATUSES.map((status) => (
+                                  <SelectItem key={status} value={status}>
+                                    {statusLabel(status)}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />

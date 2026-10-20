@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@blrplt/ui';
 import { useTranslation } from 'react-i18next';
+import { USER_STATUSES, useUserStatusLabel } from '@/lib/user-status';
 
 interface UserFiltersProps {
   filters: {
@@ -33,6 +34,7 @@ const toFilter = (value: string): string | undefined => (value === ALL ? undefin
 
 export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
   const { t } = useTranslation();
+  const statusLabel = useUserStatusLabel();
 
   return (
     <Card>
@@ -70,10 +72,11 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>{t('All Statuses')}</SelectItem>
-              <SelectItem value="ACTIVE">{t('Active')}</SelectItem>
-              <SelectItem value="PENDING_APPROVAL">{t('Pending')}</SelectItem>
-              <SelectItem value="SUSPENDED">{t('Suspended')}</SelectItem>
-              <SelectItem value="BLOCKED">{t('Banned')}</SelectItem>
+              {USER_STATUSES.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {statusLabel(status)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
