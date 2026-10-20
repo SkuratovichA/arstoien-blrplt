@@ -333,7 +333,7 @@ A new feature goes in three steps.
 
 The integration tests have no default database, because they write rows: set `DATABASE_URL` to an empty database that may be filled, for example `docker compose exec postgres createdb -U blrplt_user blrplt_test` and then `DATABASE_URL=postgresql://blrplt_user:blrplt_password@localhost:5433/blrplt_test pnpm test:integration`. The schema is created by `prisma migrate deploy` on the first run.
 
-The baseline migration `packages/server/prisma/migrations/0_init` is the schema as it was before the first migration. An empty database needs nothing, but a database that was filled earlier by `prisma db push` (the Docker entrypoint still does that) already holds every table, so `prisma migrate deploy` refuses it with P3005 until the baseline is marked as applied once: `cd packages/server && pnpm exec prisma migrate resolve --applied 0_init`.
+The baseline migration `packages/server/prisma/migrations/0_init` is the schema as it was before the first migration. An empty database needs nothing, but a database that was filled earlier by `prisma db push` (older server images did that on every start) already holds every table, so `prisma migrate deploy` refuses it with P3005 until the baseline is marked as applied once: `cd packages/server && pnpm exec prisma migrate resolve --applied 0_init`.
 
 Spec Gate is a workflow of its own and is not part of the `ci-success` job of `ci.yml`: to let it block a merge, add the Spec Gate job as a required status check in the branch protection rules.
 
@@ -379,7 +379,7 @@ Spec Gate is a workflow of its own and is not part of the `ci-success` job of `c
 
 ## Docker Image
 
-The server image is built from the repository root, because the pnpm workspace and the lockfile live there. The container creates the database if needed, pushes the schema and starts `node dist/main.js`; the client and the admin panel are static builds.
+The server image is built from the repository root, because the pnpm workspace and the lockfile live there. The container creates the database if needed, applies the migrations with `prisma migrate deploy` and starts `node dist/main.js`; the client and the admin panel are static builds.
 
 ```bash
 docker build -f packages/server/Dockerfile -t blrplt-server .

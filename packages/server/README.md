@@ -133,6 +133,18 @@ Run from `packages/server`, or with `pnpm --filter @blrplt/server <script>`:
 - `pnpm db:seed` - Seed database
 - `pnpm db:studio` - Open Prisma Studio
 
+## Docker
+
+The image is built from the repository root: `docker build -f packages/server/Dockerfile -t blrplt-server .`.
+
+The entrypoint (`docker-entrypoint.sh`) creates the database named in `DATABASE_URL` when it does not exist, applies the migrations of `prisma/migrations` with `prisma migrate deploy` and then starts `node dist/main.js`.
+`prisma migrate deploy` applies only the migrations that the database has not seen and never drops data.
+
+An empty database needs nothing.
+A database that is already live, because an older image filled it with `prisma db push`, holds every table but has no record of the baseline migration `0_init`, so `prisma migrate deploy` refuses it with P3005.
+Mark the baseline as applied once, from `packages/server` with `DATABASE_URL` pointing at that database, before the new image starts: `pnpm exec prisma migrate resolve --applied 0_init`.
+The schema of `0_init` is the schema that `prisma db push` created (`prisma migrate diff` against `prisma/schema.prisma` is empty), so nothing else changes.
+
 ## Project Structure
 
 ```

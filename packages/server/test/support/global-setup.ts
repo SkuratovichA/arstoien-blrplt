@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 const serverRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 /**
- * Builds the schema the way a deploy does, with the committed migrations, so the tests run against the database the server will really see.
+ * Builds the schema the way the Docker entrypoint does, with the committed migrations, so the tests run against the database the server will really see.
  */
 export default function setup(): void {
   if (!process.env.DATABASE_URL) {

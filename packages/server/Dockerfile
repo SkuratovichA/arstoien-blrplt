@@ -34,7 +34,7 @@ RUN pnpm install --frozen-lockfile --filter @blrplt/server...
 # -----------------------------------------------------------------------------
 FROM base AS prod-deps
 
-# prisma is a regular dependency of the server because the entrypoint runs "prisma db push" when the container starts
+# prisma is a regular dependency of the server because the entrypoint runs "prisma migrate deploy" when the container starts
 RUN pnpm install --frozen-lockfile --prod --filter @blrplt/server...
 
 # -----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ COPY --from=prod-deps --chown=nestjs:nodejs /app/packages/server/node_modules ./
 COPY --from=builder --chown=nestjs:nodejs /app/packages/server/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/packages/server/package.json ./package.json
 
-# Prisma schema and config for "prisma db push"
+# Prisma schema, migrations and config for "prisma migrate deploy"
 COPY --from=builder --chown=nestjs:nodejs /app/packages/server/prisma ./prisma
 COPY --from=builder --chown=nestjs:nodejs /app/packages/server/prisma.config.ts ./prisma.config.ts
 

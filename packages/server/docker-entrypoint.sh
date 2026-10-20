@@ -34,9 +34,10 @@ PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "postgre
   echo "Database created successfully!"
 }
 
-echo "Database exists. Pushing schema to database..."
-# Use db push for initial setup (creates tables without migrations)
-./node_modules/.bin/prisma db push --accept-data-loss
+echo "Database exists. Applying migrations..."
+# Applies the files of prisma/migrations that the database has not seen yet and never drops data
+# A database that "prisma db push" filled earlier is refused (P3005) until "prisma migrate resolve --applied 0_init" has marked the baseline once, see packages/server/README.md
+./node_modules/.bin/prisma migrate deploy
 
 echo ""
 echo "=== Starting Server ==="
