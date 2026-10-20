@@ -28,6 +28,7 @@ import { CHECK_OTP_ENABLED, LOGIN, REQUEST_OTP_LOGIN } from '../graphql/auth.gra
 import type { AuthGuardContext } from '../lib/auth-guard';
 import { requireGuest } from '../lib/auth-guard';
 import { useAuthStore } from '../lib/auth-store';
+import { errorMessageOf } from '../lib/error-message';
 
 export const Route = createFileRoute('/login')({
   beforeLoad: ({ context }) => {
@@ -62,49 +63,61 @@ function Login() {
     },
   });
 
+  const continueWithPassword = () => {
+    setShowPassword(true);
+    setEmailEntered(true);
+  };
+
   const handleEmailSubmit = async () => {
     const email = form.getValues('email');
     if (!email) return;
 
+    // Check if OTP is enabled for this email
+    let otpEnabled: boolean | undefined;
     try {
-      // Check if OTP is enabled for this email
       const result = await checkOtpEnabled({ variables: { email } });
 
       if (result.error) {
         console.error('OTP check GraphQL error:', result.error);
-        throw result.error;
-      }
-
-      if (result.data?.isOtpEnabled) {
-        // OTP is enabled, request OTP code
-        const otpResult = await requestOtpLogin({
-          variables: { email },
-        });
-
-        if (otpResult.data?.requestOtpLogin?.success) {
-          toast.success(t('auth.login.otpSent'));
-          // Navigate to OTP verification page
-          navigate({
-            to: '/verify-otp',
-            search: { email },
-          });
-        } else {
-          const errorMsg = otpResult.data?.requestOtpLogin?.message ?? t('auth.otp.sendError');
-          toast.error(errorMsg);
-          throw new Error(errorMsg);
-        }
       } else {
-        // OTP is not enabled, show password field
-        setShowPassword(true);
-        setEmailEntered(true);
+        otpEnabled = result.data?.isOtpEnabled ?? false;
       }
     } catch (error) {
       console.error('Email check error details:', error);
-      // Show error to user but still allow password login as fallback
-      toast.error(t('auth.login.otpStatusError'));
-      setShowPassword(true);
-      setEmailEntered(true);
     }
+
+    if (!otpEnabled) {
+      if (otpEnabled === undefined) {
+        // Show error to user but still allow password login as fallback
+        toast.error(t('auth.login.otpStatusError'));
+      }
+      // OTP is not enabled, show password field
+      continueWithPassword();
+      return;
+    }
+
+    // OTP is enabled, request OTP code
+    try {
+      const otpResult = await requestOtpLogin({
+        variables: { email },
+      });
+
+      if (otpResult.data?.requestOtpLogin?.success) {
+        toast.success(t('auth.login.otpSent'));
+        // Navigate to OTP verification page
+        navigate({
+          to: '/verify-otp',
+          search: { email },
+        });
+        return;
+      }
+      toast.error(otpResult.data?.requestOtpLogin?.message ?? t('auth.otp.sendError'));
+    } catch (error) {
+      console.error('OTP request error:', error);
+      toast.error(errorMessageOf(error, t));
+    }
+    // Still allow password login as fallback
+    continueWithPassword();
   };
 
   const onSubmit = async (data: LoginFormData) => {
@@ -152,12 +165,13 @@ function Login() {
         toast.success(t('auth.login.success'));
         navigate({ to: '/dashboard', search: {} });
       } else {
-        throw new Error(t('auth.login.error'));
+        toast.error(t('auth.login.error'));
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('auth.login.error');
-      toast.error(errorMessage);
+      toast.error(
+        errorMessageOf(error, t, { UNAUTHENTICATED: t('auth.login.invalidCredentials') })
+      );
     }
   };
 

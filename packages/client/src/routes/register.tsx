@@ -9,6 +9,7 @@ import { AuthLayout } from '../components/layout/auth-layout';
 import { REGISTER } from '../graphql/auth.graphql.ts';
 import type { AuthGuardContext } from '../lib/auth-guard';
 import { requireGuest } from '../lib/auth-guard';
+import { errorMessageOf } from '../lib/error-message';
 
 export const Route = createFileRoute('/register')({
   beforeLoad: ({ context }) => {
@@ -34,8 +35,8 @@ function Register() {
         toast.success(result.data.register.message ?? t('auth.register.success'));
         navigate({ to: '/login' });
       }
-    } catch {
-      toast.error(t('auth.register.error'));
+    } catch (error) {
+      toast.error(errorMessageOf(error, t, { CONFLICT: t('auth.register.emailTaken') }));
     }
   };
 

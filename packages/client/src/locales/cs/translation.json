@@ -1,4 +1,15 @@
 {
+  "apiError": {
+    "badUserInput": "Některé zadané údaje nejsou platné. Zkontrolujte je a zkuste to znovu.",
+    "conflict": "Tato položka už existuje. Použijte jiné údaje a zkuste to znovu.",
+    "forbidden": "K této akci nemáte oprávnění.",
+    "internal": "Na naší straně se něco pokazilo. Zkuste to znovu později.",
+    "network": "Server se nepodařilo kontaktovat. Zkontrolujte připojení a zkuste to znovu.",
+    "notFound": "Požadovanou položku se nepodařilo najít.",
+    "rateLimited": "Příliš mnoho pokusů. Zkuste to znovu později.",
+    "rateLimitedWait": "Příliš mnoho pokusů. Zkuste to znovu za {{seconds}} s.",
+    "unauthenticated": "Přihlášení se nezdařilo. Zkontrolujte své údaje a zkuste to znovu."
+  },
   "auth": {
     "fields": {
       "confirmPassword": "Potvrdit heslo",
@@ -28,6 +39,7 @@
       "description": "Přihlaste se ke svému účtu",
       "error": "Přihlášení se nezdařilo",
       "forgotPassword": "Zapomněli jste heslo?",
+      "invalidCredentials": "Neplatný e-mail nebo heslo, případně je váš účet zablokovaný nebo pozastavený.",
       "noAccount": "Nemáte účet?",
       "otpSent": "OTP kód byl odeslán na váš e-mail",
       "otpStatusError": "Stav OTP se nepodařilo zjistit. Použije se přihlášení heslem.",
@@ -64,7 +76,7 @@
     },
     "register": {
       "description": "Vytvořte si nový účet",
-      "error": "Registrace se nezdařila",
+      "emailTaken": "Účet s tímto e-mailem už existuje.",
       "firstName": "Jméno",
       "hasAccount": "Už máte účet?",
       "lastName": "Příjmení",
@@ -88,7 +100,6 @@
       "description": "Vytvořte si silné heslo pro zabezpečení svého účtu",
       "doneDescription": "Vaše heslo bylo úspěšně nastaveno. Přesměrování na přehled...",
       "doneTitle": "Hotovo!",
-      "error": "Nastavení hesla se nezdařilo",
       "invalidDescription": "Tento ověřovací odkaz je neplatný nebo vypršel.",
       "invalidTitle": "Neplatný odkaz",
       "invalidToken": "Neplatný ověřovací token",

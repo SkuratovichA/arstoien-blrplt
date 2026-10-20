@@ -1,4 +1,15 @@
 {
+  "apiError": {
+    "badUserInput": "Některé zadané údaje nejsou platné. Zkontrolujte je a zkuste to znovu.",
+    "conflict": "Tato položka už existuje. Použijte jiné údaje a zkuste to znovu.",
+    "forbidden": "K této akci nemáte oprávnění.",
+    "internal": "Na naší straně se něco pokazilo. Zkuste to znovu později.",
+    "network": "Server se nepodařilo kontaktovat. Zkontrolujte připojení a zkuste to znovu.",
+    "notFound": "Požadovanou položku se nepodařilo najít.",
+    "rateLimited": "Příliš mnoho pokusů. Zkuste to znovu později.",
+    "rateLimitedWait": "Příliš mnoho pokusů. Zkuste to znovu za {{seconds}} s.",
+    "unauthenticated": "Přihlášení se nezdařilo. Zkontrolujte své údaje a zkuste to znovu."
+  },
   "auditLogs": {
     "actionCreate": "Vytvoření",
     "actionDelete": "Smazání",
@@ -67,7 +78,6 @@
     "description": "Přihlaste se a získejte přístup k administrátorskému panelu",
     "emailPlaceholder": "Zadejte svůj e-mail",
     "forbidden": "Nemáte oprávnění k přístupu do administrátorského panelu",
-    "invalidCredentials": "Neplatný e-mail nebo heslo",
     "passwordPlaceholder": "Zadejte své heslo",
     "submit": "Přihlásit se",
     "submitting": "Přihlašování...",

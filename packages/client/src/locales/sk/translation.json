@@ -1,4 +1,15 @@
 {
+  "apiError": {
+    "badUserInput": "Niektoré zadané údaje nie sú platné. Skontrolujte ich a skúste to znova.",
+    "conflict": "Táto položka už existuje. Použite iné údaje a skúste to znova.",
+    "forbidden": "Na túto akciu nemáte oprávnenie.",
+    "internal": "Na našej strane sa niečo pokazilo. Skúste to znova neskôr.",
+    "network": "Server sa nepodarilo kontaktovať. Skontrolujte pripojenie a skúste to znova.",
+    "notFound": "Požadovanú položku sa nepodarilo nájsť.",
+    "rateLimited": "Príliš veľa pokusov. Skúste to znova neskôr.",
+    "rateLimitedWait": "Príliš veľa pokusov. Skúste to znova o {{seconds}} s.",
+    "unauthenticated": "Prihlásenie zlyhalo. Skontrolujte svoje údaje a skúste to znova."
+  },
   "auth": {
     "fields": {
       "confirmPassword": "Potvrdiť heslo",
@@ -28,6 +39,7 @@
       "description": "Prihláste sa do svojho účtu",
       "error": "Prihlásenie zlyhalo",
       "forgotPassword": "Zabudli ste heslo?",
+      "invalidCredentials": "Neplatný e-mail alebo heslo, prípadne je váš účet zablokovaný alebo pozastavený.",
       "noAccount": "Nemáte účet?",
       "otpSent": "OTP kód bol odoslaný na váš e-mail",
       "otpStatusError": "Stav OTP sa nepodarilo zistiť. Použije sa prihlásenie heslom.",
@@ -64,7 +76,7 @@
     },
     "register": {
       "description": "Vytvorte si nový účet",
-      "error": "Registrácia zlyhala",
+      "emailTaken": "Účet s týmto e-mailom už existuje.",
       "firstName": "Meno",
       "hasAccount": "Už máte účet?",
       "lastName": "Priezvisko",
@@ -88,7 +100,6 @@
       "description": "Vytvorte si silné heslo na zabezpečenie svojho účtu",
       "doneDescription": "Vaše heslo bolo úspešne nastavené. Presmerovanie na prehľad...",
       "doneTitle": "Hotovo!",
-      "error": "Nastavenie hesla zlyhalo",
       "invalidDescription": "Tento overovací odkaz je neplatný alebo vypršal.",
       "invalidTitle": "Neplatný odkaz",
       "invalidToken": "Neplatný overovací token",

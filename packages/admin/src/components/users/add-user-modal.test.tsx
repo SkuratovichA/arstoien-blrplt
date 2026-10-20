@@ -70,13 +70,14 @@ describe('AddUserModal', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
-  it('keeps the dialog open and reports the error when the mutation fails', async () => {
+  it('keeps the dialog open and reports the failure in the text of the catalog, not in the text of the error', async () => {
     const { onUserCreated, user } = setup({ error: new Error('Email already in use') });
 
     await openAndFill(user);
     await user.click(screen.getByRole('button', { name: 'Create User' }));
 
-    expect(await screen.findByText('Email already in use')).toBeInTheDocument();
+    expect(await screen.findByText('Failed to create user. Please try again.')).toBeInTheDocument();
+    expect(screen.queryByText('Email already in use')).not.toBeInTheDocument();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(onUserCreated).not.toHaveBeenCalled();
   });

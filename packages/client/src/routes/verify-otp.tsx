@@ -27,6 +27,7 @@ import { REQUEST_OTP_LOGIN, VERIFY_OTP_LOGIN } from '../graphql/auth.graphql.ts'
 import type { AuthGuardContext } from '../lib/auth-guard';
 import { requireGuest } from '../lib/auth-guard';
 import { useAuthStore } from '../lib/auth-store';
+import { errorMessageOf } from '../lib/error-message';
 
 export const Route = createFileRoute('/verify-otp')({
   beforeLoad: ({ context }) => {
@@ -104,12 +105,18 @@ function VerifyOtp() {
         setCanResend(false);
         form.reset();
       } else {
-        throw new Error(result.data?.requestOtpLogin?.message ?? t('auth.otp.sendError'));
+        console.error('Resend OTP error:', result.data?.requestOtpLogin?.message);
+        toast.error(t('auth.otp.resendError'));
       }
     } catch (error) {
       console.error('Resend OTP error:', error);
-      toast.error(t('auth.otp.resendError'));
+      toast.error(errorMessageOf(error, t));
     }
+  };
+
+  const showCodeError = (message: string) => {
+    toast.error(message);
+    form.setError('code', { message });
   };
 
   const onSubmit = async (data: OtpFormData) => {
@@ -150,13 +157,11 @@ function VerifyOtp() {
         toast.success(t('auth.login.success'));
         navigate({ to: '/dashboard', search: {} });
       } else {
-        throw new Error(t('auth.otp.invalidCode'));
+        showCodeError(t('auth.otp.invalidCode'));
       }
     } catch (error) {
       console.error('OTP verification error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('auth.otp.invalidCode');
-      toast.error(errorMessage);
-      form.setError('code', { message: errorMessage });
+      showCodeError(errorMessageOf(error, t, { UNAUTHENTICATED: t('auth.otp.invalidCode') }));
     }
   };
 

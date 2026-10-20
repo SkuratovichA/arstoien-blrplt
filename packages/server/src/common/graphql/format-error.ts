@@ -1,20 +1,32 @@
-import { unwrapResolverError } from '@apollo/server/errors';
+import { ApolloServerErrorCode, unwrapResolverError } from '@apollo/server/errors';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import type { GraphQLFormattedError } from 'graphql';
 
 /**
- * The extensions.code values that this API names itself, for the HTTP statuses that Apollo has no name for. A client switches on them.
+ * The extensions.code values that a client switches on. Apollo names BAD_USER_INPUT and INTERNAL_SERVER_ERROR itself; the others name the HTTP statuses that Apollo has no code for.
  */
 const ErrorCode = {
+  BadUserInput: ApolloServerErrorCode.BAD_USER_INPUT,
+  Unauthenticated: 'UNAUTHENTICATED',
+  Forbidden: 'FORBIDDEN',
+  NotFound: 'NOT_FOUND',
+  Conflict: 'CONFLICT',
   RateLimited: 'RATE_LIMITED',
+  InternalServerError: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
 } as const;
 
 type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
 /**
- * The code of an error by the HTTP status that toHttpException (effect-adapter.ts) gave it. An error whose status is not in the table keeps the shape that formatError gave it before.
+ * The code of an error by the HTTP status that toHttpException (effect-adapter.ts) gave it. A status that is not in the table is an unexpected failure.
  */
-const CODE_BY_STATUS: ReadonlyMap<number, ErrorCode> = new Map([
+const CODE_BY_STATUS: ReadonlyMap<number, ErrorCode> = new Map<number, ErrorCode>([
+  [HttpStatus.BAD_REQUEST, ErrorCode.BadUserInput],
+  [HttpStatus.UNPROCESSABLE_ENTITY, ErrorCode.BadUserInput],
+  [HttpStatus.UNAUTHORIZED, ErrorCode.Unauthenticated],
+  [HttpStatus.FORBIDDEN, ErrorCode.Forbidden],
+  [HttpStatus.NOT_FOUND, ErrorCode.NotFound],
+  [HttpStatus.CONFLICT, ErrorCode.Conflict],
   [HttpStatus.TOO_MANY_REQUESTS, ErrorCode.RateLimited],
 ]);
 
@@ -35,30 +47,40 @@ function retryAfterSecondsOf(exception: HttpException): number | undefined {
 }
 
 /**
- * The code that Apollo or @nestjs/apollo put on the error, INTERNAL_SERVER_ERROR when there is none
+ * The code that GraphQL or Apollo put on the error, INTERNAL_SERVER_ERROR when there is none. A resolver that threw something other than an HttpException leaves the code as Apollo made it, and an error that GraphQL raised before a resolver ran, such as GRAPHQL_VALIDATION_FAILED, keeps its own.
  */
 function codeOf(formatted: GraphQLFormattedError): string {
   const code = formatted.extensions?.code;
-  return typeof code === 'string' ? code : 'INTERNAL_SERVER_ERROR';
+  return typeof code === 'string' ? code : ErrorCode.InternalServerError;
+}
+
+/** extensions holds the code and the seconds to wait, and nothing of what Apollo put there, such as the stack trace */
+function apiError(
+  formatted: GraphQLFormattedError,
+  code: string,
+  retryAfterSeconds?: number
+): FormattedApiError {
+  return {
+    message: formatted.message,
+    code,
+    path: formatted.path,
+    extensions: { code, ...(retryAfterSeconds === undefined ? {} : { retryAfterSeconds }) },
+  };
 }
 
 /**
- * The error of the response for what the resolver threw: the message, the path and the code, and extensions.code besides when the status of the exception has a name in the table.
+ * The error of the response for what the resolver threw: the message, the path and the code, in extensions.code and at the top level.
  */
 export function formatThrown(formatted: GraphQLFormattedError, thrown: unknown): FormattedApiError {
   if (thrown instanceof HttpException) {
-    const code = CODE_BY_STATUS.get(thrown.getStatus());
-    if (code !== undefined) {
-      const retryAfterSeconds = retryAfterSecondsOf(thrown);
-      return {
-        message: formatted.message,
-        code,
-        path: formatted.path,
-        extensions: { code, ...(retryAfterSeconds === undefined ? {} : { retryAfterSeconds }) },
-      };
-    }
+    const code = CODE_BY_STATUS.get(thrown.getStatus()) ?? ErrorCode.InternalServerError;
+    return apiError(
+      formatted,
+      code,
+      code === ErrorCode.RateLimited ? retryAfterSecondsOf(thrown) : undefined
+    );
   }
-  return { message: formatted.message, code: codeOf(formatted), path: formatted.path };
+  return apiError(formatted, codeOf(formatted));
 }
 
 /**

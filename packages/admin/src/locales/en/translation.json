@@ -1,4 +1,15 @@
 {
+  "apiError": {
+    "badUserInput": "Some of the entered data is not valid. Check it and try again.",
+    "conflict": "This already exists. Use different details and try again.",
+    "forbidden": "You are not allowed to do this.",
+    "internal": "Something went wrong on our side. Try again later.",
+    "network": "Could not reach the server. Check your connection and try again.",
+    "notFound": "We could not find what you asked for.",
+    "rateLimited": "Too many attempts. Try again later.",
+    "rateLimitedWait": "Too many attempts. Try again in {{seconds}} s.",
+    "unauthenticated": "Sign-in failed. Check your details and try again."
+  },
   "auditLogs": {
     "actionCreate": "Create",
     "actionDelete": "Delete",
@@ -67,7 +78,6 @@
     "description": "Sign in to access the admin panel",
     "emailPlaceholder": "Enter your email",
     "forbidden": "You do not have permission to access the admin panel",
-    "invalidCredentials": "Invalid email or password",
     "passwordPlaceholder": "Enter your password",
     "submit": "Sign in",
     "submitting": "Signing in...",

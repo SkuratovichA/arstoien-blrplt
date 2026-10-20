@@ -96,8 +96,9 @@ describe('user profile', () => {
       bearer: session.accessToken,
     });
 
-    expect(result.errors.length).toBeGreaterThan(0);
-    expect(result.errors[0]?.message).toMatch(/Validation failed.*firstName/);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]?.code).toBe('BAD_USER_INPUT');
+    expect(result.errors[0]?.message).toContain('firstName');
     const stored = await testApp.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
     expect(stored.firstName).toBe('Stable');
   });

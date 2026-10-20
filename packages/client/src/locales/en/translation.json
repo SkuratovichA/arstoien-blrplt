@@ -1,4 +1,15 @@
 {
+  "apiError": {
+    "badUserInput": "Some of the entered data is not valid. Check it and try again.",
+    "conflict": "This already exists. Use different details and try again.",
+    "forbidden": "You are not allowed to do this.",
+    "internal": "Something went wrong on our side. Try again later.",
+    "network": "Could not reach the server. Check your connection and try again.",
+    "notFound": "We could not find what you asked for.",
+    "rateLimited": "Too many attempts. Try again later.",
+    "rateLimitedWait": "Too many attempts. Try again in {{seconds}} s.",
+    "unauthenticated": "Sign-in failed. Check your details and try again."
+  },
   "auth": {
     "fields": {
       "confirmPassword": "Confirm Password",
@@ -28,6 +39,7 @@
       "description": "Sign in to your account",
       "error": "Login failed",
       "forgotPassword": "Forgot password?",
+      "invalidCredentials": "Invalid email or password, or your account is blocked or suspended.",
       "noAccount": "Don't have an account?",
       "otpSent": "OTP code sent to your email",
       "otpStatusError": "Could not check OTP status. Defaulting to password login.",
@@ -64,7 +76,7 @@
     },
     "register": {
       "description": "Create a new account",
-      "error": "Registration failed",
+      "emailTaken": "An account with this email already exists.",
       "firstName": "First name",
       "hasAccount": "Already have an account?",
       "lastName": "Last name",
@@ -88,7 +100,6 @@
       "description": "Create a strong password to secure your account",
       "doneDescription": "Your password has been set successfully. Redirecting to dashboard...",
       "doneTitle": "Success!",
-      "error": "Failed to set password",
       "invalidDescription": "This verification link is invalid or has expired.",
       "invalidTitle": "Invalid Link",
       "invalidToken": "Invalid verification token",

@@ -18,6 +18,7 @@ import { AuthLayout } from '@components/layout';
 import { SET_PASSWORD_WITH_TOKEN } from '@graphql/auth.graphql.ts';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuthStore } from '@lib/auth-store.ts';
+import { errorMessageOf } from '@lib/error-message.ts';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { CheckCircle } from 'lucide-react';
 import { useState } from 'react';
@@ -109,8 +110,9 @@ function SetPassword() {
       }
     } catch (error) {
       console.error('Set password error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('auth.setPassword.error');
-      toast.error(errorMessage);
+      toast.error(
+        errorMessageOf(error, t, { BAD_USER_INPUT: t('auth.setPassword.invalidDescription') })
+      );
     }
   };
 

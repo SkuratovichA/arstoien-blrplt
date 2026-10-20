@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { graphqlUploadExpress } from 'graphql-upload-ts';
+import { validationException } from './common/graphql/validation-exception.js';
 import type { CorsConfig } from './config/config-types.js';
 
 const logger = new Logger('Bootstrap');
@@ -50,16 +51,7 @@ export function configureApp(app: INestApplication): void {
       skipMissingProperties: true,
       skipNullProperties: true,
       skipUndefinedProperties: true,
-      exceptionFactory: (errors) => {
-        console.error('❌ Validation failed:', JSON.stringify(errors, null, 2));
-        const messages = errors.map((error) => ({
-          field: error.property,
-          constraints: error.constraints,
-          value: error.value,
-        }));
-        console.error('❌ Detailed validation errors:', JSON.stringify(messages, null, 2));
-        return new Error(`Validation failed: ${JSON.stringify(messages)}`);
-      },
+      exceptionFactory: validationException,
     })
   );
 

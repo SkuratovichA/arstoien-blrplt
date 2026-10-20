@@ -1,6 +1,6 @@
-import { ApolloClient, ApolloLink, gql, InMemoryCache, Observable, split } from '@apollo/client';
+import type { TypedDocumentNode } from '@apollo/client';
+import { ApolloClient, ApolloLink, gql, InMemoryCache, split } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-import { ErrorLink, onError } from '@apollo/client/link/error';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { getMainDefinition } from '@apollo/client/utilities';
 import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs';
@@ -8,8 +8,8 @@ import { createClient } from 'graphql-ws';
 import toast from 'react-hot-toast';
 import { useAuthStore } from './auth-store';
 import { env } from './env';
-
-import ErrorHandlerOptions = ErrorLink.ErrorHandlerOptions;
+import { createErrorLink } from './error-link';
+import i18n from './i18n';
 
 const authLink = setContext((_, { headers }) => {
   const token = useAuthStore.getState().token;
@@ -22,122 +22,46 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-// Token refresh mutation
-const REFRESH_TOKEN_MUTATION = gql`
+const REFRESH_TOKEN_MUTATION: TypedDocumentNode<{ refresh: string }> = gql`
   mutation RefreshToken {
     refresh
   }
 `;
 
-let isRefreshing = false;
-let pendingRequests: (() => void)[] = [];
+// A client of its own, so that the refusal of a renewal does not reach the error link; a refused renewal must reject, so that the session ends
+const renewalClient = new ApolloClient({
+  link: ApolloLink.from([
+    new UploadHttpLink({
+      uri: env.graphqlUrl,
+      credentials: 'include',
+    }),
+  ]),
+  cache: new InMemoryCache(),
+  defaultOptions: {
+    watchQuery: { errorPolicy: 'none' },
+    query: { errorPolicy: 'none' },
+    mutate: { errorPolicy: 'none' },
+  },
+});
 
-const resolvePendingRequests = () => {
-  pendingRequests.map((callback) => callback());
-  pendingRequests = [];
-};
-
-const errorLink = onError((options) => {
-  const { graphQLErrors, networkError, operation, forward } = options as {
-    graphQLErrors?: ReadonlyArray<{ message: string; extensions?: { code?: string } }>;
-    networkError?: Error;
-  } & ErrorHandlerOptions;
-
-  if (graphQLErrors) {
-    for (const err of graphQLErrors) {
-      if (err.extensions?.code === 'UNAUTHENTICATED') {
-        // Handle token refresh
-        if (!isRefreshing) {
-          isRefreshing = true;
-
-          // Create a temporary Apollo Client for the refresh request
-          const refreshClient = new ApolloClient({
-            link: ApolloLink.from([
-              new UploadHttpLink({
-                uri: env.graphqlUrl,
-                credentials: 'include',
-              }),
-            ]),
-            cache: new InMemoryCache(),
-            // A failed refresh must reject, so the catch below logs the user out
-            defaultOptions: {
-              watchQuery: { errorPolicy: 'none' },
-              query: { errorPolicy: 'none' },
-              mutate: { errorPolicy: 'none' },
-            },
-          });
-
-          return new Observable((observer) => {
-            refreshClient
-              .mutate({
-                mutation: REFRESH_TOKEN_MUTATION,
-              })
-              .then(({ data }) => {
-                const responseData = data as { refresh: string } | null;
-                const newToken = responseData?.refresh;
-                if (newToken) {
-                  // Store the new token
-                  localStorage.setItem('accessToken', newToken);
-                  useAuthStore.getState().setToken(newToken);
-
-                  isRefreshing = false;
-                  resolvePendingRequests();
-
-                  // Retry the original operation with new token
-                  const oldHeaders = operation.getContext().headers;
-                  operation.setContext({
-                    headers: {
-                      ...oldHeaders,
-                      authorization: `Bearer ${newToken}`,
-                    },
-                  });
-
-                  forward(operation).subscribe(observer);
-                } else {
-                  observer.error(new Error('No refresh token received'));
-                }
-              })
-              .catch(() => {
-                // Refresh failed, redirect to login
-                isRefreshing = false;
-                pendingRequests = [];
-                useAuthStore.getState().clearAuth();
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-                window.location.href = '/login';
-                observer.complete();
-              });
-          });
-        } else {
-          // If already refreshing, queue this request
-          return new Observable((observer) => {
-            pendingRequests.push(() => {
-              // Retry with potentially new token
-              const token = localStorage.getItem('accessToken');
-              if (token) {
-                const oldHeaders = operation.getContext().headers;
-                operation.setContext({
-                  headers: {
-                    ...oldHeaders,
-                    authorization: `Bearer ${token}`,
-                  },
-                });
-              }
-              forward(operation).subscribe(observer);
-            });
-          });
-        }
-      } else {
-        // Show error toast for non-auth errors
-        toast.error(err.message);
-      }
-    }
-  }
-
-  if (networkError) {
-    console.error(`[Network error]: ${networkError.message}`);
-    toast.error('Network error. Please check your connection.');
-  }
+const errorLink = createErrorLink({
+  t: i18n.t,
+  notify: (message) => toast.error(message),
+  readToken: () => useAuthStore.getState().token,
+  renewToken: async () => {
+    const { data } = await renewalClient.mutate({ mutation: REFRESH_TOKEN_MUTATION });
+    return data?.refresh ?? null;
+  },
+  storeToken: (token) => {
+    localStorage.setItem('accessToken', token);
+    useAuthStore.getState().setToken(token);
+  },
+  endSession: () => {
+    useAuthStore.getState().clearAuth();
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    window.location.href = '/login';
+  },
 });
 
 const uploadLink = new UploadHttpLink({

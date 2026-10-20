@@ -70,7 +70,7 @@ function LoginPage() {
         navigate({ to: '/' });
       }
     } catch (error) {
-      toast.error(t('login.invalidCredentials'));
+      // A refused sign-in is shown by the error link, with the text of its code
       console.error('Login error:', error);
     }
   };

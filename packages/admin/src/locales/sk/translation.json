@@ -1,4 +1,15 @@
 {
+  "apiError": {
+    "badUserInput": "Niektoré zadané údaje nie sú platné. Skontrolujte ich a skúste to znova.",
+    "conflict": "Táto položka už existuje. Použite iné údaje a skúste to znova.",
+    "forbidden": "Na túto akciu nemáte oprávnenie.",
+    "internal": "Na našej strane sa niečo pokazilo. Skúste to znova neskôr.",
+    "network": "Server sa nepodarilo kontaktovať. Skontrolujte pripojenie a skúste to znova.",
+    "notFound": "Požadovanú položku sa nepodarilo nájsť.",
+    "rateLimited": "Príliš veľa pokusov. Skúste to znova neskôr.",
+    "rateLimitedWait": "Príliš veľa pokusov. Skúste to znova o {{seconds}} s.",
+    "unauthenticated": "Prihlásenie zlyhalo. Skontrolujte svoje údaje a skúste to znova."
+  },
   "auditLogs": {
     "actionCreate": "Vytvorenie",
     "actionDelete": "Zmazanie",
@@ -67,7 +78,6 @@
     "description": "Prihláste sa a získajte prístup k administrátorskému panelu",
     "emailPlaceholder": "Zadajte svoj e-mail",
     "forbidden": "Nemáte oprávnenie na prístup do administrátorského panela",
-    "invalidCredentials": "Neplatný e-mail alebo heslo",
     "passwordPlaceholder": "Zadajte svoje heslo",
     "submit": "Prihlásiť sa",
     "submitting": "Prihlasovanie...",

@@ -10,11 +10,12 @@ export interface GraphqlRequest {
   bearer?: string;
 }
 
-/** The error shape of the server: formatError in app.module.ts keeps these three fields */
+/** The error shape of the server: formatError in app.module.ts keeps these members, and extensions holds the code and the details a specification names */
 export interface GraphqlError {
   message: string;
   code: string;
   path?: unknown;
+  extensions?: Record<string, unknown>;
 }
 
 export interface GraphqlResult {
@@ -35,7 +36,9 @@ function isGraphqlError(value: unknown): value is GraphqlError {
     'message' in value &&
     typeof value.message === 'string' &&
     'code' in value &&
-    typeof value.code === 'string'
+    typeof value.code === 'string' &&
+    (!('extensions' in value) ||
+      (typeof value.extensions === 'object' && value.extensions !== null))
   );
 }
 

@@ -200,7 +200,8 @@ describe('authentication: passwords', () => {
   });
 
   // WHEN a signed-in user sends the right current password and a new password of seven characters
-  // THEN the request fails with a validation error
+  // THEN the request fails with the code BAD_USER_INPUT
+  // AND the message names the field newPassword and does not contain the password that was sent
   // AND the password of the account is unchanged
   it('Scenario: A new password shorter than eight characters is refused', async () => {
     const user = await seedUser(testApp.prisma);
@@ -209,8 +210,13 @@ describe('authentication: passwords', () => {
 
     const result = await change(session.accessToken, DEFAULT_PASSWORD, 'Short-7');
 
-    expect(result.errors.length).toBeGreaterThan(0);
-    expect(result.errors[0]?.message).toMatch(/Validation failed.*newPassword/);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]?.code).toBe('BAD_USER_INPUT');
+    expect(result.errors[0]?.extensions).toEqual({ code: 'BAD_USER_INPUT' });
+    const message = result.errors[0]?.message ?? '';
+    expect(message).toContain('newPassword');
+    expect(message).not.toContain('Short-7');
+    expect(message).not.toContain(DEFAULT_PASSWORD);
     expect(await storedHash(user.id)).toBe(hashBefore);
     await nextSecond();
     await expect(loginAs(testApp, user.email, DEFAULT_PASSWORD)).resolves.toMatchObject({

@@ -47,7 +47,7 @@ export function AddUserModal({ onUserCreated }: AddUserModalProps) {
       }
     } catch (error) {
       console.error('Create user error:', error);
-      toast.error(error instanceof Error ? error.message : t('users.create.error'));
+      toast.error(t('users.create.error'));
     }
   };
 

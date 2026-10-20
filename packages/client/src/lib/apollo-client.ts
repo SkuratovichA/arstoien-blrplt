@@ -1,5 +1,6 @@
 import { ApolloClient, ApolloLink, InMemoryCache, split } from '@apollo/client';
-import { onError } from '@apollo/client/link/error';
+import { CombinedGraphQLErrors } from '@apollo/client/errors';
+import { ErrorLink } from '@apollo/client/link/error';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { getMainDefinition } from '@apollo/client/utilities';
 import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs';
@@ -17,22 +18,13 @@ const wsLink = new GraphQLWsLink(
   })
 );
 
-const errorLink = onError((options) => {
-  const { graphQLErrors, networkError } = options as {
-    graphQLErrors?: ReadonlyArray<{ message: string; locations?: unknown; path?: unknown }>;
-    networkError?: Error;
-  };
-
-  if (graphQLErrors) {
-    for (const error of graphQLErrors) {
-      console.error(
-        `[GraphQL error]: Message: ${error.message}, Location: ${error.locations}, Path: ${error.path}`
-      );
+const errorLink = new ErrorLink(({ error }) => {
+  if (CombinedGraphQLErrors.is(error)) {
+    for (const { message, locations, path } of error.errors) {
+      console.error(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`);
     }
-  }
-
-  if (networkError) {
-    console.error(`[Network error]: ${networkError}`);
+  } else {
+    console.error(`[Network error]: ${error}`);
   }
 });
 
