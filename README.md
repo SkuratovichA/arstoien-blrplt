@@ -433,6 +433,10 @@ A new feature goes in three steps.
 
 The integration tests have no default database, because they write rows: set `DATABASE_URL` to an empty database that may be filled, for example `docker compose exec postgres createdb -U blrplt_user blrplt_test` and then `DATABASE_URL=postgresql://blrplt_user:blrplt_password@localhost:5433/blrplt_test pnpm test:integration`. The schema is created by `prisma migrate deploy` on the first run.
 
+The baseline migration `packages/server/prisma/migrations/0_init` is the schema as it was before the first migration. An empty database needs nothing, but a database that was filled earlier by `prisma db push` (the Docker entrypoint still does that) already holds every table, so `prisma migrate deploy` refuses it with P3005 until the baseline is marked as applied once: `cd packages/server && pnpm exec prisma migrate resolve --applied 0_init`.
+
+Spec Gate is a workflow of its own and is not part of the `ci-success` job of `ci.yml`: to let it block a merge, add the Spec Gate job as a required status check in the branch protection rules.
+
 `.github/workflows/spec-tests-agent.yml` is an optional workflow that lets an agent write the missing tests: when the repository variable `SPEC_TESTS_AGENT` is `true` and the secret `ANTHROPIC_API_KEY` is set, adding the label `spec-tests` to a pull request from this repository runs the `spec-to-tests` skill and commits the tests to the branch. It is off by default, it never edits a spec, and the skill has to be on the base branch of the pull request before the action can use it.
 
 `AGENTS.md` holds the same rules for people and agents who work in the repository.

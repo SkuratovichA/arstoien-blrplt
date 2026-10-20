@@ -56,7 +56,7 @@ The rules of the gate, enforced on every pull request by `.github/workflows/spec
 - Never `any` and never `as any` in TypeScript. Find the proper type, and narrow instead of asserting.
 - Search before writing logic. The repository usually holds the helper, client, mapping or validator already; reuse or extend it, and write a parallel copy only when a layer boundary forces it.
 - Server code that can fail returns an Effect with a typed error. Imports in `packages/server` are relative and end in `.js`.
-- A schema change needs a migration (`pnpm db:migrate`), because the integration tests and the spec gate build the database from the migration files in `packages/server/prisma/migrations` with `prisma migrate deploy`.
+- A schema change needs a migration (`pnpm db:migrate`), because the integration tests and the spec gate build the database from the migration files in `packages/server/prisma/migrations` with `prisma migrate deploy`; a database that `prisma db push` filled earlier needs `cd packages/server && pnpm exec prisma migrate resolve --applied 0_init` once.
 - Biome formats and lints: single quotes, width 100, `import type` for types, and a `console` call is a warning, which fails `pnpm run ci`.
 - Conventional commits.
 - Write documentation and spec text with one sentence or paragraph per line, without hard wrapping.

@@ -75,4 +75,10 @@ jobs:
             Do not edit anything under `openspec/specs`, and do not edit a spec to make a test pass.
           claude_args: |
             --max-turns 40
-            --allowedTools Edit,Read,Write,Glob,Grep,Bash
+            --allowedTools Edit,Read,Write,Glob,Grep,Bash(pnpm:*),Bash(git status:*),Bash(git diff:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*)
+
+      # The prompt forbids editing a spec, and this step makes the rule visible: the job turns red when the agent's commits touch openspec/specs
+      - name: Refuse a changed spec
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git diff --exit-code "$HEAD_SHA" HEAD -- openspec/specs
