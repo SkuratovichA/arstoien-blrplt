@@ -37,9 +37,9 @@ export function ProfileUpdateForm({ initialValues, onSubmit }: ProfileUpdateForm
           name="firstName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('First Name')}</FormLabel>
+              <FormLabel>{t('auth.fields.firstName')}</FormLabel>
               <FormControl>
-                <Input type="text" placeholder={t('John')} {...field} />
+                <Input type="text" placeholder={t('profile.firstNamePlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -50,16 +50,16 @@ export function ProfileUpdateForm({ initialValues, onSubmit }: ProfileUpdateForm
           name="lastName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Last Name')}</FormLabel>
+              <FormLabel>{t('auth.fields.lastName')}</FormLabel>
               <FormControl>
-                <Input type="text" placeholder={t('Doe')} {...field} />
+                <Input type="text" placeholder={t('profile.lastNamePlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? t('Loading...') : t('Update Profile')}
+          {form.formState.isSubmitting ? t('common.loading') : t('profile.updateButton')}
         </Button>
       </form>
     </Form>

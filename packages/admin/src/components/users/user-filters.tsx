@@ -39,13 +39,13 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('Filters')}</CardTitle>
-        <CardDescription>{t('Filter users by search, role, or status')}</CardDescription>
+        <CardTitle>{t('common.filters')}</CardTitle>
+        <CardDescription>{t('users.filters.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 md:grid-cols-3">
           <Input
-            placeholder={t('Search by name or email...')}
+            placeholder={t('users.filters.search')}
             value={filters.search}
             onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
           />
@@ -54,13 +54,13 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
             onValueChange={(value) => onFiltersChange({ ...filters, role: toFilter(value) })}
           >
             <SelectTrigger>
-              <SelectValue placeholder={t('All Roles')} />
+              <SelectValue placeholder={t('users.filters.allRoles')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>{t('All Roles')}</SelectItem>
-              <SelectItem value="USER">{t('User')}</SelectItem>
-              <SelectItem value="MODERATOR">{t('Moderator')}</SelectItem>
-              <SelectItem value="ADMIN">{t('Admin')}</SelectItem>
+              <SelectItem value={ALL}>{t('users.filters.allRoles')}</SelectItem>
+              <SelectItem value="USER">{t('roles.user')}</SelectItem>
+              <SelectItem value="MODERATOR">{t('roles.moderator')}</SelectItem>
+              <SelectItem value="ADMIN">{t('roles.admin')}</SelectItem>
             </SelectContent>
           </Select>
           <Select
@@ -68,10 +68,10 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
             onValueChange={(value) => onFiltersChange({ ...filters, status: toFilter(value) })}
           >
             <SelectTrigger>
-              <SelectValue placeholder={t('All Statuses')} />
+              <SelectValue placeholder={t('users.filters.allStatuses')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>{t('All Statuses')}</SelectItem>
+              <SelectItem value={ALL}>{t('users.filters.allStatuses')}</SelectItem>
               {USER_STATUSES.map((status) => (
                 <SelectItem key={status} value={status}>
                   {statusLabel(status)}

@@ -34,19 +34,19 @@ export function useUserStatusLabel(): (status: UserStatus) => string {
   return (status) => {
     switch (status) {
       case 'ACTIVE':
-        return t('Active');
+        return t('userStatus.active');
       case 'PENDING_APPROVAL':
-        return t('Pending');
+        return t('userStatus.pending');
       case 'FRESHLY_CREATED_REQUIRES_PASSWORD':
-        return t('Awaiting password');
+        return t('userStatus.awaitingPassword');
       case 'SUSPENDED':
-        return t('Suspended');
+        return t('userStatus.suspended');
       case 'BLOCKED':
-        return t('Banned');
+        return t('userStatus.banned');
       case 'REJECTED':
-        return t('Rejected');
+        return t('userStatus.rejected');
       case 'DELETED':
-        return t('Deleted');
+        return t('userStatus.deleted');
     }
   };
 }

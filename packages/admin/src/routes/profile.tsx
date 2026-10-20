@@ -98,10 +98,10 @@ function ProfilePage() {
       });
       if (data?.updateProfile) {
         updateUser(data.updateProfile);
-        toast.success(t('Profile updated successfully'));
+        toast.success(t('profile.updated'));
       }
     } catch (error) {
-      toast.error(t('Failed to update profile'));
+      toast.error(t('profile.updateError'));
       console.error('Update error:', error);
     }
   };
@@ -117,13 +117,13 @@ function ProfilePage() {
         },
       });
       if (data?.changePassword?.success) {
-        toast.success(t('Password changed successfully'));
+        toast.success(t('profile.passwordChanged'));
         passwordForm.reset();
       } else {
-        toast.error(data?.changePassword?.message ?? t('Failed to change password'));
+        toast.error(data?.changePassword?.message ?? t('profile.passwordChangeError'));
       }
     } catch (error) {
-      toast.error(t('Failed to change password'));
+      toast.error(t('profile.passwordChangeError'));
       console.error('Password change error:', error);
     }
   };
@@ -140,21 +140,21 @@ function ProfilePage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('Profile')}</h1>
-          <p className="text-muted-foreground">{t('Manage your account settings')}</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('profile.title')}</h1>
+          <p className="text-muted-foreground">{t('profile.description')}</p>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="profile">{t('Profile')}</TabsTrigger>
-            <TabsTrigger value="password">{t('Password')}</TabsTrigger>
+            <TabsTrigger value="profile">{t('profile.tabProfile')}</TabsTrigger>
+            <TabsTrigger value="password">{t('profile.tabPassword')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <CardTitle>{t('Profile Information')}</CardTitle>
-                <CardDescription>{t('Update your profile details')}</CardDescription>
+                <CardTitle>{t('profile.infoTitle')}</CardTitle>
+                <CardDescription>{t('profile.infoDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...profileForm}>
@@ -165,7 +165,7 @@ function ProfilePage() {
                         name="firstName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('First Name')}</FormLabel>
+                            <FormLabel>{t('fields.firstName')}</FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -178,7 +178,7 @@ function ProfilePage() {
                         name="lastName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('Last Name')}</FormLabel>
+                            <FormLabel>{t('fields.lastName')}</FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -191,7 +191,7 @@ function ProfilePage() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('Email')}</FormLabel>
+                            <FormLabel>{t('fields.email')}</FormLabel>
                             <FormControl>
                               <Input type="email" {...field} />
                             </FormControl>
@@ -201,7 +201,7 @@ function ProfilePage() {
                       />
                     </div>
                     <Button type="submit" disabled={updating}>
-                      {updating ? t('Saving...') : t('Save Changes')}
+                      {updating ? t('common.saving') : t('common.saveChanges')}
                     </Button>
                   </form>
                 </Form>
@@ -212,8 +212,8 @@ function ProfilePage() {
           <TabsContent value="password">
             <Card>
               <CardHeader>
-                <CardTitle>{t('Change Password')}</CardTitle>
-                <CardDescription>{t('Update your password')}</CardDescription>
+                <CardTitle>{t('profile.passwordTitle')}</CardTitle>
+                <CardDescription>{t('profile.passwordDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...passwordForm}>
@@ -226,7 +226,7 @@ function ProfilePage() {
                       name="currentPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('Current Password')}</FormLabel>
+                          <FormLabel>{t('profile.currentPassword')}</FormLabel>
                           <FormControl>
                             <Input type="password" {...field} />
                           </FormControl>
@@ -239,7 +239,7 @@ function ProfilePage() {
                       name="newPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('New Password')}</FormLabel>
+                          <FormLabel>{t('profile.newPassword')}</FormLabel>
                           <FormControl>
                             <Input type="password" {...field} />
                           </FormControl>
@@ -252,7 +252,7 @@ function ProfilePage() {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('Confirm New Password')}</FormLabel>
+                          <FormLabel>{t('profile.confirmPassword')}</FormLabel>
                           <FormControl>
                             <Input type="password" {...field} />
                           </FormControl>
@@ -261,7 +261,9 @@ function ProfilePage() {
                       )}
                     />
                     <Button type="submit" disabled={changingPassword}>
-                      {changingPassword ? t('Changing...') : t('Change Password')}
+                      {changingPassword
+                        ? t('profile.passwordSubmitting')
+                        : t('profile.passwordSubmit')}
                     </Button>
                   </form>
                 </Form>

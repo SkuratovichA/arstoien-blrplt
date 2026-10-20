@@ -37,9 +37,13 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('First name')}</FormLabel>
+                <FormLabel>{t('auth.register.firstName')}</FormLabel>
                 <FormControl>
-                  <Input type="text" placeholder={t('Enter your first name')} {...field} />
+                  <Input
+                    type="text"
+                    placeholder={t('auth.fields.firstNamePlaceholder')}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -50,9 +54,13 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('Last name')}</FormLabel>
+                <FormLabel>{t('auth.register.lastName')}</FormLabel>
                 <FormControl>
-                  <Input type="text" placeholder={t('Enter your last name')} {...field} />
+                  <Input
+                    type="text"
+                    placeholder={t('auth.fields.lastNamePlaceholder')}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -64,9 +72,9 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Email')}</FormLabel>
+              <FormLabel>{t('auth.fields.email')}</FormLabel>
               <FormControl>
-                <Input type="text" placeholder={t('Enter your email')} {...field} />
+                <Input type="text" placeholder={t('auth.fields.emailPlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -77,16 +85,16 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Phone')}</FormLabel>
+              <FormLabel>{t('auth.register.phone')}</FormLabel>
               <FormControl>
-                <Input type="text" placeholder={t('Enter your phone number')} {...field} />
+                <Input type="text" placeholder={t('auth.register.phonePlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? t('Loading...') : t('Register')}
+          {form.formState.isSubmitting ? t('common.loading') : t('auth.register.submit')}
         </Button>
       </form>
     </Form>

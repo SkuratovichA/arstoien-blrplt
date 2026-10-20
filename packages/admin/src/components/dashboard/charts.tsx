@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 import { USER_GROWTH_STATS_QUERY } from '@/graphql/admin.graphql';
+import { monthLabel } from '@/lib/month-label';
 
 interface ChartsProps {
   stats?: {
@@ -24,7 +25,7 @@ interface ChartsProps {
 }
 
 export function Charts({ stats }: ChartsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: growthData, loading } = useQuery(USER_GROWTH_STATS_QUERY, {
     variables: { months: 6 },
   });
@@ -34,9 +35,9 @@ export function Charts({ stats }: ChartsProps) {
   // Use real data from the query, or fall back to basic stats if loading
   const userData =
     loading || !growthData?.userGrowthStats
-      ? [{ month: t('Loading...'), users: 0, active: 0 }]
+      ? [{ month: t('common.loading'), users: 0, active: 0 }]
       : growthData.userGrowthStats.data.map((point) => ({
-          month: t(point.period),
+          month: monthLabel(point.period, i18n.language),
           users: point.totalUsers,
           active: point.activeUsers,
         }));
@@ -44,8 +45,8 @@ export function Charts({ stats }: ChartsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('User Growth')}</CardTitle>
-        <CardDescription>{t('Total and active users over time')}</CardDescription>
+        <CardTitle>{t('dashboard.userGrowth')}</CardTitle>
+        <CardDescription>{t('dashboard.userGrowthDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -59,13 +60,13 @@ export function Charts({ stats }: ChartsProps) {
               type="monotone"
               dataKey="users"
               stroke="hsl(var(--primary))"
-              name={t('Total Users')}
+              name={t('dashboard.totalUsers')}
             />
             <Line
               type="monotone"
               dataKey="active"
               stroke="hsl(var(--chart-2))"
-              name={t('Active Users')}
+              name={t('dashboard.activeUsers')}
             />
           </LineChart>
         </ResponsiveContainer>

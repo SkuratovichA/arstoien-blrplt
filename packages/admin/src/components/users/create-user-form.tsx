@@ -66,9 +66,9 @@ export function CreateUserForm({ onSubmit }: CreateUserFormProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <RequiredLabel field="email">{t('Email')}</RequiredLabel>
+              <RequiredLabel field="email">{t('fields.email')}</RequiredLabel>
               <FormControl>
-                <Input type="email" placeholder={t('user@example.com')} {...field} />
+                <Input type="email" placeholder={t('users.create.emailPlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -79,9 +79,13 @@ export function CreateUserForm({ onSubmit }: CreateUserFormProps) {
           name="firstName"
           render={({ field }) => (
             <FormItem>
-              <RequiredLabel field="firstName">{t('First Name')}</RequiredLabel>
+              <RequiredLabel field="firstName">{t('fields.firstName')}</RequiredLabel>
               <FormControl>
-                <Input type="text" placeholder={t('John')} {...field} />
+                <Input
+                  type="text"
+                  placeholder={t('users.create.firstNamePlaceholder')}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -92,9 +96,9 @@ export function CreateUserForm({ onSubmit }: CreateUserFormProps) {
           name="lastName"
           render={({ field }) => (
             <FormItem>
-              <RequiredLabel field="lastName">{t('Last Name')}</RequiredLabel>
+              <RequiredLabel field="lastName">{t('fields.lastName')}</RequiredLabel>
               <FormControl>
-                <Input type="text" placeholder={t('Doe')} {...field} />
+                <Input type="text" placeholder={t('users.create.lastNamePlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -105,9 +109,9 @@ export function CreateUserForm({ onSubmit }: CreateUserFormProps) {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <RequiredLabel field="phone">{t('Phone (optional)')}</RequiredLabel>
+              <RequiredLabel field="phone">{t('users.create.phoneLabel')}</RequiredLabel>
               <FormControl>
-                <Input type="text" placeholder={t('+1 234 567 8900')} {...field} />
+                <Input type="text" placeholder={t('users.create.phonePlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -118,7 +122,7 @@ export function CreateUserForm({ onSubmit }: CreateUserFormProps) {
           name="role"
           render={({ field }) => (
             <FormItem>
-              <RequiredLabel field="role">{t('Role')}</RequiredLabel>
+              <RequiredLabel field="role">{t('fields.role')}</RequiredLabel>
               <Select value={field.value} onValueChange={field.onChange} disabled={field.disabled}>
                 <FormControl>
                   <SelectTrigger ref={field.ref} onBlur={field.onBlur}>
@@ -126,8 +130,8 @@ export function CreateUserForm({ onSubmit }: CreateUserFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="USER">{t('User')}</SelectItem>
-                  <SelectItem value="ADMIN">{t('Admin')}</SelectItem>
+                  <SelectItem value="USER">{t('roles.user')}</SelectItem>
+                  <SelectItem value="ADMIN">{t('roles.admin')}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -139,19 +143,23 @@ export function CreateUserForm({ onSubmit }: CreateUserFormProps) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <RequiredLabel field="password">{t('Password (optional)')}</RequiredLabel>
+              <RequiredLabel field="password">{t('users.create.passwordLabel')}</RequiredLabel>
               <FormControl>
-                <Input type="password" placeholder={t('Leave empty to auto-generate')} {...field} />
+                <Input
+                  type="password"
+                  placeholder={t('users.create.passwordPlaceholder')}
+                  {...field}
+                />
               </FormControl>
               <FormDescription className="text-xs">
-                {t('If left empty, a temporary password will be generated and sent via email')}
+                {t('users.create.passwordHint')}
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? t('Creating...') : t('Create User')}
+          {form.formState.isSubmitting ? t('users.create.submitting') : t('users.create.submit')}
         </Button>
       </form>
     </Form>

@@ -41,15 +41,13 @@ export function AddUserModal({ onUserCreated }: AddUserModalProps) {
       });
 
       if (result.data?.createUser) {
-        toast.success(t('User created successfully'));
+        toast.success(t('users.create.success'));
         setIsOpen(false);
         onUserCreated?.();
       }
     } catch (error) {
       console.error('Create user error:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to create user. Please try again.';
-      toast.error(t(errorMessage));
+      toast.error(error instanceof Error ? error.message : t('users.create.error'));
     }
   };
 
@@ -58,15 +56,13 @@ export function AddUserModal({ onUserCreated }: AddUserModalProps) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          {t('Add User')}
+          {t('users.add')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{t('Create User')}</DialogTitle>
-          <DialogDescription>
-            {t('Add a new user to the system. Required fields are marked with an asterisk (*)')}
-          </DialogDescription>
+          <DialogTitle>{t('users.create.title')}</DialogTitle>
+          <DialogDescription>{t('users.create.description')}</DialogDescription>
         </DialogHeader>
         <div className="mt-4">
           <CreateUserForm onSubmit={handleSubmit} />

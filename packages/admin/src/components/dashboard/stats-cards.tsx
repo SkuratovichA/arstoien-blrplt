@@ -19,23 +19,23 @@ export function StatsCards({ stats }: StatsCardsProps) {
 
   const cards = [
     {
-      title: t('Total Users'),
+      title: t('dashboard.totalUsers'),
       value: stats.totalUsers,
       icon: Users,
-      description: `+${stats.newUsersThisMonth} ${t('this month')}`,
+      description: `+${stats.newUsersThisMonth} ${t('dashboard.thisMonth')}`,
       trend: stats.userGrowth,
     },
     {
-      title: t('Active Users'),
+      title: t('dashboard.activeUsers'),
       value: stats.activeUsers,
       icon: UserCheck,
-      description: `${stats.pendingUsers} ${t('pending')}`,
+      description: `${stats.pendingUsers} ${t('dashboard.pending')}`,
     },
     {
-      title: t('Growth Rate'),
+      title: t('dashboard.growthRate'),
       value: `${stats.userGrowth}%`,
       icon: TrendingUp,
-      description: t('User growth this month'),
+      description: t('dashboard.growthRateDescription'),
       trend: stats.userGrowth,
     },
   ];

@@ -47,8 +47,8 @@ function DashboardPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('Dashboard')}</h1>
-          <p className="text-muted-foreground">{t('Overview of your system')}</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h1>
+          <p className="text-muted-foreground">{t('dashboard.description')}</p>
         </div>
 
         <StatsCards stats={stats} />
@@ -58,20 +58,20 @@ function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>{t('Recent Activity')}</CardTitle>
-              <CardDescription>{t('Latest actions in the system')}</CardDescription>
+              <CardTitle>{t('dashboard.recentActivity')}</CardTitle>
+              <CardDescription>{t('dashboard.recentActivityDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {activities.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">{t('No recent activity')}</p>
+                  <p className="text-muted-foreground text-sm">{t('dashboard.noRecentActivity')}</p>
                 ) : (
                   activities.map((activity) => (
                     <div key={activity.id} className="flex items-start gap-4">
                       <div className="flex-1 space-y-1">
                         <p className="text-sm font-medium">{activity.description}</p>
                         <p className="text-muted-foreground text-xs">
-                          {activity.userEmail ?? t('System')}
+                          {activity.userEmail ?? t('common.system')}
                         </p>
                       </div>
                       <p className="text-muted-foreground text-xs">

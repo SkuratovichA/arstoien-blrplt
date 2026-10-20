@@ -82,14 +82,14 @@ function Login() {
         });
 
         if (otpResult.data?.requestOtpLogin?.success) {
-          toast.success(t('OTP code sent to your email'));
+          toast.success(t('auth.login.otpSent'));
           // Navigate to OTP verification page
           navigate({
             to: '/verify-otp',
             search: { email },
           });
         } else {
-          const errorMsg = otpResult.data?.requestOtpLogin?.message ?? t('Failed to send OTP');
+          const errorMsg = otpResult.data?.requestOtpLogin?.message ?? t('auth.otp.sendError');
           toast.error(errorMsg);
           throw new Error(errorMsg);
         }
@@ -101,7 +101,7 @@ function Login() {
     } catch (error) {
       console.error('Email check error details:', error);
       // Show error to user but still allow password login as fallback
-      toast.error(t('Could not check OTP status. Defaulting to password login.'));
+      toast.error(t('auth.login.otpStatusError'));
       setShowPassword(true);
       setEmailEntered(true);
     }
@@ -116,7 +116,7 @@ function Login() {
 
     // Traditional password login - validate password is provided
     if (!data.password) {
-      form.setError('password', { message: t('Password is required') });
+      form.setError('password', { message: t('auth.login.passwordRequired') });
       return;
     }
 
@@ -149,14 +149,14 @@ function Login() {
           emailVerifiedAt: user.emailVerifiedAt,
           createdAt: user.createdAt,
         });
-        toast.success(t('Login successful'));
+        toast.success(t('auth.login.success'));
         navigate({ to: '/dashboard', search: {} });
       } else {
-        throw new Error(t('Login failed'));
+        throw new Error(t('auth.login.error'));
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('Login failed');
+      const errorMessage = error instanceof Error ? error.message : t('auth.login.error');
       toast.error(errorMessage);
     }
   };
@@ -165,8 +165,8 @@ function Login() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('Login')}</CardTitle>
-          <CardDescription>{t('Sign in to your account')}</CardDescription>
+          <CardTitle>{t('auth.login.title')}</CardTitle>
+          <CardDescription>{t('auth.login.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -176,11 +176,11 @@ function Login() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Email')}</FormLabel>
+                    <FormLabel>{t('auth.fields.email')}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder={t('Enter your email')}
+                        placeholder={t('auth.fields.emailPlaceholder')}
                         disabled={checkingOtp || requestingOtp || emailEntered}
                         {...field}
                       />
@@ -196,9 +196,12 @@ function Login() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('Password')}</FormLabel>
+                      <FormLabel>{t('auth.fields.password')}</FormLabel>
                       <FormControl>
-                        <PasswordInput placeholder={t('Enter your password')} {...field} />
+                        <PasswordInput
+                          placeholder={t('auth.fields.passwordPlaceholder')}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -212,7 +215,7 @@ function Login() {
                     to="/forgot-password"
                     className="text-muted-foreground hover:text-foreground text-sm"
                   >
-                    {t('Forgot password?')}
+                    {t('auth.login.forgotPassword')}
                   </Link>
                 </div>
               )}
@@ -223,23 +226,23 @@ function Login() {
                 disabled={loading || checkingOtp || requestingOtp}
               >
                 {loading
-                  ? t('Signing in...')
+                  ? t('auth.login.submitting')
                   : checkingOtp
-                    ? t('Checking authentication method...')
+                    ? t('auth.login.checking')
                     : requestingOtp
-                      ? t('Sending verification code...')
+                      ? t('auth.login.sendingCode')
                       : showPassword
-                        ? t('Sign in')
-                        : t('Continue')}
+                        ? t('auth.login.submit')
+                        : t('auth.login.continue')}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-muted-foreground text-sm">
-            {t("Don't have an account?")}{' '}
+            {t('auth.login.noAccount')}{' '}
             <Link to="/register" className="text-foreground hover:underline">
-              {t('Sign up')}
+              {t('auth.login.signUp')}
             </Link>
           </p>
         </CardFooter>

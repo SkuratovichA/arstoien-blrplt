@@ -63,10 +63,10 @@ function Profile() {
           phone: updated.phone ?? undefined,
           emailVerifiedAt: updated.emailVerifiedAt,
         });
-        toast.success(t('Profile updated successfully'));
+        toast.success(t('profile.updateSuccess'));
       }
     } catch {
-      toast.error(t('Failed to update profile'));
+      toast.error(t('profile.updateError'));
     }
   };
 
@@ -81,20 +81,19 @@ function Profile() {
         },
       });
 
-      toast.success(t('Password changed successfully'));
+      toast.success(t('profile.passwordChangeSuccess'));
       return true;
     } catch {
-      toast.error(t('Failed to change password'));
+      toast.error(t('profile.passwordChangeError'));
       return false;
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm(t('Are you sure you want to delete your account? This action cannot be undone.')))
-      return;
+    if (!confirm(t('profile.deleteAccountConfirm'))) return;
 
     try {
-      const password = prompt(t('Please enter your password to confirm'));
+      const password = prompt(t('profile.deleteAccountPrompt'));
       if (!password) return;
 
       await deleteAccount({
@@ -102,23 +101,23 @@ function Profile() {
       });
 
       logout();
-      toast.success(t('Account deleted successfully'));
+      toast.success(t('profile.deleteAccountSuccess'));
     } catch {
-      toast.error(t('Failed to delete account'));
+      toast.error(t('profile.deleteAccountError'));
     }
   };
 
   return (
     <MainLayout>
       <div className="container mx-auto max-w-4xl px-4 py-8">
-        <h1 className="mb-8 text-4xl font-bold">{t('Profile')}</h1>
+        <h1 className="mb-8 text-4xl font-bold">{t('profile.title')}</h1>
 
         <div className="space-y-6">
           {/* Profile Information */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('Personal Information')}</CardTitle>
-              <CardDescription>{t('Update your personal details')}</CardDescription>
+              <CardTitle>{t('profile.personalInfo')}</CardTitle>
+              <CardDescription>{t('profile.personalInfoDescription')}</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
@@ -127,7 +126,7 @@ function Profile() {
                   htmlFor="profile-email"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  {t('Email')}
+                  {t('auth.fields.email')}
                 </label>
                 <Input id="profile-email" value={user?.email} disabled className="mt-2" />
               </div>
@@ -142,10 +141,8 @@ function Profile() {
           {/* Change Password */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('Change Password')}</CardTitle>
-              <CardDescription>
-                {t('Update your password to keep your account secure')}
-              </CardDescription>
+              <CardTitle>{t('profile.changePassword')}</CardTitle>
+              <CardDescription>{t('profile.changePasswordDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <PasswordChangeForm onSubmit={onPasswordSubmit} />
@@ -155,10 +152,8 @@ function Profile() {
           {/* Danger Zone */}
           <Card className="border-destructive">
             <CardHeader>
-              <CardTitle className="text-destructive">{t('Danger Zone')}</CardTitle>
-              <CardDescription>
-                {t('Permanently delete your account and all associated data')}
-              </CardDescription>
+              <CardTitle className="text-destructive">{t('profile.dangerZone')}</CardTitle>
+              <CardDescription>{t('profile.dangerZoneDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -166,7 +161,7 @@ function Profile() {
                 onClick={handleDeleteAccount}
                 disabled={deletingAccount}
               >
-                {deletingAccount ? t('Loading...') : t('Delete Account')}
+                {deletingAccount ? t('common.loading') : t('profile.deleteAccount')}
               </Button>
             </CardContent>
           </Card>

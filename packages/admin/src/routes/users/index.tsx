@@ -98,14 +98,14 @@ function UsersPage() {
       });
 
       if (result.data?.bulkUpdateOtp?.success) {
-        toast.success(result.data.bulkUpdateOtp.message ?? t('OTP settings updated'));
+        toast.success(result.data.bulkUpdateOtp.message ?? t('users.otp.updated'));
         refetch();
       } else {
-        toast.error(t('Failed to update OTP settings'));
+        toast.error(t('users.otp.updateError'));
       }
     } catch (error) {
       console.error('Bulk OTP update error:', error);
-      toast.error(t('Failed to update OTP settings'));
+      toast.error(t('users.otp.updateError'));
     } finally {
       setShowOtpDialog(false);
       setOtpAction(null);
@@ -117,19 +117,19 @@ function UsersPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('Users')}</h1>
-            <p className="text-muted-foreground">{t('Manage all users in the system')}</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t('users.title')}</h1>
+            <p className="text-muted-foreground">{t('users.description')}</p>
           </div>
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   <MoreHorizontal className="mr-2 h-4 w-4" />
-                  {t('Bulk Actions')}
+                  {t('users.bulkActions')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>{t('OTP Settings')}</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('users.otp.settings')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => {
@@ -138,7 +138,7 @@ function UsersPage() {
                   }}
                 >
                   <Shield className="mr-2 h-4 w-4" />
-                  {t('Enable OTP for All Users')}
+                  {t('users.otp.enableAll')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
@@ -147,7 +147,7 @@ function UsersPage() {
                   }}
                 >
                   <ShieldOff className="mr-2 h-4 w-4" />
-                  {t('Disable OTP for All Users')}
+                  {t('users.otp.disableAll')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -174,23 +174,19 @@ function UsersPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>
                 {otpAction === 'enable'
-                  ? t('Enable OTP for All Users?')
-                  : t('Disable OTP for All Users?')}
+                  ? t('users.otp.enableAllTitle')
+                  : t('users.otp.disableAllTitle')}
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {otpAction === 'enable'
-                  ? t(
-                      'This will enable OTP authentication for all users in the system. Users will be able to sign in using OTP codes sent to their email addresses.'
-                    )
-                  : t(
-                      'This will disable OTP authentication for all users in the system. Users will need to use passwords to sign in.'
-                    )}
+                  ? t('users.otp.enableAllDescription')
+                  : t('users.otp.disableAllDescription')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>{t('Cancel')}</AlertDialogCancel>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
               <AlertDialogAction onClick={handleBulkOtpUpdate}>
-                {otpAction === 'enable' ? t('Enable OTP') : t('Disable OTP')}
+                {otpAction === 'enable' ? t('users.otp.enable') : t('users.otp.disable')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

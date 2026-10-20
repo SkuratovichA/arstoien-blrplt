@@ -20,9 +20,9 @@ export function Header() {
       logout();
       await apolloClient.cache.reset();
       navigate({ to: '/login' });
-      toast.success(t('Logged out successfully'));
+      toast.success(t('auth.logout.success'));
     } catch {
-      toast.error(t('Failed to log out'));
+      toast.error(t('auth.logout.error'));
     }
   };
 
@@ -37,22 +37,22 @@ export function Header() {
           {user ? (
             <>
               <Link to="/dashboard">
-                <Button variant="ghost">{t('Dashboard')}</Button>
+                <Button variant="ghost">{t('nav.dashboard')}</Button>
               </Link>
               <Link to="/profile">
-                <Button variant="ghost">{t('Profile')}</Button>
+                <Button variant="ghost">{t('nav.profile')}</Button>
               </Link>
               <Button onClick={handleLogout} variant="outline">
-                {t('Log out')}
+                {t('auth.logout.button')}
               </Button>
             </>
           ) : (
             <>
               <Link to="/login">
-                <Button variant="ghost">{t('Login')}</Button>
+                <Button variant="ghost">{t('nav.login')}</Button>
               </Link>
               <Link to="/register">
-                <Button>{t('Register')}</Button>
+                <Button>{t('nav.register')}</Button>
               </Link>
             </>
           )}

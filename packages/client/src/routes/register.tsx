@@ -31,11 +31,11 @@ function Register() {
       });
 
       if (result.data?.register.success) {
-        toast.success(result.data.register.message ?? t('Registration successful'));
+        toast.success(result.data.register.message ?? t('auth.register.success'));
         navigate({ to: '/login' });
       }
     } catch {
-      toast.error(t('Registration failed'));
+      toast.error(t('auth.register.error'));
     }
   };
 
@@ -43,17 +43,17 @@ function Register() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('Register')}</CardTitle>
-          <CardDescription>{t('Create a new account')}</CardDescription>
+          <CardTitle>{t('auth.register.title')}</CardTitle>
+          <CardDescription>{t('auth.register.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <RegisterForm onSubmit={onSubmit} />
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-muted-foreground text-sm">
-            {t('Already have an account?')}{' '}
+            {t('auth.register.hasAccount')}{' '}
             <Link to="/login" className="text-foreground hover:underline">
-              {t('Sign in')}
+              {t('auth.register.signIn')}
             </Link>
           </p>
         </CardFooter>

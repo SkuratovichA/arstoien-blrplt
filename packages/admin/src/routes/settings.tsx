@@ -54,9 +54,9 @@ function SettingsPage() {
           },
         },
       });
-      toast.success(t('Settings updated successfully'));
+      toast.success(t('settings.updated'));
     } catch (error) {
-      toast.error(t('Failed to update settings'));
+      toast.error(t('settings.updateError'));
       console.error('Update error:', error);
     }
   };
@@ -73,18 +73,16 @@ function SettingsPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('System Settings')}</h1>
-          <p className="text-muted-foreground">
-            {t('Configure system-wide settings and preferences')}
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('settings.title')}</h1>
+          <p className="text-muted-foreground">{t('settings.description')}</p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t('Email Settings')}</CardTitle>
-                <CardDescription>{t('Configure support email address')}</CardDescription>
+                <CardTitle>{t('settings.emailTitle')}</CardTitle>
+                <CardDescription>{t('settings.emailDescription')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
@@ -92,11 +90,11 @@ function SettingsPage() {
                   name="supportEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('Support Email')}</FormLabel>
+                      <FormLabel>{t('settings.supportEmail')}</FormLabel>
                       <FormControl>
                         <Input {...field} type="email" placeholder="support@example.com" />
                       </FormControl>
-                      <FormDescription>{t('Email address for support inquiries')}</FormDescription>
+                      <FormDescription>{t('settings.supportEmailDescription')}</FormDescription>
                     </FormItem>
                   )}
                 />
@@ -105,8 +103,8 @@ function SettingsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>{t('Authentication Settings')}</CardTitle>
-                <CardDescription>{t('Configure authentication methods')}</CardDescription>
+                <CardTitle>{t('settings.authTitle')}</CardTitle>
+                <CardDescription>{t('settings.authDescription')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
@@ -115,20 +113,14 @@ function SettingsPage() {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          {t('OTP Passwordless Authentication')}
-                        </FormLabel>
-                        <FormDescription>
-                          {t(
-                            'Enable passwordless login using OTP codes sent to email. When enabled, users can sign in without passwords.'
-                          )}
-                        </FormDescription>
+                        <FormLabel className="text-base">{t('settings.otpTitle')}</FormLabel>
+                        <FormDescription>{t('settings.otpDescription')}</FormDescription>
                       </div>
                       <FormControl>
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
-                          aria-label={t('Toggle OTP authentication')}
+                          aria-label={t('settings.otpToggle')}
                         />
                       </FormControl>
                     </FormItem>
@@ -139,7 +131,7 @@ function SettingsPage() {
 
             <div className="flex justify-end">
               <Button type="submit" disabled={updating}>
-                {updating ? t('Saving...') : t('Save Settings')}
+                {updating ? t('common.saving') : t('settings.save')}
               </Button>
             </div>
           </form>

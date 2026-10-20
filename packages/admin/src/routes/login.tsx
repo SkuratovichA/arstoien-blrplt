@@ -61,16 +61,16 @@ function LoginPage() {
 
         // Check if user has admin access (SUPER_ADMIN, ADMIN, or MODERATOR)
         if (!hasAdminAccess(user.role as UserRole)) {
-          toast.error(t('You do not have permission to access the admin panel'));
+          toast.error(t('login.forbidden'));
           return;
         }
 
         setAuth(accessToken, user as User);
-        toast.success(t('Login successful'));
+        toast.success(t('login.success'));
         navigate({ to: '/' });
       }
     } catch (error) {
-      toast.error(t('Invalid email or password'));
+      toast.error(t('login.invalidCredentials'));
       console.error('Login error:', error);
     }
   };
@@ -79,8 +79,8 @@ function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">{t('Admin Panel')}</CardTitle>
-          <CardDescription>{t('Sign in to access the admin panel')}</CardDescription>
+          <CardTitle className="text-2xl font-bold">{t('login.title')}</CardTitle>
+          <CardDescription>{t('login.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -90,9 +90,9 @@ function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Email')}</FormLabel>
+                    <FormLabel>{t('fields.email')}</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder={t('Enter your email')} {...field} />
+                      <Input type="email" placeholder={t('login.emailPlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -103,16 +103,20 @@ function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Password')}</FormLabel>
+                    <FormLabel>{t('fields.password')}</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder={t('Enter your password')} {...field} />
+                      <Input
+                        type="password"
+                        placeholder={t('login.passwordPlaceholder')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('Signing in...') : t('Sign in')}
+                {loading ? t('login.submitting') : t('login.submit')}
               </Button>
             </form>
           </Form>

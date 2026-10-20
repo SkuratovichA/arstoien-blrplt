@@ -12,6 +12,7 @@ The product is described first, in `openspec/specs/`, and built second. For a ch
 - `openspec/specs/<capability>/spec.md` - what the product does today, one directory per capability
 - `openspec/changes/<id>/` - a change in flight: proposal, design, tasks and delta specs
 - `scripts/spec-scenarios.ts` - the tool that ties scenarios to tests (`check` and `generate`)
+- `scripts/i18n-catalog.ts` - the check that keeps the translation catalogs of `packages/client` and `packages/admin` in step with their `t()` calls; `scripts/i18n-locales.spec.ts` runs it on both
 - `packages/server/test/spec/` - the integration tests, one file per capability
 - `packages/server/test/support/` - the harness: `createTestApp`, `gql`, `seedUser`, `loginAs` and the in-memory fakes
 - `.agents/skills/` - the agent skills (the OpenSpec ones and `spec-to-tests`), and `.claude/skills/` mirrors them for Claude Code; `scripts/skill-mirror.spec.ts` fails when the two copies of `spec-to-tests` differ
@@ -55,6 +56,7 @@ The rules of the gate, enforced on every pull request by `.github/workflows/spec
 
 - Never `any` and never `as any` in TypeScript. Find the proper type, and narrow instead of asserting.
 - Search before writing logic. The repository usually holds the helper, client, mapping or validator already; reuse or extend it, and write a parallel copy only when a layer boundary forces it.
+- Texts in the client and the admin go through `t('feature.key')`, where the key is a string literal that names a nested key of `src/locales/<language>/translation.json`, never the English text. A new key goes into `en`, `cs` and `sk` together, with real Czech and Slovak translations, and `pnpm test` fails when a catalog lacks a key that the code uses, when a catalog holds a key that no `t()` call uses, and when a `t()` call names its key without a string literal.
 - Server code that can fail returns an Effect with a typed error. Imports in `packages/server` are relative and end in `.js`.
 - A schema change needs a migration (`pnpm db:migrate`), because the integration tests and the spec gate build the database from the migration files in `packages/server/prisma/migrations` with `prisma migrate deploy`; a database that `prisma db push` filled earlier needs `cd packages/server && pnpm exec prisma migrate resolve --applied 0_init` once.
 - Biome formats and lints: single quotes, width 100, `import type` for types, and a `console` call is a warning, which fails `pnpm run ci`.

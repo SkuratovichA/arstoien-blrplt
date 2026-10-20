@@ -80,10 +80,10 @@ function PendingUsersPage() {
           },
         },
       });
-      toast.success(t('User approved successfully'));
+      toast.success(t('users.pending.approved'));
       refetch();
     } catch (error) {
-      toast.error(t('Failed to approve user'));
+      toast.error(t('users.pending.approveError'));
       console.error('Approve error:', error);
     }
   };
@@ -100,12 +100,12 @@ function PendingUsersPage() {
           },
         },
       });
-      toast.success(t('User rejected'));
+      toast.success(t('users.pending.rejected'));
       setRejectReason('');
       setSelectedUserId(null);
       refetch();
     } catch (error) {
-      toast.error(t('Failed to reject user'));
+      toast.error(t('users.pending.rejectError'));
       console.error('Reject error:', error);
     }
   };
@@ -114,10 +114,8 @@ function PendingUsersPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('Pending Users')}</h1>
-          <p className="text-muted-foreground">
-            {t('Review and approve or reject pending user registrations')}
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('users.pending.title')}</h1>
+          <p className="text-muted-foreground">{t('users.pending.description')}</p>
         </div>
 
         {loading ? (
@@ -125,7 +123,7 @@ function PendingUsersPage() {
         ) : pendingUsers.length === 0 ? (
           <Card>
             <CardContent className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">{t('No pending users')}</p>
+              <p className="text-muted-foreground">{t('users.pending.empty')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -152,12 +150,13 @@ function PendingUsersPage() {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-muted-foreground text-xs">
-                      {t('Registered')}: {new Date(user.createdAt).toLocaleDateString()}
+                      {t('users.pending.registered')}:{' '}
+                      {new Date(user.createdAt).toLocaleDateString()}
                     </p>
                     <div className="flex gap-2">
                       <Button size="sm" className="flex-1" onClick={() => handleApprove(user.id)}>
                         <Check className="mr-1 h-4 w-4" />
-                        {t('Approve')}
+                        {t('users.pending.approve')}
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -168,27 +167,27 @@ function PendingUsersPage() {
                             onClick={() => setSelectedUserId(user.id)}
                           >
                             <X className="mr-1 h-4 w-4" />
-                            {t('Reject')}
+                            {t('users.pending.reject')}
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>{t('Reject User')}</AlertDialogTitle>
+                            <AlertDialogTitle>{t('users.pending.rejectTitle')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              {t('Provide a reason for rejecting this user registration')}
+                              {t('users.pending.rejectDescription')}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <Textarea
-                            placeholder={t('Reason for rejection...')}
+                            placeholder={t('users.pending.rejectPlaceholder')}
                             value={rejectReason}
                             onChange={(e) => setRejectReason(e.target.value)}
                           />
                           <AlertDialogFooter>
                             <AlertDialogCancel onClick={() => setRejectReason('')}>
-                              {t('Cancel')}
+                              {t('common.cancel')}
                             </AlertDialogCancel>
                             <AlertDialogAction onClick={handleReject}>
-                              {t('Reject')}
+                              {t('users.pending.reject')}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>

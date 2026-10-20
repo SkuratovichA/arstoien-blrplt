@@ -72,10 +72,10 @@ function ResetPassword() {
         },
       });
 
-      toast.success(t('Password reset successful'));
+      toast.success(t('auth.resetPassword.success'));
       navigate({ to: '/login' });
     } catch {
-      toast.error(t('Failed to reset password'));
+      toast.error(t('auth.resetPassword.error'));
     }
   };
 
@@ -83,8 +83,8 @@ function ResetPassword() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('Reset password')}</CardTitle>
-          <CardDescription>{t('Enter your new password')}</CardDescription>
+          <CardTitle>{t('auth.resetPassword.title')}</CardTitle>
+          <CardDescription>{t('auth.resetPassword.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -94,9 +94,12 @@ function ResetPassword() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('New password')}</FormLabel>
+                    <FormLabel>{t('auth.resetPassword.newPassword')}</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder={t('Enter your password')} {...field} />
+                      <PasswordInput
+                        placeholder={t('auth.fields.passwordPlaceholder')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -108,9 +111,12 @@ function ResetPassword() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Confirm password')}</FormLabel>
+                    <FormLabel>{t('auth.resetPassword.confirmPassword')}</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder={t('Confirm your password')} {...field} />
+                      <PasswordInput
+                        placeholder={t('auth.fields.confirmPasswordPlaceholder')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -118,7 +124,7 @@ function ResetPassword() {
               />
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('Loading...') : t('Reset password')}
+                {loading ? t('common.loading') : t('auth.resetPassword.submit')}
               </Button>
             </form>
           </Form>

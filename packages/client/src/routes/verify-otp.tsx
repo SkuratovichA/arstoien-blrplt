@@ -89,7 +89,7 @@ function VerifyOtp() {
 
   const handleResendCode = async () => {
     if (!search.email) {
-      toast.error(t('Email address is required'));
+      toast.error(t('auth.otp.emailRequired'));
       return;
     }
 
@@ -99,22 +99,22 @@ function VerifyOtp() {
       });
 
       if (result.data?.requestOtpLogin?.success) {
-        toast.success(t('New OTP code sent to your email'));
+        toast.success(t('auth.otp.resendSuccess'));
         setCountdown(300); // Reset countdown
         setCanResend(false);
         form.reset();
       } else {
-        throw new Error(result.data?.requestOtpLogin?.message ?? t('Failed to send OTP'));
+        throw new Error(result.data?.requestOtpLogin?.message ?? t('auth.otp.sendError'));
       }
     } catch (error) {
       console.error('Resend OTP error:', error);
-      toast.error(t('Failed to resend code'));
+      toast.error(t('auth.otp.resendError'));
     }
   };
 
   const onSubmit = async (data: OtpFormData) => {
     if (!search.email) {
-      toast.error(t('Email address is required'));
+      toast.error(t('auth.otp.emailRequired'));
       navigate({ to: '/login' });
       return;
     }
@@ -147,14 +147,14 @@ function VerifyOtp() {
           createdAt: user.createdAt,
         });
 
-        toast.success(t('Login successful'));
+        toast.success(t('auth.login.success'));
         navigate({ to: '/dashboard', search: {} });
       } else {
-        throw new Error(t('Invalid or expired code'));
+        throw new Error(t('auth.otp.invalidCode'));
       }
     } catch (error) {
       console.error('OTP verification error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('Invalid or expired code');
+      const errorMessage = error instanceof Error ? error.message : t('auth.otp.invalidCode');
       toast.error(errorMessage);
       form.setError('code', { message: errorMessage });
     }
@@ -204,9 +204,9 @@ function VerifyOtp() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('Enter Verification Code')}</CardTitle>
+          <CardTitle>{t('auth.otp.title')}</CardTitle>
           <CardDescription>
-            {t('We sent a 6-digit code to')} <strong>{search.email}</strong>
+            {t('auth.otp.sentTo')} <strong>{search.email}</strong>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -217,7 +217,7 @@ function VerifyOtp() {
                 name="code"
                 render={() => (
                   <FormItem>
-                    <FormLabel>{t('Verification Code')}</FormLabel>
+                    <FormLabel>{t('auth.otp.codeLabel')}</FormLabel>
                     <FormControl>
                       <div className="flex justify-center gap-2">
                         {OTP_SLOT_KEYS.map((slotKey, index) => (
@@ -244,10 +244,10 @@ function VerifyOtp() {
                     <FormDescription className="text-center">
                       {countdown > 0 ? (
                         <>
-                          {t('Code expires in')} <strong>{formatCountdown(countdown)}</strong>
+                          {t('auth.otp.expiresIn')} <strong>{formatCountdown(countdown)}</strong>
                         </>
                       ) : (
-                        <span className="text-destructive">{t('Code has expired')}</span>
+                        <span className="text-destructive">{t('auth.otp.expired')}</span>
                       )}
                     </FormDescription>
                     <FormMessage />
@@ -256,7 +256,7 @@ function VerifyOtp() {
               />
 
               <Button type="submit" className="w-full" disabled={verifying}>
-                {verifying ? t('Verifying...') : t('Verify Code')}
+                {verifying ? t('auth.otp.verifying') : t('auth.otp.verify')}
               </Button>
 
               <div className="space-y-2 text-center">
@@ -269,17 +269,17 @@ function VerifyOtp() {
                     disabled={!canResend || requesting}
                   >
                     {requesting
-                      ? t('Sending...')
+                      ? t('auth.otp.sending')
                       : canResend
-                        ? t('Resend Code')
-                        : t('Resend available in {{time}}', { time: formatCountdown(countdown) })}
+                        ? t('auth.otp.resend')
+                        : t('auth.otp.resendIn', { time: formatCountdown(countdown) })}
                   </Button>
                 </div>
 
                 <div className="text-muted-foreground text-sm">
-                  {t('Wrong email?')}{' '}
+                  {t('auth.otp.wrongEmail')}{' '}
                   <Link to="/login" className="text-foreground hover:underline">
-                    {t('Back to login')}
+                    {t('auth.forgotPassword.backToLogin')}
                   </Link>
                 </div>
               </div>

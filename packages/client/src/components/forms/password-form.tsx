@@ -43,9 +43,9 @@ export function PasswordChangeForm({ onSubmit }: PasswordChangeFormProps) {
           name="currentPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Current Password')}</FormLabel>
+              <FormLabel>{t('profile.currentPassword')}</FormLabel>
               <FormControl>
-                <PasswordInput placeholder={t('Enter your current password')} {...field} />
+                <PasswordInput placeholder={t('profile.currentPasswordPlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -56,10 +56,10 @@ export function PasswordChangeForm({ onSubmit }: PasswordChangeFormProps) {
           name="newPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('New Password')}</FormLabel>
+              <FormLabel>{t('profile.newPassword')}</FormLabel>
               <FormControl>
                 <PasswordInput
-                  placeholder={t('Enter your new password')}
+                  placeholder={t('profile.newPasswordPlaceholder')}
                   {...field}
                   onChange={(event) => {
                     field.onChange(event);
@@ -79,16 +79,16 @@ export function PasswordChangeForm({ onSubmit }: PasswordChangeFormProps) {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Confirm Password')}</FormLabel>
+              <FormLabel>{t('auth.fields.confirmPassword')}</FormLabel>
               <FormControl>
-                <PasswordInput placeholder={t('Confirm your new password')} {...field} />
+                <PasswordInput placeholder={t('profile.confirmPasswordPlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? t('Loading...') : t('Change Password')}
+          {form.formState.isSubmitting ? t('common.loading') : t('profile.changePasswordButton')}
         </Button>
       </form>
     </Form>
