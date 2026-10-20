@@ -8,10 +8,11 @@ runs:
     - name: Setup pnpm
       uses: pnpm/action-setup@v6
 
+    # .nvmrc is the one place that names the Node major, so local shells, CI and the deploy jobs cannot drift apart
     - name: Setup Node.js
       uses: actions/setup-node@v7
       with:
-        node-version: 26
+        node-version-file: .nvmrc
         cache: pnpm
 
     - name: Install dependencies
