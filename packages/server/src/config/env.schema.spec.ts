@@ -87,13 +87,28 @@ describe('loadEnv', () => {
     expect(thrown instanceof InvalidEnvironmentError && thrown.problems).toHaveLength(3);
   });
 
-  it('does not repeat a secret in the error', () => {
+  it('does not repeat the valid secrets when other variables fail', () => {
     const error = Effect.runSync(
       Effect.flip(decodeEnv({ ...required, DATABASE_URL: '', PORT: 'abc' }))
     );
 
     expect(error.message).not.toContain('access-secret');
     expect(error.message).not.toContain('refresh-secret');
+  });
+
+  // The error names a variable and what was expected, and a secret that fails would be printed with it, so a secret may only fail by being missing
+  it('checks no secret for its shape, so a variable that fails never carries one', () => {
+    const oddSecrets = {
+      DATABASE_URL: 'not a url at all',
+      JWT_SECRET: 'x',
+      JWT_REFRESH_SECRET: '   ',
+      GOOGLE_CLIENT_SECRET: '"quoted"',
+      S3_SECRET_KEY: '!',
+      SMTP_PASS: '\n',
+      ADMIN_PASSWORD: '1',
+    };
+
+    expect(() => loadEnv(oddSecrets)).not.toThrow();
   });
 });
 
