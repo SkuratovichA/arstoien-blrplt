@@ -14,7 +14,7 @@ The product is described first, in `openspec/specs/`, and built second. For a ch
 - `scripts/spec-scenarios.ts` - the tool that ties scenarios to tests (`check` and `generate`)
 - `packages/server/test/spec/` - the integration tests, one file per capability
 - `packages/server/test/support/` - the harness: `createTestApp`, `gql`, `seedUser`, `loginAs` and the in-memory fakes
-- `.agents/skills/` - the agent skills (the OpenSpec ones and `spec-to-tests`), and `.claude/skills/` mirrors them for Claude Code
+- `.agents/skills/` - the agent skills (the OpenSpec ones and `spec-to-tests`), and `.claude/skills/` mirrors them for Claude Code; `scripts/skill-mirror.spec.ts` fails when the two copies of `spec-to-tests` differ
 - `.github/workflows/` - `ci.yml`, `spec-gate.yml` and the optional `spec-tests-agent.yml`
 
 ## Commands
