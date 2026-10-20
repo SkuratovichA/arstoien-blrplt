@@ -365,15 +365,19 @@ function groupBy<T>(items: readonly T[], key: (item: T) => string): Map<string, 
   return groups;
 }
 
-/** A title may be in the spec and again in the delta of one active change, because a MODIFIED requirement repeats its scenarios; any other repetition is two scenarios that one test title cannot tell apart. */
+/** A title may be in the spec and again in the delta of one active change to the same capability, because a MODIFIED requirement repeats its scenarios; any other repetition is two scenarios that one test title cannot tell apart. */
 function isConflict(occurrences: readonly Scenario[]): boolean {
   const inSpecs = occurrences.filter((scenario) => scenario.change === null).length;
   const inChanges = groupBy(
     occurrences.filter((scenario) => scenario.change !== null),
     (scenario) => scenario.change ?? ''
   );
+  const capabilities = new Set(occurrences.map((scenario) => scenario.capability));
   return (
-    inSpecs > 1 || inChanges.size > 1 || [...inChanges.values()].some((group) => group.length > 1)
+    inSpecs > 1 ||
+    inChanges.size > 1 ||
+    capabilities.size > 1 ||
+    [...inChanges.values()].some((group) => group.length > 1)
   );
 }
 

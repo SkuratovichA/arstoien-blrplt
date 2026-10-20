@@ -403,6 +403,15 @@ describe('compareScenarios', () => {
 
     expect(report.problems.map((problem) => problem.kind)).toEqual(['duplicate-scenario']);
   });
+
+  it('reports a title that the spec of one capability and the delta of another both state', () => {
+    const report = compareScenarios(
+      [scenario('A'), scenario('A', { change: 'edit', capability: 'other' })],
+      [scenarioTest('A')]
+    );
+
+    expect(report.problems.map((problem) => problem.kind)).toEqual(['duplicate-scenario']);
+  });
 });
 
 describe('formatReport', () => {

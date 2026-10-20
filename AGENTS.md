@@ -44,7 +44,7 @@ A change is done when `pnpm run ci`, `pnpm typecheck`, `pnpm test`, `pnpm test:i
 
 The rules of the gate, enforced on every pull request by `.github/workflows/spec-gate.yml`:
 
-- The title of a test is `Scenario: ` followed by the exact scenario title, copied from the spec and never typed by hand. A title is unique across all specs and open changes.
+- The title of a test is `Scenario: ` followed by the exact scenario title, copied from the spec and never typed by hand. A title is unique across all specs and open changes, except that the delta of one open change repeats the title of the scenario it modifies in the same capability.
 - A scenario whose test is an `it.todo` or an `it.skip` counts as uncovered.
 - A test titled `Scenario: ...` for a scenario that does not exist is an orphan, and fails the gate as well.
 - A spec is never edited to make a test pass. A spec change is its own OpenSpec change.
