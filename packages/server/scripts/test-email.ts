@@ -6,14 +6,13 @@
  * This script tests the email service configuration and sends test emails
  * to verify that the SMTP setup is working correctly.
  *
- * Usage:
- *   pnpm tsx scripts/test-email.ts [recipient-email]
+ * Usage (the package script loads .env):
+ *   pnpm test:email [recipient-email]
  *
  * For production testing:
- *   NODE_ENV=production pnpm tsx scripts/test-email.ts [recipient-email]
+ *   NODE_ENV=production pnpm test:email [recipient-email]
  */
 
-import 'dotenv/config';
 import * as nodemailer from 'nodemailer';
 import type SMTPConnection from 'nodemailer/lib/smtp-connection';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';

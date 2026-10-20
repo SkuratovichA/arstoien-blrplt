@@ -28,8 +28,8 @@
     "db:studio": "prisma studio",
     "create:admin": "tsx --env-file-if-exists=.env src/scripts/create-admin.ts",
     "create:test-users": "tsx --env-file-if-exists=.env src/scripts/create-test-users.ts",
-    "test:email": "tsx scripts/test-email.ts",
-    "test:email-service": "tsx scripts/test-email-service.ts"
+    "test:email": "tsx --env-file-if-exists=.env scripts/test-email.ts",
+    "test:email-service": "tsx --env-file-if-exists=.env scripts/test-email-service.ts"
   },
   "dependencies": {
     "@apollo/server": "^5.5.1",

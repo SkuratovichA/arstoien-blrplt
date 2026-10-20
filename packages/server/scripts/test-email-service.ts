@@ -6,8 +6,8 @@
  * This script tests the EmailService directly, including template rendering
  * and all the methods we've fixed.
  *
- * Usage:
- *   pnpm tsx scripts/test-email-service.ts [test-type] [recipient-email]
+ * Usage (the package script loads .env):
+ *   pnpm test:email-service [test-type] [recipient-email]
  *
  * Test types:
  *   - admin: Test admin notification email
@@ -18,12 +18,11 @@
  *   - all: Test all email types
  *
  * Example:
- *   pnpm tsx scripts/test-email-service.ts admin admin@example.com
- *   NODE_ENV=production pnpm tsx scripts/test-email-service.ts all test@example.com
+ *   pnpm test:email-service admin admin@example.com
+ *   NODE_ENV=production pnpm test:email-service all test@example.com
  */
 
 import 'reflect-metadata';
-import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { Effect } from 'effect';
 import { EmailService } from '../src/modules/notification/email.service.js';
