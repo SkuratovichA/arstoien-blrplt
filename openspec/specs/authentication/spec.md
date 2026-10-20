@@ -20,7 +20,7 @@ The system SHALL accept a registration made of an email address, a first name, a
 #### Scenario: Registration with an email that is taken is refused
 
 - **WHEN** a visitor registers with an email address that an account already uses
-- **THEN** the request fails with a conflict error that names the email field
+- **THEN** the request fails with the message "User with this email already exists"
 - **AND** no second account is created
 
 ### Requirement: Password login returns tokens and sets cookies
@@ -154,6 +154,11 @@ The system SHALL offer login with a one-time code only when the system-wide sett
 
 - **WHEN** the system-wide OTP setting is on and a client asks whether OTP is enabled for the email of a user whose own preference is on
 - **THEN** the answer is true
+
+#### Scenario: OTP is reported as disabled for an email that no account uses
+
+- **WHEN** the system-wide OTP setting is on and a client asks whether OTP is enabled for an email that no account uses
+- **THEN** the answer is false
 
 ### Requirement: A one-time code is emailed and works once
 
