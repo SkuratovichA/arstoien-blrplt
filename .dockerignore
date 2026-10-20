@@ -4,10 +4,8 @@
 **/build
 **/coverage
 .git
-.claude
 .github
 infrastructure
-LEARNING.md
 **/.env
 **/.env.*
 !**/.env.example
