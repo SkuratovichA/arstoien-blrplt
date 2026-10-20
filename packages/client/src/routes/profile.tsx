@@ -70,7 +70,7 @@ function Profile() {
     }
   };
 
-  const onPasswordSubmit = async (data: PasswordChangeFormData) => {
+  const onPasswordSubmit = async (data: PasswordChangeFormData): Promise<boolean> => {
     try {
       await changePassword({
         variables: {
@@ -82,8 +82,10 @@ function Profile() {
       });
 
       toast.success(t('Password changed successfully'));
+      return true;
     } catch {
       toast.error(t('Failed to change password'));
+      return false;
     }
   };
 

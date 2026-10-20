@@ -15,7 +15,8 @@ import type { PasswordChangeFormData } from './password-form-schema';
 import { passwordChangeSchema } from './password-form-schema';
 
 interface PasswordChangeFormProps {
-  onSubmit: (data: PasswordChangeFormData) => Promise<void>;
+  /** Resolves to true when the password was changed, which clears the form; false keeps what the user typed so they can correct it */
+  onSubmit: (data: PasswordChangeFormData) => Promise<boolean>;
 }
 
 export function PasswordChangeForm({ onSubmit }: PasswordChangeFormProps) {
@@ -28,9 +29,15 @@ export function PasswordChangeForm({ onSubmit }: PasswordChangeFormProps) {
     reValidateMode: 'onChange',
   });
 
+  const submit = async (data: PasswordChangeFormData) => {
+    if (await onSubmit(data)) {
+      form.reset();
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
         <FormField
           control={form.control}
           name="currentPassword"
@@ -51,7 +58,17 @@ export function PasswordChangeForm({ onSubmit }: PasswordChangeFormProps) {
             <FormItem>
               <FormLabel>{t('New Password')}</FormLabel>
               <FormControl>
-                <PasswordInput placeholder={t('Enter your new password')} {...field} />
+                <PasswordInput
+                  placeholder={t('Enter your new password')}
+                  {...field}
+                  onChange={(event) => {
+                    field.onChange(event);
+                    // The mismatch message sits on the confirmation, so it is checked again when the password it is compared with changes
+                    if (form.getValues('confirmPassword')) {
+                      form.trigger('confirmPassword');
+                    }
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
