@@ -26,6 +26,11 @@ interface UserFiltersProps {
   }) => void;
 }
 
+// A select item cannot have an empty value, so "no filter" is an item of its own that the query must never receive
+const ALL = 'all';
+
+const toFilter = (value: string): string | undefined => (value === ALL ? undefined : value);
+
 export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
   const { t } = useTranslation();
 
@@ -43,32 +48,32 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
             onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
           />
           <Select
-            value={filters.role}
-            onValueChange={(value) => onFiltersChange({ ...filters, role: value || undefined })}
+            value={filters.role ?? ALL}
+            onValueChange={(value) => onFiltersChange({ ...filters, role: toFilter(value) })}
           >
             <SelectTrigger>
               <SelectValue placeholder={t('All Roles')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('All Roles')}</SelectItem>
+              <SelectItem value={ALL}>{t('All Roles')}</SelectItem>
               <SelectItem value="USER">{t('User')}</SelectItem>
               <SelectItem value="MODERATOR">{t('Moderator')}</SelectItem>
               <SelectItem value="ADMIN">{t('Admin')}</SelectItem>
             </SelectContent>
           </Select>
           <Select
-            value={filters.status}
-            onValueChange={(value) => onFiltersChange({ ...filters, status: value || undefined })}
+            value={filters.status ?? ALL}
+            onValueChange={(value) => onFiltersChange({ ...filters, status: toFilter(value) })}
           >
             <SelectTrigger>
               <SelectValue placeholder={t('All Statuses')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('All Statuses')}</SelectItem>
+              <SelectItem value={ALL}>{t('All Statuses')}</SelectItem>
               <SelectItem value="ACTIVE">{t('Active')}</SelectItem>
-              <SelectItem value="PENDING">{t('Pending')}</SelectItem>
+              <SelectItem value="PENDING_APPROVAL">{t('Pending')}</SelectItem>
               <SelectItem value="SUSPENDED">{t('Suspended')}</SelectItem>
-              <SelectItem value="BANNED">{t('Banned')}</SelectItem>
+              <SelectItem value="BLOCKED">{t('Banned')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
