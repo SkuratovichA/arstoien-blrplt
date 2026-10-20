@@ -10,14 +10,17 @@
   "scripts": {
     "dev": "concurrently -n server,client,admin -c cyan,magenta,yellow \"pnpm --filter @blrplt/server dev\" \"pnpm --filter @blrplt/client dev\" \"pnpm --filter @blrplt/admin dev\"",
     "build": "pnpm -r run build",
-    "test": "pnpm -r run test",
+    "test": "pnpm run test:scripts && pnpm -r run test",
+    "test:scripts": "vitest run --config scripts/vitest.config.ts",
     "check": "biome check",
     "check:fix": "biome check --write",
     "ci": "biome ci --error-on-warnings",
     "format": "biome format --write",
     "lint": "biome lint",
-    "typecheck": "pnpm -r run typecheck",
+    "typecheck": "pnpm -r run typecheck && tsc --project scripts/tsconfig.json",
     "spec:validate": "pnpm dlx @fission-ai/openspec@1.14.3 validate --all --strict",
+    "spec:check": "node scripts/spec-scenarios.ts check",
+    "spec:generate": "node scripts/spec-scenarios.ts generate",
     "db:generate": "pnpm --filter @blrplt/server db:generate",
     "db:migrate": "pnpm --filter @blrplt/server db:migrate",
     "db:migrate:prod": "pnpm --filter @blrplt/server db:migrate:prod",
@@ -29,7 +32,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@types/node": "catalog:",
     "concurrently": "^10.0.6",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
