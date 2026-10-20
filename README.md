@@ -209,7 +209,7 @@ VITE_WS_URL=ws://localhost:4000/graphql
 - `pnpm check:fix` - Biome: apply the fixes
 - `pnpm lint` - Biome: lint rules only
 - `pnpm format` - Biome: write the formatting
-- `pnpm run ci` - The Biome check that CI runs (read-only, warnings count as errors)
+- `pnpm run ci` - The Biome check that CI runs (read-only, warnings count as errors). It needs `run`, because `pnpm ci` is pnpm's own command that cleans and reinstalls
 
 ### Database
 - `pnpm db:generate` - Generate the Prisma client

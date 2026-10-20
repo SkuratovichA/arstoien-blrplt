@@ -59,7 +59,7 @@ The admin panel will run on http://localhost:5173
 - `pnpm typecheck` - Run TypeScript type checking
 - `pnpm test` - Run the Vitest suite (`pnpm test:watch` to watch, `pnpm test:cov` for coverage)
 - `pnpm check` - Lint and check formatting with Biome (`pnpm check:fix` writes the fixes)
-- `pnpm ci` - The Biome check CI runs, which fails on warnings
+- `pnpm run ci` - The Biome check CI runs, which fails on warnings (it needs `run`, because `pnpm ci` is pnpm's own command that cleans and reinstalls)
 - `pnpm codegen` - Generate GraphQL types
 - `pnpm i18n` - Extract i18n strings
 

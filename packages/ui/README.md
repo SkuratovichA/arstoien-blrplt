@@ -12,4 +12,4 @@ Commands, run from this directory or with `pnpm -r` from the root:
 
 - `pnpm test` runs the Vitest and Testing Library specs in jsdom.
 - `pnpm typecheck` runs `tsc --noEmit`.
-- `pnpm ci` runs Biome with warnings as errors.
+- `pnpm run ci` runs Biome with warnings as errors. It needs `run`, because `pnpm ci` is pnpm's own command that cleans and reinstalls.
