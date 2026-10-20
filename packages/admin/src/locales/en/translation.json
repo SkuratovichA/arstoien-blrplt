@@ -96,13 +96,13 @@
   "notifications": {
     "create": "Create",
     "createButton": "Create Notification",
+    "created": "Created",
     "createDescription": "Create a new notification to send to users",
     "createError": "Failed to create notification",
     "createNotImplemented": "Notification creation is not yet implemented",
     "createTitle": "Create Notification",
-    "created": "Created",
-    "deleteError": "Failed to delete notification",
     "deleted": "Notification deleted successfully",
+    "deleteError": "Failed to delete notification",
     "description": "Create and manage system notifications",
     "empty": "No notifications",
     "fieldMessage": "Message",
@@ -135,8 +135,8 @@
     "infoDescription": "Update your profile details",
     "infoTitle": "Profile Information",
     "newPassword": "New Password",
-    "passwordChangeError": "Failed to change password",
     "passwordChanged": "Password changed successfully",
+    "passwordChangeError": "Failed to change password",
     "passwordDescription": "Update your password",
     "passwordSubmit": "Change Password",
     "passwordSubmitting": "Changing...",
@@ -144,8 +144,8 @@
     "tabPassword": "Password",
     "tabProfile": "Profile",
     "title": "Profile",
-    "updateError": "Failed to update profile",
-    "updated": "Profile updated successfully"
+    "updated": "Profile updated successfully",
+    "updateError": "Failed to update profile"
   },
   "roles": {
     "admin": "Admin",
@@ -165,17 +165,8 @@
     "supportEmail": "Support Email",
     "supportEmailDescription": "Email address for support inquiries",
     "title": "System Settings",
-    "updateError": "Failed to update settings",
-    "updated": "Settings updated successfully"
-  },
-  "userStatus": {
-    "active": "Active",
-    "awaitingPassword": "Awaiting password",
-    "banned": "Banned",
-    "deleted": "Deleted",
-    "pending": "Pending",
-    "rejected": "Rejected",
-    "suspended": "Suspended"
+    "updated": "Settings updated successfully",
+    "updateError": "Failed to update settings"
   },
   "users": {
     "add": "Add User",
@@ -201,10 +192,10 @@
       "activityDescription": "Recent user activity",
       "activityTitle": "Activity Log",
       "delete": "Delete User",
+      "deleted": "User deleted successfully",
       "deleteDescription": "This action cannot be undone. This will permanently delete the user account.",
       "deleteError": "Failed to delete user",
       "deleteTitle": "Are you sure?",
-      "deleted": "User deleted successfully",
       "infoDescription": "Update user details",
       "infoTitle": "User Information",
       "noActivity": "No activity found",
@@ -213,8 +204,8 @@
       "otpLabel": "OTP Authentication",
       "tabActivity": "Activity",
       "tabDetails": "Details",
-      "updateError": "Failed to update user",
-      "updated": "User updated successfully"
+      "updated": "User updated successfully",
+      "updateError": "Failed to update user"
     },
     "filters": {
       "allRoles": "All Roles",
@@ -232,22 +223,22 @@
       "enableAllDescription": "This will enable OTP authentication for all users in the system. Users will be able to sign in using OTP codes sent to their email addresses.",
       "enableAllTitle": "Enable OTP for All Users?",
       "settings": "OTP Settings",
-      "updateError": "Failed to update OTP settings",
-      "updated": "OTP settings updated"
+      "updated": "OTP settings updated",
+      "updateError": "Failed to update OTP settings"
     },
     "pending": {
       "approve": "Approve",
-      "approveError": "Failed to approve user",
       "approved": "User approved successfully",
+      "approveError": "Failed to approve user",
       "description": "Review and approve or reject pending user registrations",
       "empty": "No pending users",
       "registered": "Registered",
       "reject": "Reject",
       "rejectDescription": "Provide a reason for rejecting this user registration",
+      "rejected": "User rejected",
       "rejectError": "Failed to reject user",
       "rejectPlaceholder": "Reason for rejection...",
       "rejectTitle": "Reject User",
-      "rejected": "User rejected",
       "title": "Pending Users"
     },
     "table": {
@@ -262,5 +253,14 @@
       "verified": "Verified"
     },
     "title": "Users"
+  },
+  "userStatus": {
+    "active": "Active",
+    "awaitingPassword": "Awaiting password",
+    "banned": "Banned",
+    "deleted": "Deleted",
+    "pending": "Pending",
+    "rejected": "Rejected",
+    "suspended": "Suspended"
   }
 }

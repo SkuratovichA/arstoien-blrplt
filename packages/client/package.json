@@ -20,7 +20,7 @@
     "typecheck": "tsc --noEmit",
     "codegen": "graphql-codegen --config codegen.ts",
     "codegen:watch": "graphql-codegen --config codegen.ts --watch",
-    "i18n": "i18next -c i18next-parser.config.cjs",
+    "i18n": "i18next-cli extract",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage"
@@ -62,7 +62,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "i18next-parser": "^9.4.0",
+    "i18next-cli": "^1.77.0",
     "jsdom": "catalog:",
     "tailwindcss": "^4.3.3",
     "typescript": "catalog:",

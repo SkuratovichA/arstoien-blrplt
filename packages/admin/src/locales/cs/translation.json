@@ -96,13 +96,13 @@
   "notifications": {
     "create": "Vytvořit",
     "createButton": "Vytvořit oznámení",
+    "created": "Vytvořeno",
     "createDescription": "Vytvořte nové oznámení k odeslání uživatelům",
     "createError": "Oznámení se nepodařilo vytvořit",
     "createNotImplemented": "Vytváření oznámení zatím není implementováno",
     "createTitle": "Vytvořit oznámení",
-    "created": "Vytvořeno",
-    "deleteError": "Oznámení se nepodařilo smazat",
     "deleted": "Oznámení bylo úspěšně smazáno",
+    "deleteError": "Oznámení se nepodařilo smazat",
     "description": "Vytváření a správa systémových oznámení",
     "empty": "Žádná oznámení",
     "fieldMessage": "Zpráva",
@@ -135,8 +135,8 @@
     "infoDescription": "Aktualizujte údaje ve svém profilu",
     "infoTitle": "Informace o profilu",
     "newPassword": "Nové heslo",
-    "passwordChangeError": "Heslo se nepodařilo změnit",
     "passwordChanged": "Heslo bylo úspěšně změněno",
+    "passwordChangeError": "Heslo se nepodařilo změnit",
     "passwordDescription": "Aktualizujte své heslo",
     "passwordSubmit": "Změnit heslo",
     "passwordSubmitting": "Probíhá změna...",
@@ -144,8 +144,8 @@
     "tabPassword": "Heslo",
     "tabProfile": "Profil",
     "title": "Profil",
-    "updateError": "Profil se nepodařilo aktualizovat",
-    "updated": "Profil byl úspěšně aktualizován"
+    "updated": "Profil byl úspěšně aktualizován",
+    "updateError": "Profil se nepodařilo aktualizovat"
   },
   "roles": {
     "admin": "Administrátor",
@@ -165,17 +165,8 @@
     "supportEmail": "E-mail podpory",
     "supportEmailDescription": "E-mailová adresa pro dotazy na podporu",
     "title": "Systémová nastavení",
-    "updateError": "Nastavení se nepodařilo aktualizovat",
-    "updated": "Nastavení bylo úspěšně aktualizováno"
-  },
-  "userStatus": {
-    "active": "Aktivní",
-    "awaitingPassword": "Čeká na heslo",
-    "banned": "Zablokovaný",
-    "deleted": "Smazaný",
-    "pending": "Čekající",
-    "rejected": "Zamítnutý",
-    "suspended": "Pozastavený"
+    "updated": "Nastavení bylo úspěšně aktualizováno",
+    "updateError": "Nastavení se nepodařilo aktualizovat"
   },
   "users": {
     "add": "Přidat uživatele",
@@ -201,10 +192,10 @@
       "activityDescription": "Nedávná aktivita uživatele",
       "activityTitle": "Protokol aktivit",
       "delete": "Smazat uživatele",
+      "deleted": "Uživatel byl úspěšně smazán",
       "deleteDescription": "Tuto akci nelze vrátit zpět. Tímto trvale smažete uživatelský účet.",
       "deleteError": "Uživatele se nepodařilo smazat",
       "deleteTitle": "Jste si jistí?",
-      "deleted": "Uživatel byl úspěšně smazán",
       "infoDescription": "Aktualizace údajů uživatele",
       "infoTitle": "Informace o uživateli",
       "noActivity": "Nebyla nalezena žádná aktivita",
@@ -213,8 +204,8 @@
       "otpLabel": "Ověřování pomocí OTP",
       "tabActivity": "Aktivita",
       "tabDetails": "Detaily",
-      "updateError": "Uživatele se nepodařilo aktualizovat",
-      "updated": "Uživatel byl úspěšně aktualizován"
+      "updated": "Uživatel byl úspěšně aktualizován",
+      "updateError": "Uživatele se nepodařilo aktualizovat"
     },
     "filters": {
       "allRoles": "Všechny role",
@@ -232,22 +223,22 @@
       "enableAllDescription": "Tím se pro všechny uživatele v systému povolí ověřování pomocí OTP. Uživatelé se budou moci přihlásit pomocí kódů OTP zaslaných na jejich e-mailové adresy.",
       "enableAllTitle": "Povolit OTP pro všechny uživatele?",
       "settings": "Nastavení OTP",
-      "updateError": "Nastavení OTP se nepodařilo aktualizovat",
-      "updated": "Nastavení OTP bylo aktualizováno"
+      "updated": "Nastavení OTP bylo aktualizováno",
+      "updateError": "Nastavení OTP se nepodařilo aktualizovat"
     },
     "pending": {
       "approve": "Schválit",
-      "approveError": "Uživatele se nepodařilo schválit",
       "approved": "Uživatel byl úspěšně schválen",
+      "approveError": "Uživatele se nepodařilo schválit",
       "description": "Kontrola a schválení nebo odmítnutí čekajících registrací",
       "empty": "Žádní čekající uživatelé",
       "registered": "Registrace",
       "reject": "Zamítnout",
       "rejectDescription": "Uveďte důvod zamítnutí této registrace uživatele",
+      "rejected": "Uživatel byl zamítnut",
       "rejectError": "Uživatele se nepodařilo zamítnout",
       "rejectPlaceholder": "Důvod zamítnutí...",
       "rejectTitle": "Zamítnout uživatele",
-      "rejected": "Uživatel byl zamítnut",
       "title": "Čekající uživatelé"
     },
     "table": {
@@ -262,5 +253,14 @@
       "verified": "Ověřený"
     },
     "title": "Uživatelé"
+  },
+  "userStatus": {
+    "active": "Aktivní",
+    "awaitingPassword": "Čeká na heslo",
+    "banned": "Zablokovaný",
+    "deleted": "Smazaný",
+    "pending": "Čekající",
+    "rejected": "Zamítnutý",
+    "suspended": "Pozastavený"
   }
 }
