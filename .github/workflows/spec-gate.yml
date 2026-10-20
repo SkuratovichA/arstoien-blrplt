@@ -1,0 +1,63 @@
+# =============================================================================
+# Spec Gate - every scenario of the specs has a test, and the tests pass
+# =============================================================================
+# Runs on every pull request, whatever its base branch; it uses no secrets
+# Fails when a scenario in openspec/specs has no test titled "Scenario: <title>", when such a test has no scenario, or when a unit or integration test fails
+# The integration tests run the real application against the PostgreSQL service container, with the schema built by prisma migrate deploy
+
+name: Spec Gate
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scenarios:
+    name: Scenario tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Same major version and image family as the postgres service of docker-compose.yml
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: blrplt_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d blrplt_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up the workspace
+        uses: ./.github/actions/setup
+
+      - name: Validate the specs
+        run: pnpm spec:validate
+
+      - name: Check that every scenario has a test
+        run: pnpm spec:check
+
+      - name: Run the unit tests
+        run: pnpm test
+        env:
+          NODE_ENV: test
+
+      - name: Run the integration tests
+        run: pnpm test:integration
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/blrplt_test
