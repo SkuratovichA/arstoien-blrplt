@@ -225,7 +225,9 @@ function readLiteral(source: string, start: number): Literal | null {
 
 const TEST_CALL =
   /(?:it|test)((?:\.(?:todo|skip|only|fails|concurrent|sequential))*)\s*\(\s*(?=['"`])/y;
-const AFTER_TITLE = /\s*[,)]/y;
+const AFTER_TITLE = /\s*([,)])/y;
+/** A suite that Vitest does not run, so none of the tests inside it does */
+const SKIPPED_SUITE = /describe\.(?:skip|todo)\s*\(/y;
 const EXPRESSION_TAIL = /[\p{L}\p{N}_$.]/u;
 
 interface TestCall {
@@ -246,16 +248,63 @@ function readTestCall(source: string, at: number): TestCall | null {
     return null;
   }
   AFTER_TITLE.lastIndex = literal.end;
-  if (!AFTER_TITLE.test(source)) {
+  const afterTitle = AFTER_TITLE.exec(source);
+  if (afterTitle === null) {
     return null;
   }
   const modifiers = call[1];
+  // A call that closes right after the title has no function, and Vitest does not run it
   const kind: TestKind = modifiers.includes('.todo')
     ? 'todo'
     : modifiers.includes('.skip')
       ? 'skip'
-      : 'test';
+      : afterTitle[1] === ')'
+        ? 'todo'
+        : 'test';
   return { kind, title: literal.value, end: literal.end };
+}
+
+/** The index after the comment or string literal that starts at `index`, or `index` itself when none starts there. */
+function skipTrivia(source: string, index: number): number {
+  const char = source[index];
+  const next = source[index + 1];
+
+  if (char === '/' && next === '/') {
+    const end = source.indexOf('\n', index);
+    return end < 0 ? source.length : end;
+  }
+  if (char === '/' && next === '*') {
+    const end = source.indexOf('*/', index + 2);
+    return end < 0 ? source.length : end + 2;
+  }
+  if (char === '"' || char === "'" || char === '`') {
+    return readLiteral(source, index)?.end ?? index + 1;
+  }
+  return index;
+}
+
+/** The index after the parenthesis that closes the one at `open`, or the end of the source when it never closes. */
+function findCallEnd(source: string, open: number): number {
+  let depth = 0;
+  let index = open;
+
+  while (index < source.length) {
+    const afterTrivia = skipTrivia(source, index);
+    if (afterTrivia !== index) {
+      index = afterTrivia;
+      continue;
+    }
+    if (source[index] === '(') {
+      depth += 1;
+    } else if (source[index] === ')') {
+      depth -= 1;
+      if (depth === 0) {
+        return index + 1;
+      }
+    }
+    index += 1;
+  }
+  return source.length;
 }
 
 /**
@@ -264,19 +313,22 @@ function readTestCall(source: string, at: number): TestCall | null {
 export function parseScenarioTests(source: string, file: string): ScenarioTest[] {
   const found: ScenarioTest[] = [];
   let index = 0;
+  let skippedUntil = 0;
 
   while (index < source.length) {
     const char = source[index];
-    const next = source[index + 1];
+    const afterTrivia = skipTrivia(source, index);
 
-    if (char === '/' && next === '/') {
-      const end = source.indexOf('\n', index);
-      index = end < 0 ? source.length : end;
-    } else if (char === '/' && next === '*') {
-      const end = source.indexOf('*/', index + 2);
-      index = end < 0 ? source.length : end + 2;
-    } else if (char === '"' || char === "'" || char === '`') {
-      index = readLiteral(source, index)?.end ?? index + 1;
+    if (afterTrivia !== index) {
+      index = afterTrivia;
+    } else if (char === 'd' && !EXPRESSION_TAIL.test(source[index - 1] ?? '')) {
+      SKIPPED_SUITE.lastIndex = index;
+      if (SKIPPED_SUITE.test(source)) {
+        skippedUntil = Math.max(skippedUntil, findCallEnd(source, SKIPPED_SUITE.lastIndex - 1));
+        index = SKIPPED_SUITE.lastIndex;
+      } else {
+        index += 1;
+      }
     } else if ((char === 'i' || char === 't') && !EXPRESSION_TAIL.test(source[index - 1] ?? '')) {
       const call = readTestCall(source, index);
       if (call === null) {
@@ -286,7 +338,7 @@ export function parseScenarioTests(source: string, file: string): ScenarioTest[]
       if (call.title.startsWith(SCENARIO_PREFIX)) {
         found.push({
           title: normalizeTitle(call.title.slice(SCENARIO_PREFIX.length)),
-          kind: call.kind,
+          kind: index < skippedUntil ? 'skip' : call.kind,
           file,
           line: source.slice(0, index).split('\n').length,
         });

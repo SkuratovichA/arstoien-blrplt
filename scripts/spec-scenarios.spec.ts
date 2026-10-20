@@ -253,6 +253,50 @@ describe('parseScenarioTests', () => {
 
     expect(parseScenarioTests(source, 'a.spec.ts')[0].line).toBe(3);
   });
+
+  describe('what Vitest does not run', () => {
+    const kinds = (source: string): [string, string][] =>
+      parseScenarioTests(source, 'a.spec.ts').map((found) => [found.title, found.kind]);
+
+    it('counts a test inside describe.skip or describe.todo as skipped, and not the test after the suite', () => {
+      const source = lines(
+        "describe.skip('suite', () => {",
+        "  it('Scenario: inside skip', () => {});",
+        "  it('Scenario: with parentheses', () => { expect(')').toBe(')'); });",
+        '});',
+        "describe.todo('planned suite', () => {",
+        "  it('Scenario: inside todo', () => {});",
+        '});',
+        "it('Scenario: after the suites', () => {});"
+      );
+
+      expect(kinds(source)).toEqual([
+        ['inside skip', 'skip'],
+        ['with parentheses', 'skip'],
+        ['inside todo', 'skip'],
+        ['after the suites', 'test'],
+      ]);
+    });
+
+    it('does not read describe.skip in a comment or a string as a suite', () => {
+      const source = lines(
+        "// describe.skip('old suite', () => {",
+        'const note = "describe.skip(\'x\', () => {";',
+        "it('Scenario: still running', () => {});"
+      );
+
+      expect(kinds(source)).toEqual([['still running', 'test']]);
+    });
+
+    it('counts a call without a function as a todo, because Vitest does not run it', () => {
+      const source = lines("it('Scenario: no body');", 'test("Scenario: no body either")');
+
+      expect(kinds(source)).toEqual([
+        ['no body', 'todo'],
+        ['no body either', 'todo'],
+      ]);
+    });
+  });
 });
 
 describe('compareScenarios', () => {
