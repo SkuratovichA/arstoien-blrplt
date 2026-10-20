@@ -106,3 +106,14 @@ export type AppError = InstanceType<(typeof appErrorClasses)[number]>;
 export function isAppError(error: unknown): error is AppError {
   return appErrorClasses.some((errorClass) => error instanceof errorClass);
 }
+
+/**
+ * The message of a thrown value: Error.message for an Error, otherwise the fallback, or the value as text when there is none.
+ */
+export function errorMessage(error: unknown, fallback?: string): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallback ?? String(error);
+}

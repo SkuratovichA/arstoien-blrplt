@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
+import { errorMessage } from '../../common/effect/index.js';
 import { User } from '../../generated/prisma/client.js';
 import { AuthService } from './auth.service.js';
 import { GoogleAuthGuard } from './guards/google-auth.guard.js';
@@ -114,8 +115,7 @@ export class AuthController {
 
       return res.send({ accessToken: newAccessToken });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.warn(`Failed to refresh token: ${errorMessage}`);
+      this.logger.warn(`Failed to refresh token: ${errorMessage(error, 'Unknown error')}`);
       const cookieOptions = this.configService.get('app.cookieOptions');
       res.clearCookie('accessToken', cookieOptions);
       res.clearCookie('refreshToken', cookieOptions);
@@ -164,9 +164,9 @@ export class AuthController {
         user: authResponse.user,
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.warn(`Failed to set password: ${errorMessage}`);
-      throw new ForbiddenException(errorMessage ?? 'Failed to set password');
+      const message = errorMessage(error, 'Unknown error');
+      this.logger.warn(`Failed to set password: ${message}`);
+      throw new ForbiddenException(message ?? 'Failed to set password');
     }
   }
 }

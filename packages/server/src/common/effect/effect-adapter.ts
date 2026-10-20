@@ -11,7 +11,13 @@ import {
 } from '@nestjs/common';
 import { Effect, Match } from 'effect';
 
-import { type AppError, DatabaseError, isAppError, ValidationError } from './errors.js';
+import {
+  type AppError,
+  DatabaseError,
+  errorMessage,
+  isAppError,
+  ValidationError,
+} from './errors.js';
 
 const logger = new Logger('EffectAdapter');
 
@@ -101,26 +107,26 @@ export function promiseToEffect<A>(
       // Check for Prisma validation errors (e.g., invalid query arguments)
       // These errors occur before the query reaches the database
       if (error instanceof Error) {
-        const errorMessage = error.message;
+        const message = error.message;
 
         // Detect Prisma validation errors (invalid arguments, schema mismatches, etc.)
         if (
-          errorMessage.includes('Unknown argument') ||
-          errorMessage.includes('Invalid argument') ||
-          errorMessage.includes('Unknown field') ||
-          (errorMessage.includes('Expected') && errorMessage.includes('but got')) ||
-          (errorMessage.includes('Invalid `') && errorMessage.includes('()` invocation'))
+          message.includes('Unknown argument') ||
+          message.includes('Invalid argument') ||
+          message.includes('Unknown field') ||
+          (message.includes('Expected') && message.includes('but got')) ||
+          (message.includes('Invalid `') && message.includes('()` invocation'))
         ) {
           return new ValidationError({
-            message: errorMessage,
-            errors: [{ field: 'query', message: errorMessage }],
+            message,
+            errors: [{ field: 'query', message }],
           });
         }
       }
 
       // Default to DatabaseError for other database-related errors
       return new DatabaseError({
-        message: error instanceof Error ? error.message : 'Unknown database error',
+        message: errorMessage(error, 'Unknown database error'),
         operation: 'database_operation',
         error,
       });

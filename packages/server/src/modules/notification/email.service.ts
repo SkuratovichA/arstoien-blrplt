@@ -7,11 +7,7 @@ import handlebars from 'handlebars';
 import nodemailer, { type Transporter } from 'nodemailer';
 import type SMTPConnection from 'nodemailer/lib/smtp-connection/index.js';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
-import { ExternalApiError } from '../../common/effect/index.js';
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
+import { ExternalApiError, errorMessage } from '../../common/effect/index.js';
 
 @Injectable()
 export class EmailService {
