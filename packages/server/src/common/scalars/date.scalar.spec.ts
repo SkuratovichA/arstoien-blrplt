@@ -1,4 +1,4 @@
-import { Kind } from 'graphql';
+import { GraphQLError, Kind } from 'graphql';
 import { DateScalar } from './date.scalar.js';
 
 describe('DateScalar', () => {
@@ -12,8 +12,13 @@ describe('DateScalar', () => {
   });
 
   it('rejects a client value that is neither a number, a string nor a Date', () => {
-    expect(scalar.parseValue({})).toBeNull();
-    expect(scalar.parseValue(true)).toBeNull();
+    expect(() => scalar.parseValue({})).toThrow(GraphQLError);
+    expect(() => scalar.parseValue(true)).toThrow(GraphQLError);
+  });
+
+  it('rejects a client string that is not a date', () => {
+    expect(() => scalar.parseValue('garbage')).toThrow('Date must be a valid');
+    expect(() => scalar.parseValue(Number.NaN)).toThrow(GraphQLError);
   });
 
   it('serializes a Date, a timestamp and an ISO string into a timestamp', () => {
@@ -23,13 +28,19 @@ describe('DateScalar', () => {
     expect(scalar.serialize({})).toBeNull();
   });
 
-  it('parses INT and STRING literals and nothing else', () => {
+  it('parses INT and STRING literals', () => {
     expect(scalar.parseLiteral({ kind: Kind.INT, value: String(timestamp) })).toEqual(
       new Date(timestamp)
     );
     expect(scalar.parseLiteral({ kind: Kind.STRING, value: isoString })).toEqual(
       new Date(timestamp)
     );
-    expect(scalar.parseLiteral({ kind: Kind.BOOLEAN, value: true })).toBeNull();
+  });
+
+  it('rejects a literal of another kind and a STRING literal that is not a date', () => {
+    expect(() => scalar.parseLiteral({ kind: Kind.BOOLEAN, value: true })).toThrow(GraphQLError);
+    expect(() => scalar.parseLiteral({ kind: Kind.STRING, value: 'garbage' })).toThrow(
+      GraphQLError
+    );
   });
 });
