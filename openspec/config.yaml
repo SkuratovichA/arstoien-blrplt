@@ -1,0 +1,31 @@
+schema: spec-driven
+
+context: |
+  A starting point for full-stack TypeScript products. pnpm workspace on Node 26: packages/server is NestJS 12 as native ES modules (relative imports end in .js) with GraphQL code-first on Apollo Server 5 and Express 5, Prisma 7 on PostgreSQL, and Effect 4 at the service boundary (typed errors, converted to HTTP exceptions by runEffect). packages/client and packages/admin are React 19 apps on Vite 8 with TanStack Router and Apollo Client 4, packages/ui holds the shared components. Biome does formatting and linting, Vitest does the tests, the TypeScript 7 compiler does the type checks.
+
+  AGENTS.md is the working contract. openspec/specs/ is the source of truth for what the product does today, one directory per capability and one spec.md in it. A product built from this template describes itself there first and builds second.
+
+  Hard conventions: never `any` or `as any` in TypeScript; one pattern per problem, so extend the helper that exists instead of adding a second one; server code that can fail returns an Effect with a typed error; migrations are SQL files in packages/server/prisma/migrations applied with `prisma migrate deploy`; conventional commits; the order of work is spec, then a failing test, then the implementation.
+
+  Every scenario in a spec is proved by a test whose title is `Scenario: ` followed by the exact scenario title. `pnpm spec:check` fails on a scenario without a test, on a test that names a scenario that does not exist, and on a title used twice; `pnpm spec:generate <capability>` writes the missing test skeletons as `it.todo`, which still counts as uncovered.
+
+  A change is archived in the same PR as its code. Proposal and design are planning material; what stays true after the change lives in openspec/specs/.
+
+rules:
+  proposal:
+    - State the problem and the behavior change; leave implementation detail to design.
+    - Name the existing code, specs and tests the change touches, and say whether it extends them or replaces them. A second implementation of something that already exists needs an explicit reason here.
+  specs:
+    - Describe what the product does today; behavior behind a flag or an environment variable names that gate.
+    - One capability per directory under openspec/specs/, one spec.md in it. Requirements use SHALL, scenarios use WHEN and THEN.
+    - A scenario title is unique across all specs and active changes, because the title names the test that proves it.
+    - State outcomes a user or a client can observe (statuses, answers, stored records, messages sent), not resolver names or class names.
+    - Specs carry no history; git history records how a behavior came to be.
+  design:
+    - Start with the contracts - types, module boundaries, the GraphQL schema, service interfaces, status transitions - and model them so an invalid state cannot be represented.
+    - List the existing patterns the change reuses by file, and say how any abstraction that has to be widened is widened.
+    - Do not restate the proposal or the spec; record decisions and rejected options briefly.
+  tasks:
+    - Order the tasks spec, then failing test, then implementation, then review, then archive.
+    - Every task that changes behavior names the requirement it satisfies and the test title that proves it, written as `Scenario: <exact scenario title>`.
+    - Archive the change in the same PR as its code, after `pnpm spec:validate`, `pnpm spec:check`, `pnpm test` and `pnpm test:integration` pass.

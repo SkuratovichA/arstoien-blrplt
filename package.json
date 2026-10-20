@@ -17,6 +17,7 @@
     "format": "biome format --write",
     "lint": "biome lint",
     "typecheck": "pnpm -r run typecheck",
+    "spec:validate": "pnpm dlx @fission-ai/openspec@1.14.3 validate --all --strict",
     "db:generate": "pnpm --filter @blrplt/server db:generate",
     "db:migrate": "pnpm --filter @blrplt/server db:migrate",
     "db:migrate:prod": "pnpm --filter @blrplt/server db:migrate:prod",
