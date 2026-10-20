@@ -1,4 +1,4 @@
-import { BadRequestException, Logger, UseGuards } from '@nestjs/common';
+import { Logger, ParseEnumPipe, UseGuards } from '@nestjs/common';
 import { Args, Context, ID, Int, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import bcrypt from 'bcrypt';
 import { Effect } from 'effect';
@@ -33,13 +33,6 @@ import {
   UserGrowthDataPoint,
   UserGrowthStatsType,
 } from './dto/index.js';
-
-function isEnumValue<TEnum extends Record<string, string>>(
-  enumObject: TEnum,
-  value: string
-): value is TEnum[keyof TEnum] {
-  return Object.values<string>(enumObject).includes(value);
-}
 
 @Resolver()
 export class AdminResolver {
@@ -236,25 +229,30 @@ export class AdminResolver {
   async getUsers(
     @Args('skip', { type: () => Int, nullable: true, defaultValue: 0 }) skip?: number,
     @Args('take', { type: () => Int, nullable: true, defaultValue: 50 }) take?: number,
-    @Args('status', { nullable: true }) status?: string,
-    @Args('role', { nullable: true }) role?: string,
+    // The schema keeps these two as plain strings, the pipes turn a value that is not in the enum into a BadRequestException
+    @Args(
+      'status',
+      { type: () => String, nullable: true },
+      new ParseEnumPipe(UserStatus, { optional: true })
+    )
+    status?: UserStatus,
+    @Args(
+      'role',
+      { type: () => String, nullable: true },
+      new ParseEnumPipe(UserRole, { optional: true })
+    )
+    role?: UserRole,
     @Args('search', { nullable: true }) search?: string
   ): Promise<User[]> {
     const where: Prisma.UserWhereInput = {};
 
     // Add status filter
     if (status) {
-      if (!isEnumValue(UserStatus, status)) {
-        throw new BadRequestException(`Invalid status: ${status}`);
-      }
       where.status = status;
     }
 
     // Add role filter
     if (role) {
-      if (!isEnumValue(UserRole, role)) {
-        throw new BadRequestException(`Invalid role: ${role}`);
-      }
       where.role = role;
     }
 
