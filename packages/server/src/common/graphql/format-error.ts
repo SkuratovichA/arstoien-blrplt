@@ -1,0 +1,72 @@
+import { unwrapResolverError } from '@apollo/server/errors';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import type { GraphQLFormattedError } from 'graphql';
+
+/**
+ * The extensions.code values that this API names itself, for the HTTP statuses that Apollo has no name for. A client switches on them.
+ */
+const ErrorCode = {
+  RateLimited: 'RATE_LIMITED',
+} as const;
+
+type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
+
+/**
+ * The code of an error by the HTTP status that toHttpException (effect-adapter.ts) gave it. An error whose status is not in the table keeps the shape that formatError gave it before.
+ */
+const CODE_BY_STATUS: ReadonlyMap<number, ErrorCode> = new Map([
+  [HttpStatus.TOO_MANY_REQUESTS, ErrorCode.RateLimited],
+]);
+
+/**
+ * An error of the response. The code stays at the top level for the readers of the response that predate extensions.code.
+ */
+export interface FormattedApiError extends GraphQLFormattedError {
+  readonly code: string;
+}
+
+/** The seconds to wait that toHttpException puts into the body of a rate-limit exception */
+function retryAfterSecondsOf(exception: HttpException): number | undefined {
+  const body = exception.getResponse();
+  if (typeof body === 'object' && 'retryAfterSeconds' in body) {
+    return typeof body.retryAfterSeconds === 'number' ? body.retryAfterSeconds : undefined;
+  }
+  return undefined;
+}
+
+/**
+ * The code that Apollo or @nestjs/apollo put on the error, INTERNAL_SERVER_ERROR when there is none
+ */
+function codeOf(formatted: GraphQLFormattedError): string {
+  const code = formatted.extensions?.code;
+  return typeof code === 'string' ? code : 'INTERNAL_SERVER_ERROR';
+}
+
+/**
+ * The error of the response for what the resolver threw: the message, the path and the code, and extensions.code besides when the status of the exception has a name in the table.
+ */
+export function formatThrown(formatted: GraphQLFormattedError, thrown: unknown): FormattedApiError {
+  if (thrown instanceof HttpException) {
+    const code = CODE_BY_STATUS.get(thrown.getStatus());
+    if (code !== undefined) {
+      const retryAfterSeconds = retryAfterSecondsOf(thrown);
+      return {
+        message: formatted.message,
+        code,
+        path: formatted.path,
+        extensions: { code, ...(retryAfterSeconds === undefined ? {} : { retryAfterSeconds }) },
+      };
+    }
+  }
+  return { message: formatted.message, code: codeOf(formatted), path: formatted.path };
+}
+
+/**
+ * formatError of the GraphQL module. Apollo hands over the GraphQLError that wraps the exception of the resolver, and the exception is what carries the status.
+ */
+export function formatGraphqlError(
+  formatted: GraphQLFormattedError,
+  error: unknown
+): FormattedApiError {
+  return formatThrown(formatted, unwrapResolverError(error));
+}

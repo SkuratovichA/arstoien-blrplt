@@ -27,5 +27,5 @@ rules:
     - Do not restate the proposal or the spec; record decisions and rejected options briefly.
   tasks:
     - Order the tasks spec, then failing test, then implementation, then review, then archive.
-    - Every task that changes behavior names the requirement it satisfies and the test title that proves it, written as `Scenario: <exact scenario title>`.
+    - 'Every task that changes behavior names the requirement it satisfies and the test title that proves it, written as `Scenario: <exact scenario title>`.'
     - Archive the change in the same PR as its code, after `pnpm spec:validate`, `pnpm spec:check`, `pnpm test` and `pnpm test:integration` pass.

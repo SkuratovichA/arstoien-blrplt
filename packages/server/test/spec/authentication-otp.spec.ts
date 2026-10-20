@@ -199,4 +199,29 @@ describe('authentication: one-time code', () => {
 
     expect(retry.errors.map((error) => error.message)).toEqual(['Invalid or expired OTP code']);
   });
+
+  // WHEN an email has made three code requests through the requestOtpLogin mutation in the current window and a client makes a fourth
+  // THEN the response carries an error with the code RATE_LIMITED and the seconds to wait in retryAfterSeconds
+  // AND the response does not answer with success set to false
+  // AND only the three accepted requests sent an email
+  it('Scenario: A rejected code request reaches the client as a rate-limit error', async () => {
+    await setSystemOtp(true);
+    const user = await seedUser(testApp.prisma, { otpAuthEnabled: true });
+    for (let request = 1; request <= 3; request += 1) {
+      const accepted = await gql(testApp, { query: REQUEST_OTP, variables: { email: user.email } });
+      expect(accepted.errors).toEqual([]);
+      expect(pick(accepted.data, 'requestOtpLogin', 'success')).toBe(true);
+    }
+
+    const rejected = await gql(testApp, { query: REQUEST_OTP, variables: { email: user.email } });
+
+    expect(rejected.errors).toHaveLength(1);
+    expect(rejected.errors[0]).toMatchObject({ extensions: { code: 'RATE_LIMITED' } });
+    // The window of fifteen minutes opened with the first of the three requests
+    const retryAfterSeconds = Number(pick(rejected.errors[0], 'extensions', 'retryAfterSeconds'));
+    expect(retryAfterSeconds).toBeGreaterThan(0);
+    expect(retryAfterSeconds).toBeLessThanOrEqual(15 * 60);
+    expect(pick(rejected.data, 'requestOtpLogin', 'success')).toBeUndefined();
+    expect(testApp.emails.sentTo(user.email, 'otp')).toHaveLength(3);
+  });
 });

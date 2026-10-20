@@ -1,4 +1,4 @@
-import { Inject, Logger, UseGuards } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Logger, UseGuards } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Request } from 'express';
@@ -269,6 +269,10 @@ export class AuthResolver {
         message: result.message,
       };
     } catch (error) {
+      // The rate limit is the one failure the client answers on its own, so it keeps its status and reaches formatError as RATE_LIMITED
+      if (error instanceof HttpException && error.getStatus() === HttpStatus.TOO_MANY_REQUESTS) {
+        throw error;
+      }
       this.logger.error('Failed to request OTP login:', error);
       return {
         success: false,

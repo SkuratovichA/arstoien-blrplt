@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { CommonModule } from './common/common.module.js';
+import { formatGraphqlError } from './common/graphql/format-error.js';
 import { PubSubModule } from './common/pubsub/pubsub.module.js';
 import { DateScalar } from './common/scalars/date.scalar.js';
 import { AppConfig, appConfig } from './config/app.config.js';
@@ -144,11 +145,7 @@ interface GraphQLContext {
               },
             },
           },
-          formatError: (error) => ({
-            message: error.message,
-            code: error.extensions?.code ?? 'INTERNAL_SERVER_ERROR',
-            path: error.path,
-          }),
+          formatError: formatGraphqlError,
         };
       },
     }),
