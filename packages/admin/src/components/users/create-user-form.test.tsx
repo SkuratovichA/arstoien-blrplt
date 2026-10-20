@@ -53,6 +53,16 @@ describe('CreateUserForm', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  // The browser would stop a malformed address in a type="email" field before the schema runs and show its own untranslated bubble
+  it('validates with the schema when Enter submits a malformed email address', async () => {
+    const { onSubmit, user } = setup();
+
+    await user.type(screen.getByLabelText(/^Email/), 'not-an-email{Enter}');
+
+    expect(await screen.findByText('Please enter a valid email address')).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it('submits the required fields with the USER role and empty optional fields', async () => {
     const { onSubmit, user } = setup();
 
