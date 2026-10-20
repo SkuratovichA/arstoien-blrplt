@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, CardContent } from '@blrplt/ui';
 import { Link } from '@tanstack/react-router';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, stockFeatures, useTable } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DataTable } from '@/components/shared/data-table';
@@ -31,12 +31,12 @@ interface UserTableProps {
   onRefetch: () => void;
 }
 
-const columnHelper = createColumnHelper<User>();
+const columnHelper = createColumnHelper<typeof stockFeatures, User>();
 
 export function UserTable({ users, totalCount, pagination, onPaginationChange }: UserTableProps) {
   const { t } = useTranslation();
 
-  const columns = [
+  const columns = columnHelper.columns([
     columnHelper.accessor('email', {
       header: t('common.user'),
       cell: (info) => {
@@ -112,12 +112,12 @@ export function UserTable({ users, totalCount, pagination, onPaginationChange }:
         </Link>
       ),
     }),
-  ];
+  ]);
 
-  const table = useReactTable({
+  const table = useTable({
+    features: stockFeatures,
     data: users,
     columns,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     pageCount: Math.ceil(totalCount / pagination.take),
   });

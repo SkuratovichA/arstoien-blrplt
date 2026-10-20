@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@blrplt/ui';
 import { createFileRoute } from '@tanstack/react-router';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, stockFeatures, useTable } from '@tanstack/react-table';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '@/components/layout/admin-layout';
@@ -25,7 +25,7 @@ import { requireAuth } from '@/lib/auth-guard';
 
 type AuditLog = AuditLogsQuery['auditLogs'][number];
 
-const columnHelper = createColumnHelper<AuditLog>();
+const columnHelper = createColumnHelper<typeof stockFeatures, AuditLog>();
 
 export const Route = createFileRoute('/audit-logs')({
   beforeLoad: () => requireAuth(),
@@ -54,7 +54,7 @@ function AuditLogsPage() {
 
   const auditLogs = data?.auditLogs ?? [];
 
-  const columns = [
+  const columns = columnHelper.columns([
     columnHelper.accessor('action', {
       header: t('auditLogs.columnAction'),
       cell: (info) => <span className="font-medium">{info.getValue()}</span>,
@@ -83,12 +83,12 @@ function AuditLogsPage() {
       header: t('auditLogs.columnDate'),
       cell: (info) => <span className="text-sm">{new Date(info.getValue()).toLocaleString()}</span>,
     }),
-  ];
+  ]);
 
-  const table = useReactTable({
+  const table = useTable({
+    features: stockFeatures,
     data: auditLogs,
     columns,
-    getCoreRowModel: getCoreRowModel(),
   });
 
   return (
