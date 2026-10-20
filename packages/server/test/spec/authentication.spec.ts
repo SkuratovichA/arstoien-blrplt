@@ -69,6 +69,7 @@ describe('authentication', () => {
   // AND no second account is created
   it('Scenario: Registration with an email that is taken is refused', async () => {
     const existing = await seedUser(testApp.prisma);
+    const usersBefore = await testApp.prisma.user.count();
     const input = {
       email: existing.email,
       firstName: 'Ada',
@@ -80,7 +81,9 @@ describe('authentication', () => {
 
     expect(result.errors).toHaveLength(1);
     expect(result.errors[0]?.message).toBe('User with this email already exists');
-    expect(await testApp.prisma.user.count({ where: { email: existing.email } })).toBe(1);
+    // The email column is unique, so a count of the email alone could not catch an overwritten account
+    expect(await testApp.prisma.user.count()).toBe(usersBefore);
+    expect(await testApp.prisma.user.findUnique({ where: { id: existing.id } })).toEqual(existing);
   });
 
   // WHEN a user with an active account logs in with the right email and password
