@@ -31,7 +31,7 @@ describe('GET /health', () => {
     expect(response.body).toMatchObject({ status: 'ok', database: 'connected' });
   });
 
-  it('reports an error when the database query fails', async () => {
+  it('Scenario: Health reports an error when the database does not answer', async () => {
     prisma.$queryRaw.mockRejectedValue(new Error('connection refused'));
 
     const response = await request(app.getHttpServer()).get('/health').expect(200);

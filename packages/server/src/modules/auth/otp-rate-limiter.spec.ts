@@ -26,7 +26,7 @@ describe('OtpRateLimiter', () => {
     );
   });
 
-  it('fails the next request with a RateLimitError that says when to retry', async () => {
+  it('Scenario: The fourth code request within the window is rejected', async () => {
     const error = await run(
       Effect.gen(function* () {
         const limiter = yield* OtpRateLimiter;
