@@ -163,7 +163,7 @@ export class LockService implements OnModuleDestroy {
   }
 
   async onModuleDestroy() {
+    // Redlock quits every client it was built with, so a second quit on the same client rejects with "Connection is closed"
     await this.redlock.quit();
-    await this.redisClient.quit();
   }
 }

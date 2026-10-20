@@ -10,6 +10,8 @@ const logger = new Logger('Bootstrap');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // Without this the onModuleDestroy hooks (OTP runtime, Prisma, Redis) never run when Docker or App Runner sends SIGTERM
+  app.enableShutdownHooks();
   const configService = app.get(ConfigService);
 
   // Cookie parser middleware
