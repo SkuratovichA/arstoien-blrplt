@@ -4,21 +4,26 @@
   "description": "Production-ready boilerplate for full-stack applications",
   "private": true,
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=26.0.0"
   },
-  "packageManager": "pnpm@9.14.2",
+  "packageManager": "pnpm@12.14.0",
   "scripts": {
     "dev": "concurrently -n server,client,admin -c cyan,magenta,yellow \"pnpm --filter @blrplt/server dev\" \"pnpm --filter @blrplt/client dev\" \"pnpm --filter @blrplt/admin dev\"",
     "build": "pnpm -r run build",
-    "test": "pnpm -r run test",
-    "lint:check": "pnpm -r run lint:check",
-    "lint:fix": "pnpm -r run lint:fix",
-    "prettier:check": "pnpm -r run prettier:check",
-    "prettier:fix": "pnpm -r run prettier:fix",
-    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm run test:scripts && pnpm -r run test",
+    "test:scripts": "vitest run --config scripts/vitest.config.ts",
+    "check": "biome check",
+    "check:fix": "biome check --write",
+    "ci": "biome ci --error-on-warnings",
+    "format": "biome format --write",
+    "lint": "biome lint",
+    "typecheck": "pnpm -r run typecheck && tsc --project scripts/tsconfig.json",
+    "test:integration": "pnpm --filter @blrplt/server run test:integration",
+    "spec:validate": "pnpm dlx @fission-ai/openspec@1.14.3 validate --all --strict",
+    "spec:check": "node scripts/spec-scenarios.ts check",
+    "spec:generate": "node scripts/spec-scenarios.ts generate",
     "db:generate": "pnpm --filter @blrplt/server db:generate",
     "db:migrate": "pnpm --filter @blrplt/server db:migrate",
-    "db:migrate:prod": "pnpm --filter @blrplt/server db:migrate:prod",
     "db:push": "pnpm --filter @blrplt/server db:push",
     "db:seed": "pnpm --filter @blrplt/server db:seed",
     "db:studio": "pnpm --filter @blrplt/server db:studio",
@@ -26,10 +31,10 @@
     "i18n": "pnpm -r run i18n"
   },
   "devDependencies": {
-    "@arstoien/devtools": "^1.0.1",
-    "concurrently": "^8.2.2",
-    "eslint": "^9.14.0",
-    "prettier": "^3.3.3",
-    "typescript": "^5.3.3"
+    "@biomejs/biome": "2.5.15",
+    "@types/node": "catalog:",
+    "concurrently": "^10.0.6",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

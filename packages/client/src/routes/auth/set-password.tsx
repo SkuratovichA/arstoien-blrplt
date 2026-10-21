@@ -1,11 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { AuthLayout } from '@components/layout';
 import {
   Button,
   Card,
@@ -20,11 +13,19 @@ import {
   FormLabel,
   FormMessage,
   PasswordInput,
-} from '@arstoien/shared-ui';
-import { CheckCircle } from 'lucide-react';
+} from '@blrplt/ui';
+import { AuthLayout } from '@components/layout';
 import { SET_PASSWORD_WITH_TOKEN } from '@graphql/auth.graphql.ts';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuthStore } from '@lib/auth-store.ts';
+import { errorMessageOf } from '@lib/error-message.ts';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
 
 export const Route = createFileRoute('/auth/set-password')({
   component: SetPassword,
@@ -64,7 +65,7 @@ function SetPassword() {
 
   const onSubmit = async (data: SetPasswordFormData) => {
     if (!token) {
-      toast.error(t('Invalid verification token'));
+      toast.error(t('auth.setPassword.invalidToken'));
       return;
     }
 
@@ -100,7 +101,7 @@ function SetPassword() {
         });
 
         setIsSuccess(true);
-        toast.success(t('Password set successfully'));
+        toast.success(t('auth.setPassword.success'));
 
         // Redirect to dashboard after a short delay
         setTimeout(() => {
@@ -109,8 +110,9 @@ function SetPassword() {
       }
     } catch (error) {
       console.error('Set password error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('Failed to set password');
-      toast.error(errorMessage);
+      toast.error(
+        errorMessageOf(error, t, { BAD_USER_INPUT: t('auth.setPassword.invalidDescription') })
+      );
     }
   };
 
@@ -121,11 +123,9 @@ function SetPassword() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-6 w-6 text-green-500" />
-              {t('Success!')}
+              {t('auth.setPassword.doneTitle')}
             </CardTitle>
-            <CardDescription>
-              {t('Your password has been set successfully. Redirecting to dashboard...')}
-            </CardDescription>
+            <CardDescription>{t('auth.setPassword.doneDescription')}</CardDescription>
           </CardHeader>
         </Card>
       </AuthLayout>
@@ -137,10 +137,8 @@ function SetPassword() {
       <AuthLayout>
         <Card>
           <CardHeader>
-            <CardTitle>{t('Invalid Link')}</CardTitle>
-            <CardDescription>
-              {t('This verification link is invalid or has expired.')}
-            </CardDescription>
+            <CardTitle>{t('auth.setPassword.invalidTitle')}</CardTitle>
+            <CardDescription>{t('auth.setPassword.invalidDescription')}</CardDescription>
           </CardHeader>
         </Card>
       </AuthLayout>
@@ -151,8 +149,8 @@ function SetPassword() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('Set Your Password')}</CardTitle>
-          <CardDescription>{t('Create a strong password to secure your account')}</CardDescription>
+          <CardTitle>{t('auth.setPassword.title')}</CardTitle>
+          <CardDescription>{t('auth.setPassword.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -162,9 +160,12 @@ function SetPassword() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Password')}</FormLabel>
+                    <FormLabel>{t('auth.fields.password')}</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder={t('Enter your password')} {...field} />
+                      <PasswordInput
+                        placeholder={t('auth.fields.passwordPlaceholder')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -176,9 +177,12 @@ function SetPassword() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Confirm Password')}</FormLabel>
+                    <FormLabel>{t('auth.fields.confirmPassword')}</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder={t('Confirm your password')} {...field} />
+                      <PasswordInput
+                        placeholder={t('auth.fields.confirmPasswordPlaceholder')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -186,7 +190,7 @@ function SetPassword() {
               />
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('Setting password...') : t('Set Password')}
+                {loading ? t('auth.setPassword.submitting') : t('auth.setPassword.submit')}
               </Button>
             </form>
           </Form>

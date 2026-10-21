@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, Profile, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
-import { AuthService } from '../auth.service';
+import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { AuthService } from '../auth.service.js';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -49,7 +49,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       });
 
       // Extract redirect_uri from query parameter (passed via state)
-      const redirectUri = req.query?.redirect_uri as string | undefined;
+      const queryRedirectUri = req.query?.redirect_uri;
+      const redirectUri = typeof queryRedirectUri === 'string' ? queryRedirectUri : undefined;
 
       // Pass the full auth response (user + tokens) + redirect_uri to Passport
       done(null, { ...authResponse, redirectUri });

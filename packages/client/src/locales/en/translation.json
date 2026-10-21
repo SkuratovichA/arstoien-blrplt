@@ -1,173 +1,211 @@
 {
-  "common": {
-    "loading": "Loading...",
-    "yes": "Yes",
-    "no": "No",
-    "enabled": "Enabled",
-    "disabled": "Disabled"
-  },
-  "loading": "Loading...",
-  "error": {
-    "title": "Oops! Something went wrong",
-    "description": "We encountered an unexpected error. Please try again.",
-    "reload": "Reload Page"
-  },
-  "nav": {
-    "dashboard": "Dashboard",
-    "profile": "Profile"
-  },
-  "footer": {
-    "copyright": "© {{year}} {{appName}}. All rights reserved.",
-    "privacy": "Privacy Policy",
-    "terms": "Terms of Service",
-    "contact": "Contact"
-  },
-  "landing": {
-    "title": "Welcome to Arstoien Boilerplate",
-    "description": "A modern full-stack application with authentication, GraphQL, and React 19",
-    "getStarted": "Get Started",
-    "signIn": "Sign In",
-    "goToDashboard": "Go to Dashboard",
-    "features": {
-      "auth": {
-        "title": "Secure Authentication",
-        "description": "Complete authentication system with email verification and 2FA support"
-      },
-      "graphql": {
-        "title": "GraphQL API",
-        "description": "Powerful GraphQL API with Apollo Client and type-safe operations"
-      },
-      "modern": {
-        "title": "Modern Stack",
-        "description": "Built with React 19, TypeScript, TanStack Router, and Tailwind CSS"
-      }
-    }
+  "apiError": {
+    "badUserInput": "Some of the entered data is not valid. Check it and try again.",
+    "conflict": "This already exists. Use different details and try again.",
+    "forbidden": "You are not allowed to do this.",
+    "internal": "Something went wrong on our side. Try again later.",
+    "network": "Could not reach the server. Check your connection and try again.",
+    "notFound": "We could not find what you asked for.",
+    "rateLimited": "Too many attempts. Try again later.",
+    "rateLimitedWait": "Too many attempts. Try again in {{seconds}} s.",
+    "unauthenticated": "Sign-in failed. Check your details and try again."
   },
   "auth": {
     "fields": {
-      "email": "Email",
-      "emailPlaceholder": "Enter your email",
-      "password": "Password",
-      "passwordPlaceholder": "Enter your password",
-      "newPassword": "New Password",
       "confirmPassword": "Confirm Password",
       "confirmPasswordPlaceholder": "Confirm your password",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
       "firstName": "First Name",
       "firstNamePlaceholder": "Enter your first name",
       "lastName": "Last Name",
-      "lastNamePlaceholder": "Enter your last name"
-    },
-    "login": {
-      "title": "Sign In",
-      "description": "Enter your credentials to access your account",
-      "submit": "Sign In",
-      "success": "Successfully signed in",
-      "error": "Invalid credentials",
-      "forgotPassword": "Forgot password?",
-      "noAccount": "Don't have an account?",
-      "signUp": "Sign up"
-    },
-    "register": {
-      "title": "Create Account",
-      "description": "Create a new account to get started",
-      "submit": "Create Account",
-      "success": "Account created successfully",
-      "error": "Failed to create account",
-      "hasAccount": "Already have an account?",
-      "signIn": "Sign in"
-    },
-    "logout": {
-      "button": "Sign Out",
-      "success": "Successfully signed out",
-      "error": "Failed to sign out"
+      "lastNamePlaceholder": "Enter your last name",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password"
     },
     "forgotPassword": {
-      "title": "Forgot Password",
-      "description": "Enter your email address and we'll send you a reset link",
-      "submit": "Send Reset Link",
-      "success": "Password reset link sent",
-      "error": "Failed to send reset link",
-      "emailSent": "Check Your Email",
-      "checkEmail": "We've sent a password reset link to your email address",
-      "backToLogin": "Back to login"
+      "backToLogin": "Back to login",
+      "checkEmail": "Check your email for password reset instructions",
+      "description": "Enter your email to receive a password reset link",
+      "emailSent": "Email sent",
+      "error": "Failed to send password reset email",
+      "submit": "Send reset link",
+      "success": "Password reset email sent",
+      "title": "Forgot password"
+    },
+    "login": {
+      "checking": "Checking authentication method...",
+      "continue": "Continue",
+      "description": "Sign in to your account",
+      "error": "Login failed",
+      "forgotPassword": "Forgot password?",
+      "invalidCredentials": "Invalid email or password, or your account is blocked or suspended.",
+      "noAccount": "Don't have an account?",
+      "otpSent": "OTP code sent to your email",
+      "otpStatusError": "Could not check OTP status. Defaulting to password login.",
+      "passwordRequired": "Password is required",
+      "sendingCode": "Sending verification code...",
+      "signUp": "Sign up",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "success": "Login successful",
+      "title": "Login"
+    },
+    "logout": {
+      "button": "Log out",
+      "error": "Failed to log out",
+      "success": "Logged out successfully"
+    },
+    "otp": {
+      "codeLabel": "Verification Code",
+      "emailRequired": "Email address is required",
+      "expired": "Code has expired",
+      "expiresIn": "Code expires in",
+      "invalidCode": "Invalid or expired code",
+      "resend": "Resend Code",
+      "resendError": "Failed to resend code",
+      "resendIn": "Resend available in {{time}}",
+      "resendSuccess": "New OTP code sent to your email",
+      "sendError": "Failed to send OTP",
+      "sending": "Sending...",
+      "sentTo": "We sent a 6-digit code to",
+      "title": "Enter Verification Code",
+      "verify": "Verify Code",
+      "verifying": "Verifying...",
+      "wrongEmail": "Wrong email?"
+    },
+    "register": {
+      "description": "Create a new account",
+      "emailTaken": "An account with this email already exists.",
+      "firstName": "First name",
+      "hasAccount": "Already have an account?",
+      "lastName": "Last name",
+      "phone": "Phone",
+      "phonePlaceholder": "Enter your phone number",
+      "signIn": "Sign in",
+      "submit": "Register",
+      "success": "Registration successful",
+      "title": "Register"
     },
     "resetPassword": {
-      "title": "Reset Password",
+      "confirmPassword": "Confirm password",
       "description": "Enter your new password",
-      "submit": "Reset Password",
-      "success": "Password reset successfully",
-      "error": "Failed to reset password"
+      "error": "Failed to reset password",
+      "newPassword": "New password",
+      "submit": "Reset password",
+      "success": "Password reset successful",
+      "title": "Reset password"
+    },
+    "setPassword": {
+      "description": "Create a strong password to secure your account",
+      "doneDescription": "Your password has been set successfully. Redirecting to dashboard...",
+      "doneTitle": "Success!",
+      "invalidDescription": "This verification link is invalid or has expired.",
+      "invalidTitle": "Invalid Link",
+      "invalidToken": "Invalid verification token",
+      "submit": "Set Password",
+      "submitting": "Setting password...",
+      "success": "Password set successfully",
+      "title": "Set Your Password"
     },
     "verifyEmail": {
-      "title": "Verify Your Email",
+      "checkEmail": "Check your email: {{email}}",
       "description": "Please verify your email address to continue",
-      "checkEmail": "We've sent a verification link to {{email}}",
-      "resendButton": "Resend Verification Email",
+      "error": "Email verification failed",
+      "goToDashboard": "Go to dashboard",
+      "goToLogin": "Go to login",
+      "loginRequiredDescription": "Please log in to resend verification email",
+      "loginRequiredTitle": "Email verification",
+      "resendButton": "Resend verification email",
+      "resendError": "Failed to resend verification email",
       "resendSuccess": "Verification email sent",
-      "resendError": "Failed to send verification email",
       "success": "Email verified successfully",
-      "error": "Failed to verify email",
-      "verified": "Email Verified",
-      "verifiedDescription": "Your email has been verified successfully",
-      "goToDashboard": "Go to Dashboard"
-    },
-    "twoFactor": {
-      "title": "Two-Factor Authentication",
-      "description": "Enter the 6-digit code from your authenticator app",
-      "codeLabel": "Authentication Code",
-      "codePlaceholder": "000000",
-      "submit": "Verify",
-      "success": "Authentication successful",
-      "error": "Invalid authentication code"
+      "title": "Verify your email",
+      "verified": "Email verified",
+      "verifiedDescription": "Your email has been successfully verified",
+      "verifying": "Verifying email...",
+      "verifyingDescription": "Please wait while we verify your email address"
     }
   },
+  "common": {
+    "loading": "Loading...",
+    "no": "No",
+    "yes": "Yes"
+  },
   "dashboard": {
-    "welcome": "Welcome, {{name}}!",
-    "accountInfo": "Account Information",
+    "accountInfo": "Account information",
     "email": "Email",
+    "emailVerified": "Email verified",
     "name": "Name",
-    "emailVerified": "Email Verified",
-    "twoFactor": "Two-Factor Authentication",
-    "quickActions": "Quick Actions",
-    "quickActionsDescription": "Manage your account and settings",
-    "recentActivity": "Recent Activity",
-    "noActivity": "No recent activity"
+    "noActivity": "No recent activity",
+    "quickActions": "Quick actions",
+    "quickActionsDescription": "Quick actions will appear here",
+    "recentActivity": "Recent activity",
+    "welcome": "Welcome, {{name}}"
+  },
+  "error": {
+    "description": "An unexpected error occurred. Please try again.",
+    "reload": "Reload page",
+    "title": "Something went wrong"
+  },
+  "footer": {
+    "contact": "Contact",
+    "copyright": "© {{year}} {{appName}}. All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "landing": {
+    "description": "A modern full-stack application with authentication and GraphQL",
+    "features": {
+      "auth": {
+        "description": "Secure authentication with JWT, email verification, and 2FA support",
+        "title": "Authentication"
+      },
+      "graphql": {
+        "description": "Type-safe GraphQL API powered by NestJS and Apollo",
+        "title": "GraphQL API"
+      },
+      "modern": {
+        "description": "Built with React, TypeScript, and TailwindCSS",
+        "title": "Modern stack"
+      }
+    },
+    "getStarted": "Get started",
+    "goToDashboard": "Go to dashboard",
+    "signIn": "Sign in",
+    "title": "Welcome to Boilerplate"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "profile": "Profile",
+    "register": "Register"
   },
   "profile": {
-    "title": "Profile Settings",
-    "personalInfo": "Personal Information",
-    "personalInfoDescription": "Update your personal information",
-    "updateButton": "Update Profile",
-    "updateSuccess": "Profile updated successfully",
-    "updateError": "Failed to update profile",
     "changePassword": "Change Password",
-    "changePasswordDescription": "Update your account password",
-    "currentPassword": "Current Password",
-    "newPassword": "New Password",
     "changePasswordButton": "Change Password",
-    "passwordChangeSuccess": "Password changed successfully",
-    "passwordChangeError": "Failed to change password",
-    "twoFactor": "Two-Factor Authentication",
-    "twoFactorDescription": "Add an extra layer of security to your account",
-    "twoFactorStatus": "Status",
-    "enableTwoFactor": "Enable 2FA",
-    "disableTwoFactor": "Disable 2FA",
-    "twoFactorEnableSuccess": "2FA enabled successfully",
-    "twoFactorEnableError": "Failed to enable 2FA",
-    "twoFactorDisableSuccess": "2FA disabled successfully",
-    "twoFactorDisableError": "Failed to disable 2FA",
-    "twoFactorDisableConfirm": "Are you sure you want to disable 2FA?",
-    "twoFactorConfirmError": "Failed to verify code",
-    "scanQrCode": "Scan this QR code with your authenticator app",
-    "manualEntry": "Or enter this code manually",
-    "enterVerificationCode": "Enter the verification code from your app",
-    "confirmTwoFactor": "Confirm & Enable",
-    "enterPassword": "Enter your password",
+    "changePasswordDescription": "Update your password to keep your account secure",
+    "confirmPasswordPlaceholder": "Confirm your new password",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter your current password",
     "dangerZone": "Danger Zone",
-    "dangerZoneDescription": "Irreversible actions that permanently affect your account",
+    "dangerZoneDescription": "Permanently delete your account and all associated data",
     "deleteAccount": "Delete Account",
     "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+    "deleteAccountError": "Failed to delete account",
+    "deleteAccountPrompt": "Please enter your password to confirm",
     "deleteAccountSuccess": "Account deleted successfully",
-    "deleteAccountError": "Failed to delete account"
+    "firstNamePlaceholder": "John",
+    "lastNamePlaceholder": "Doe",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter your new password",
+    "passwordChangeError": "Failed to change password",
+    "passwordChangeSuccess": "Password changed successfully",
+    "personalInfo": "Personal Information",
+    "personalInfoDescription": "Update your personal details",
+    "title": "Profile",
+    "updateButton": "Update Profile",
+    "updateError": "Failed to update profile",
+    "updateSuccess": "Profile updated successfully"
   }
 }

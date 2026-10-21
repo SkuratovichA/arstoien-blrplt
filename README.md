@@ -23,7 +23,7 @@ Production-ready full-stack boilerplate with authentication, user management, an
 - User growth analytics with charts
 
 ### Technical Features
-- Radix UI components via @arstoien/shared-ui
+- Radix UI components from the in-repo `@blrplt/ui` workspace package
 - Internationalization (Czech, English, Slovak)
 - Currency selection (backend only)
 - Responsive design
@@ -36,9 +36,10 @@ Production-ready full-stack boilerplate with authentication, user management, an
 ## Tech Stack
 
 ### Backend
-- **NestJS** - Node.js framework
-- **Prisma** - ORM for PostgreSQL
-- **Apollo GraphQL** - API layer
+- **NestJS 12** - Node.js framework, running as native ES modules
+- **Prisma 7** - ORM for PostgreSQL (`prisma-client` generator and the `pg` driver adapter)
+- **Apollo Server 5** - GraphQL API layer, on Express 5
+- **Effect 4** - Typed errors, the OTP flow and the schema-validated environment
 - **Redis** - Caching and pub/sub
 - **Passport.js** - Authentication
 - **Nodemailer** - Email service
@@ -50,9 +51,8 @@ Production-ready full-stack boilerplate with authentication, user management, an
 - **TanStack Router** - File-based routing
 - **Apollo Client** - GraphQL client
 - **Tailwind CSS** - Styling
-- **@arstoien/shared-ui** - Component library
-- **@arstoien/former** - Form library
-- **React Hook Form** - Form handling
+- **@blrplt/ui** - Component library (Radix UI + Tailwind, a workspace package in `packages/ui`)
+- **React Hook Form + Zod** - Forms and validation
 - **Zustand** - State management
 - **i18next** - Internationalization
 - **react-hot-toast** - Notifications
@@ -62,17 +62,27 @@ Production-ready full-stack boilerplate with authentication, user management, an
 - **PostgreSQL 15** - Primary database
 - **Redis 7** - Cache and sessions
 - **Docker** - Containerization
-- **pnpm** - Package management
-- **TypeScript** - Type safety
+- **Node.js 26** - Runtime for the server and for every tool
+- **pnpm 12** - Package management, with a shared dependency catalog in `pnpm-workspace.yaml`
+- **TypeScript 7** - Type safety with the native compiler; the server is compiled by `tsc` itself, so it uses relative imports and no path aliases
+- **Biome** - Formatting and linting in one tool (`biome.json` at the root)
+- **Vitest** - Unit tests in every package, and the integration tests of the server against a real PostgreSQL
+- **OpenSpec** - The specs in `openspec/specs`, each scenario tied to a test by `pnpm spec:check`
 
 ## Project Structure
 
 ```
 arstoien-blrplt/
 ├── packages/
-│   ├── server/         # NestJS backend
+│   ├── server/         # NestJS backend (test/ holds the integration tests and their harness)
 │   ├── client/         # React client app
-│   └── admin/          # React admin panel
+│   ├── admin/          # React admin panel
+│   └── ui/             # Shared React components (@blrplt/ui)
+├── openspec/           # Specs of the product (specs/) and the changes in flight (changes/)
+├── scripts/            # The tool that ties spec scenarios to tests
+├── .agents/            # Agent skills (.claude/skills mirrors them)
+├── .github/workflows/  # CI, the spec gate and the optional spec-tests agent
+├── AGENTS.md           # Working contract for people and agents
 ├── docker-compose.yml  # Development services
 ├── package.json        # Root workspace config
 └── init.sql           # Database initialization
@@ -82,8 +92,8 @@ arstoien-blrplt/
 
 ### Prerequisites
 
-- Node.js 22+
-- pnpm 9.14.2
+- Node.js 26+
+- pnpm 12 (the root `package.json` pins the exact version in `packageManager`)
 - Docker & Docker Compose
 - PostgreSQL 15 (or use Docker)
 - Redis 7 (or use Docker)
@@ -98,10 +108,8 @@ cd arstoien-blrplt
 
 2. **Install pnpm**
 ```bash
-corepack enable
-corepack prepare pnpm@9.14.2 --activate
-# Or install globally
-npm install -g pnpm
+# Node.js 25 and later no longer bundle Corepack, so take the pinned version from npm
+npm install --global pnpm@12.14.0
 ```
 
 3. **Install dependencies**
@@ -126,14 +134,14 @@ cp packages/admin/.env.example packages/admin/.env
 
 6. **Setup database**
 ```bash
-# Generate Prisma client
-pnpm --filter @blrplt/server prisma generate
+# Generate Prisma client (build, test and typecheck of the server do this on their own)
+pnpm db:generate
 
 # Run migrations
-pnpm --filter @blrplt/server prisma migrate dev
+pnpm db:migrate
 
 # Seed database (optional)
-pnpm --filter @blrplt/server prisma db seed
+pnpm db:seed
 ```
 
 7. **Start development servers**
@@ -201,88 +209,35 @@ VITE_WS_URL=ws://localhost:4000/graphql
 ### Root Level
 - `pnpm dev` - Start all services in development
 - `pnpm build` - Build all packages
-- `pnpm test` - Run all tests
+- `pnpm test` - Run all unit tests with Vitest
+- `pnpm test:scripts` - Run only the tests of the tools in `scripts/`
+- `pnpm test:integration` - Run the integration tests of the server against a real PostgreSQL; it needs `DATABASE_URL`, see [Spec-driven workflow](#spec-driven-workflow)
+- `pnpm spec:validate` - OpenSpec: validate every spec and change in `openspec/`
+- `pnpm spec:check` - Check that every scenario in `openspec/specs` has a test titled `Scenario: <title>`, and the reverse
+- `pnpm spec:generate <capability>` - Append `it.todo` skeletons for the scenarios that have no test; `--change <id>` does it for a change in flight
 - `pnpm typecheck` - TypeScript checking
-- `pnpm lint:check` - Check linting
-- `pnpm lint:fix` - Fix linting issues
-- `pnpm prettier:check` - Check formatting
-- `pnpm prettier:fix` - Fix formatting
+- `pnpm check` - Biome: check formatting, lint rules and import order
+- `pnpm check:fix` - Biome: apply the fixes
+- `pnpm lint` - Biome: lint rules only
+- `pnpm format` - Biome: write the formatting
+- `pnpm run ci` - The Biome check that CI runs (read-only, warnings count as errors). It needs `run`, because `pnpm ci` is pnpm's own command that cleans and reinstalls
 
 ### Database
+- `pnpm db:generate` - Generate the Prisma client
 - `pnpm db:migrate` - Run migrations
 - `pnpm db:push` - Push schema changes
 - `pnpm db:seed` - Seed database
 - `pnpm db:studio` - Open Prisma Studio
-- `pnpm create:admin` - Create admin user (requires env vars)
-- `pnpm create:test-users` - Create test users for development
+- `pnpm --filter @blrplt/server create:admin` - Create admin user (requires env vars)
+- `pnpm --filter @blrplt/server create:test-users` - Create test users for development
 
 ### Code Generation
 - `pnpm codegen` - Generate GraphQL types
 - `pnpm i18n` - Extract i18n strings
 
-## Production Database Setup
+## Admin and Test Users
 
-### Prerequisites
-- AWS CLI configured with proper credentials
-- Database connection details (from Terraform outputs)
-- Admin credentials ready
-
-### Step 1: Make RDS Database Accessible
-
-For security, production RDS databases are typically not publicly accessible. To connect:
-
-```bash
-# 1. Temporarily make RDS publicly accessible
-aws rds modify-db-instance \
-  --db-instance-identifier blrplt-postgres \
-  --publicly-accessible \
-  --apply-immediately \
-  --region eu-central-1
-
-# 2. Wait for the modification to complete
-aws rds wait db-instance-available \
-  --db-instance-identifier blrplt-postgres \
-  --region eu-central-1
-
-# 3. Add your IP to the security group
-MY_IP=$(curl -s ifconfig.me)
-echo "Your IP: $MY_IP"
-
-aws ec2 authorize-security-group-ingress \
-  --group-id <your-security-group-id> \
-  --protocol tcp \
-  --port 5432 \
-  --cidr $MY_IP/32 \
-  --region eu-central-1
-```
-
-### Step 2: Check Database Connection
-
-```bash
-# Export database URL (get from Terraform outputs or AWS console)
-export DATABASE_URL="postgresql://username:password@host:5432/database"
-
-# Test connection with psql
-psql $DATABASE_URL -c "SELECT version();"
-
-# Or check via the application
-cd packages/server
-pnpm db:studio  # Opens Prisma Studio to view data
-```
-
-### Step 3: Run Migrations
-
-```bash
-cd packages/server
-
-# Generate Prisma client
-pnpm db:generate
-
-# Run production migrations
-pnpm db:migrate:prod
-```
-
-### Step 4: Create Admin User
+### Create the Admin User
 
 The application requires an admin user to manage the system. Create one using environment variables:
 
@@ -300,9 +255,9 @@ export ADMIN_LAST_NAME="User"     # Optional
 pnpm create:admin
 ```
 
-### Step 5: Create Test Users (Development Only)
+### Create Test Users (Development Only)
 
-For development/staging environments, you can create test users:
+For development environments, you can create test users:
 
 ```bash
 cd packages/server
@@ -324,53 +279,67 @@ Test users created (passwords are BASE_PWD + suffix):
 
 ⚠️ **Warning**: Never run `create:test-users` in production!
 
-### Step 6: Secure Database Access
-
-After setup, always revert the security changes:
-
-```bash
-# 1. Make RDS private again
-aws rds modify-db-instance \
-  --db-instance-identifier blrplt-postgres \
-  --no-publicly-accessible \
-  --apply-immediately \
-  --region eu-central-1
-
-# 2. Remove your IP from security group
-aws ec2 revoke-security-group-ingress \
-  --group-id <your-security-group-id> \
-  --protocol tcp \
-  --port 5432 \
-  --cidr $MY_IP/32 \
-  --region eu-central-1
-```
-
-### Alternative: Connect via App Runner
-
-If direct connection is not possible, you can run commands through your App Runner service:
-
-```bash
-# Update App Runner start command temporarily
-aws apprunner update-service \
-  --service-arn <your-app-runner-arn> \
-  --region eu-central-1 \
-  --source-configuration '{
-    "ImageRepository": {
-      "ImageConfiguration": {
-        "StartCommand": "sh -c \"npx prisma migrate deploy && node src/scripts/create-admin.js && npm start\""
-      }
-    }
-  }'
-```
-
 ## Development Workflow
 
 1. **Make changes** to code
 2. **Run type checking**: `pnpm typecheck`
-3. **Run linting**: `pnpm lint:check`
-4. **Run tests**: `pnpm test`
+3. **Check formatting and lint rules**: `pnpm run ci` (`pnpm check:fix` applies the fixes)
+4. **Run tests**: `pnpm test`, and `pnpm test:integration` when the server changed
 5. **Generate types** (if GraphQL changed): `pnpm codegen`
 6. **Run migrations** (if schema changed): `pnpm db:migrate`
+7. **Check the specs**: `pnpm spec:validate` and `pnpm spec:check`
+
+## Spec-driven workflow
+
+The behaviour of the product is written down in `openspec/specs/<capability>/spec.md`, and every `#### Scenario:` in those files is proved by a test titled `Scenario: <exact scenario title>`.
+
+`pnpm spec:check` compares the two, and the Spec Gate workflow (`.github/workflows/spec-gate.yml`) runs it on every pull request together with the spec validation, the unit tests and the integration tests, so a scenario without a test, a test without a scenario and a red test each fail the pull request.
+
+The starter specs describe authentication, the user profile and health; the integration tests start the real application against a real PostgreSQL, with the schema built by `prisma migrate deploy` and only the external senders replaced by in-memory fakes.
+
+A new feature goes in three steps.
+
+1. **Describe it.** In Claude Code, `/opsx:propose subscribe to a newsletter` writes `openspec/changes/add-newsletter/` with a proposal, a design, tasks and a delta spec such as:
+
+   ```markdown
+   ## ADDED Requirements
+
+   ### Requirement: A signed-in user can subscribe to the newsletter once
+
+   The system SHALL let a signed-in user subscribe to the newsletter, and SHALL refuse a second subscription of the same user.
+
+   #### Scenario: A signed-in user subscribes
+
+   - **WHEN** a signed-in user runs the subscribeToNewsletter mutation
+   - **THEN** the answer is true
+
+   #### Scenario: A second subscription is refused
+
+   - **WHEN** a subscribed user runs the subscribeToNewsletter mutation again
+   - **THEN** the request fails with the message "Already subscribed"
+   ```
+
+2. **Get the failing tests.** `pnpm spec:generate --change add-newsletter` appends one skeleton per scenario to `packages/server/test/spec/newsletter.spec.ts`:
+
+   ```ts
+   // WHEN a signed-in user runs the subscribeToNewsletter mutation
+   // THEN the answer is true
+   it.todo('Scenario: A signed-in user subscribes');
+   ```
+
+   The `spec-to-tests` skill (`.agents/skills/spec-to-tests/SKILL.md`) turns each skeleton into a real test with the helpers in `packages/server/test/support/`. An `it.todo` still counts as uncovered, so `pnpm spec:check` stays red until every skeleton is a real test.
+
+3. **Build it, then archive it.** `/opsx:apply` works through the tasks until `pnpm test:integration` is green, and `/opsx:archive` folds the delta into `openspec/specs/` in the same pull request as the code.
+
+The integration tests have no default database, because they write rows: set `DATABASE_URL` to an empty database that may be filled, for example `docker compose exec postgres createdb -U blrplt_user blrplt_test` and then `DATABASE_URL=postgresql://blrplt_user:blrplt_password@localhost:5433/blrplt_test pnpm test:integration`. The schema is created by `prisma migrate deploy` on the first run.
+
+The baseline migration `packages/server/prisma/migrations/0_init` is the schema as it was before the first migration. An empty database needs nothing, but a database that was filled earlier by `prisma db push` (older server images did that on every start) already holds every table, so `prisma migrate deploy` refuses it with P3005 until the baseline is marked as applied once: `cd packages/server && pnpm exec prisma migrate resolve --applied 0_init`.
+
+Spec Gate is a workflow of its own and is not part of the `ci-success` job of `ci.yml`: to let it block a merge, add the Spec Gate job as a required status check in the branch protection rules.
+
+`.github/workflows/spec-tests-agent.yml` is an optional workflow that lets an agent write the missing tests: when the repository variable `SPEC_TESTS_AGENT` is `true` and the secret `ANTHROPIC_API_KEY` is set, adding the label `spec-tests` to a pull request from this repository runs the `spec-to-tests` skill and commits the tests to the branch. It is off by default, it never edits a spec, and the skill has to be on the base branch of the pull request before the action can use it.
+
+`AGENTS.md` holds the same rules for people and agents who work in the repository.
 
 ## Authentication Flow
 
@@ -408,35 +377,12 @@ aws apprunner update-service \
 4. User sets new password via link
 5. Can login with new password
 
-## Deployment
+## Docker Image
 
-### Docker Deployment
+The server image is built from the repository root, because the pnpm workspace and the lockfile live there. The container creates the database if needed, applies the migrations with `prisma migrate deploy` and starts `node dist/main.js`; the client and the admin panel are static builds.
+
 ```bash
-# Build images
-docker build -t blrplt-server ./packages/server
-docker build -t blrplt-client ./packages/client
-docker build -t blrplt-admin ./packages/admin
-
-# Run with docker-compose
-docker-compose -f docker-compose.production.yml up
-```
-
-### Manual Deployment
-```bash
-# Build all packages
-yarn build
-
-# Server
-cd packages/server
-node dist/main.js
-
-# Client (serve static files)
-cd packages/client
-npx serve -s dist
-
-# Admin (serve static files)
-cd packages/admin
-npx serve -s dist
+docker build -f packages/server/Dockerfile -t blrplt-server .
 ```
 
 ## API Documentation
@@ -642,12 +588,18 @@ subscription AdminPendingCountsChanged {
 }
 ```
 
-## Project Dependencies
+## Workspace Packages
 
-### NPM Packages
-- **@arstoien/devtools** - ESLint and Prettier configurations
-- **@arstoien/shared-ui** - Component library (Radix UI + Tailwind)
-- **@arstoien/former** - Form library with dynamic forms
+- **@blrplt/server** - NestJS API
+- **@blrplt/client** - React client app
+- **@blrplt/admin** - React admin panel
+- **@blrplt/ui** - React components (Radix UI + Tailwind) shared by the client and the admin panel
+
+Everything the template needs lives in this repository, so `pnpm install` works without a registry token.
+
+## Tooling Migration
+
+Earlier versions of this template linted with ESLint, formatted with Prettier and tested with Jest. Biome now does the first two jobs from the single `biome.json` at the root (`pnpm check`, `pnpm check:fix`), and Vitest runs the tests of every package (`pnpm test`). Nothing in the repository configures the old tools any more, and the generated files (the route trees and `src/gql`) are skipped by Biome. The one remaining mention is the dependency `@testing-library/jest-dom`: the name belongs to the DOM matchers package, and its `/vitest` entry point is what the test setup of the client, the admin panel and `@blrplt/ui` imports.
 
 ## Contributing
 

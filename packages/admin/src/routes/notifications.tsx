@@ -1,16 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@apollo/client/react';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { requireAuth } from '@/lib/auth-guard';
-import { NOTIFICATIONS_QUERY, DELETE_NOTIFICATION_MUTATION } from '@/graphql/settings.graphql';
-import { AdminLayout } from '@/components/layout/admin-layout';
-import { Loading } from '@/components/shared/loading';
+import { useMutation, useQuery } from '@apollo/client/react';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -36,9 +26,19 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
-  Badge,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute } from '@tanstack/react-router';
 import { Plus, Send, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { Loading } from '@/components/shared/loading';
+import { DELETE_NOTIFICATION_MUTATION, NOTIFICATIONS_QUERY } from '@/graphql/settings.graphql';
+import { requireAuth } from '@/lib/auth-guard';
 
 const notificationSchema = z.object({
   title: z.string().min(1),
@@ -82,11 +82,11 @@ function NotificationsPage() {
     try {
       // TODO: CREATE_NOTIFICATION_MUTATION is not properly implemented in GraphQL
       // For now, just close the dialog and show a message
-      toast(t('Notification creation is not yet implemented'));
+      toast(t('notifications.createNotImplemented'));
       setIsDialogOpen(false);
       form.reset();
     } catch (error) {
-      toast.error(t('Failed to create notification'));
+      toast.error(t('notifications.createError'));
       console.error('Create error:', error);
     }
   };
@@ -94,9 +94,9 @@ function NotificationsPage() {
   const handleSend = async (_id: string) => {
     try {
       // TODO: SEND_NOTIFICATION_MUTATION is not properly implemented in GraphQL
-      toast(t('Notification sending is not yet implemented'));
+      toast(t('notifications.sendNotImplemented'));
     } catch (error) {
-      toast.error(t('Failed to send notification'));
+      toast.error(t('notifications.sendError'));
       console.error('Send error:', error);
     }
   };
@@ -106,10 +106,10 @@ function NotificationsPage() {
       await deleteNotification({
         variables: { notificationId: id },
       });
-      toast.success(t('Notification deleted successfully'));
+      toast.success(t('notifications.deleted'));
       refetch();
     } catch (error) {
-      toast.error(t('Failed to delete notification'));
+      toast.error(t('notifications.deleteError'));
       console.error('Delete error:', error);
     }
   };
@@ -119,22 +119,20 @@ function NotificationsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('Notifications')}</h1>
-            <p className="text-muted-foreground">{t('Create and manage system notifications')}</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t('notifications.title')}</h1>
+            <p className="text-muted-foreground">{t('notifications.description')}</p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                {t('Create Notification')}
+                {t('notifications.createButton')}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
-                <DialogTitle>{t('Create Notification')}</DialogTitle>
-                <DialogDescription>
-                  {t('Create a new notification to send to users')}
-                </DialogDescription>
+                <DialogTitle>{t('notifications.createTitle')}</DialogTitle>
+                <DialogDescription>{t('notifications.createDescription')}</DialogDescription>
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -143,7 +141,7 @@ function NotificationsPage() {
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('Title')}</FormLabel>
+                        <FormLabel>{t('notifications.fieldTitle')}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -156,7 +154,7 @@ function NotificationsPage() {
                     name="message"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('Message')}</FormLabel>
+                        <FormLabel>{t('notifications.fieldMessage')}</FormLabel>
                         <FormControl>
                           <Textarea {...field} rows={4} />
                         </FormControl>
@@ -170,7 +168,7 @@ function NotificationsPage() {
                       name="type"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('Type')}</FormLabel>
+                          <FormLabel>{t('notifications.fieldType')}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -178,10 +176,14 @@ function NotificationsPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="INFO">{t('Info')}</SelectItem>
-                              <SelectItem value="WARNING">{t('Warning')}</SelectItem>
-                              <SelectItem value="ERROR">{t('Error')}</SelectItem>
-                              <SelectItem value="SUCCESS">{t('Success')}</SelectItem>
+                              <SelectItem value="INFO">{t('notifications.typeInfo')}</SelectItem>
+                              <SelectItem value="WARNING">
+                                {t('notifications.typeWarning')}
+                              </SelectItem>
+                              <SelectItem value="ERROR">{t('notifications.typeError')}</SelectItem>
+                              <SelectItem value="SUCCESS">
+                                {t('notifications.typeSuccess')}
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -193,7 +195,7 @@ function NotificationsPage() {
                       name="priority"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('Priority')}</FormLabel>
+                          <FormLabel>{t('notifications.fieldPriority')}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -201,10 +203,16 @@ function NotificationsPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="LOW">{t('Low')}</SelectItem>
-                              <SelectItem value="MEDIUM">{t('Medium')}</SelectItem>
-                              <SelectItem value="HIGH">{t('High')}</SelectItem>
-                              <SelectItem value="URGENT">{t('Urgent')}</SelectItem>
+                              <SelectItem value="LOW">{t('notifications.priorityLow')}</SelectItem>
+                              <SelectItem value="MEDIUM">
+                                {t('notifications.priorityMedium')}
+                              </SelectItem>
+                              <SelectItem value="HIGH">
+                                {t('notifications.priorityHigh')}
+                              </SelectItem>
+                              <SelectItem value="URGENT">
+                                {t('notifications.priorityUrgent')}
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -216,7 +224,7 @@ function NotificationsPage() {
                       name="recipientType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('Recipients')}</FormLabel>
+                          <FormLabel>{t('notifications.fieldRecipients')}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -224,10 +232,18 @@ function NotificationsPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="ALL">{t('All Users')}</SelectItem>
-                              <SelectItem value="ADMINS">{t('Admins')}</SelectItem>
-                              <SelectItem value="MODERATORS">{t('Moderators')}</SelectItem>
-                              <SelectItem value="USERS">{t('Users')}</SelectItem>
+                              <SelectItem value="ALL">
+                                {t('notifications.recipientsAll')}
+                              </SelectItem>
+                              <SelectItem value="ADMINS">
+                                {t('notifications.recipientsAdmins')}
+                              </SelectItem>
+                              <SelectItem value="MODERATORS">
+                                {t('notifications.recipientsModerators')}
+                              </SelectItem>
+                              <SelectItem value="USERS">
+                                {t('notifications.recipientsUsers')}
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -237,9 +253,9 @@ function NotificationsPage() {
                   </div>
                   <div className="flex justify-end gap-2">
                     <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                      {t('Cancel')}
+                      {t('common.cancel')}
                     </Button>
-                    <Button type="submit">{t('Create')}</Button>
+                    <Button type="submit">{t('notifications.create')}</Button>
                   </div>
                 </form>
               </Form>
@@ -252,7 +268,7 @@ function NotificationsPage() {
         ) : notifications.length === 0 ? (
           <Card>
             <CardContent className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">{t('No notifications')}</p>
+              <p className="text-muted-foreground">{t('notifications.empty')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -277,11 +293,13 @@ function NotificationsPage() {
                   <div className="flex items-center justify-between">
                     <div className="text-muted-foreground text-sm">
                       <p>
-                        {t('Created')}: {new Date(notification.createdAt).toLocaleString()}
+                        {t('notifications.created')}:{' '}
+                        {new Date(notification.createdAt).toLocaleString()}
                       </p>
                       {notification.readAt && (
                         <p>
-                          {t('Read')}: {new Date(notification.readAt).toLocaleString()}
+                          {t('notifications.read')}:{' '}
+                          {new Date(notification.readAt).toLocaleString()}
                         </p>
                       )}
                     </div>
@@ -289,7 +307,7 @@ function NotificationsPage() {
                       {notification.status !== 'READ' && (
                         <Button size="sm" onClick={() => handleSend(notification.id)}>
                           <Send className="mr-2 h-4 w-4" />
-                          {t('Send')}
+                          {t('notifications.send')}
                         </Button>
                       )}
                       <Button

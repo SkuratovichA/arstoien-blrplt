@@ -1,0 +1,84 @@
+# =============================================================================
+# Spec Tests Agent - writes the missing scenario tests on a labelled pull request
+# =============================================================================
+# This workflow is off until the repository variable SPEC_TESTS_AGENT is set to true.
+# It needs the repository secret ANTHROPIC_API_KEY.
+# It starts only when the label spec-tests is added to a pull request from this repository.
+# It runs the spec-to-tests skill: it writes the missing tests and commits them to the pull request branch.
+# It does not touch anything under openspec/specs, and fork pull requests never reach it.
+
+name: Spec Tests Agent
+
+on:
+  pull_request:
+    types: [labeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  write-tests:
+    name: Write missing scenario tests
+    if: github.event.label.name == 'spec-tests' && vars.SPEC_TESTS_AGENT == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    # The same service as in spec-gate.yml, so the agent can run the integration tests it writes
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: blrplt_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d blrplt_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/blrplt_test
+
+    steps:
+      # The branch is checked out by name so the agent can commit to it
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set up the workspace
+        uses: ./.github/actions/setup
+
+      - name: Write the missing tests
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Use the spec-to-tests skill on this pull request.
+            Run `pnpm spec:check` and read its uncovered, orphan and duplicate lines.
+            Write the missing tests with titles copied from the spec, as `Scenario: <exact title>`.
+            See each new test fail once before you trust it, then run the gates from the skill.
+            DATABASE_URL points at the PostgreSQL service of this job, so `pnpm test:integration` runs here.
+            Commit the tests to the pull request branch.
+            Do not edit anything under `openspec/specs`, and do not edit a spec to make a test pass.
+          claude_args: |
+            --max-turns 40
+            --allowedTools Edit,Read,Write,Glob,Grep,Bash(pnpm:*),Bash(git status:*),Bash(git diff:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*)
+
+      # The prompt forbids editing a spec, and this step makes the rule visible: the job turns red when the agent's commits touch openspec/specs
+      - name: Refuse a changed spec
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git diff --exit-code "$HEAD_SHA" HEAD -- openspec/specs

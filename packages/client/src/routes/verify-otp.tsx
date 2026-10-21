@@ -1,28 +1,33 @@
-import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useMutation } from '@apollo/client/react';
-import { AuthLayout } from '../components/layout/auth-layout';
-import { Button } from '@arstoien/shared-ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
 import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
-} from '@arstoien/shared-ui';
-import { Input } from '@arstoien/shared-ui';
-import { VERIFY_OTP_LOGIN, REQUEST_OTP_LOGIN } from '../graphql/auth.graphql.ts';
-import { useAuthStore } from '../lib/auth-store';
+  Input,
+} from '@blrplt/ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, Link, useNavigate, useSearch } from '@tanstack/react-router';
+import { useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
-import { useState, useEffect, useRef } from 'react';
-import { Link } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { AuthLayout } from '../components/layout/auth-layout';
+import { REQUEST_OTP_LOGIN, VERIFY_OTP_LOGIN } from '../graphql/auth.graphql.ts';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireGuest } from '../lib/auth-guard';
+import { useAuthStore } from '../lib/auth-store';
+import { errorMessageOf } from '../lib/error-message';
 
 export const Route = createFileRoute('/verify-otp')({
   beforeLoad: ({ context }) => {
@@ -39,6 +44,8 @@ const otpSchema = z.object({
 });
 
 type OtpFormData = z.infer<typeof otpSchema>;
+
+const OTP_SLOT_KEYS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'] as const;
 
 function VerifyOtp() {
   const { t } = useTranslation();
@@ -83,7 +90,7 @@ function VerifyOtp() {
 
   const handleResendCode = async () => {
     if (!search.email) {
-      toast.error(t('Email address is required'));
+      toast.error(t('auth.otp.emailRequired'));
       return;
     }
 
@@ -93,22 +100,28 @@ function VerifyOtp() {
       });
 
       if (result.data?.requestOtpLogin?.success) {
-        toast.success(t('New OTP code sent to your email'));
+        toast.success(t('auth.otp.resendSuccess'));
         setCountdown(300); // Reset countdown
         setCanResend(false);
         form.reset();
       } else {
-        throw new Error(result.data?.requestOtpLogin?.message ?? t('Failed to send OTP'));
+        console.error('Resend OTP error:', result.data?.requestOtpLogin?.message);
+        toast.error(t('auth.otp.resendError'));
       }
     } catch (error) {
       console.error('Resend OTP error:', error);
-      toast.error(t('Failed to resend code'));
+      toast.error(errorMessageOf(error, t));
     }
+  };
+
+  const showCodeError = (message: string) => {
+    toast.error(message);
+    form.setError('code', { message });
   };
 
   const onSubmit = async (data: OtpFormData) => {
     if (!search.email) {
-      toast.error(t('Email address is required'));
+      toast.error(t('auth.otp.emailRequired'));
       navigate({ to: '/login' });
       return;
     }
@@ -141,16 +154,14 @@ function VerifyOtp() {
           createdAt: user.createdAt,
         });
 
-        toast.success(t('Login successful'));
+        toast.success(t('auth.login.success'));
         navigate({ to: '/dashboard', search: {} });
       } else {
-        throw new Error(t('Invalid or expired code'));
+        showCodeError(t('auth.otp.invalidCode'));
       }
     } catch (error) {
       console.error('OTP verification error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('Invalid or expired code');
-      toast.error(errorMessage);
-      form.setError('code', { message: errorMessage });
+      showCodeError(errorMessageOf(error, t, { UNAUTHENTICATED: t('auth.otp.invalidCode') }));
     }
   };
 
@@ -198,9 +209,9 @@ function VerifyOtp() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('Enter Verification Code')}</CardTitle>
+          <CardTitle>{t('auth.otp.title')}</CardTitle>
           <CardDescription>
-            {t('We sent a 6-digit code to')} <strong>{search.email}</strong>
+            {t('auth.otp.sentTo')} <strong>{search.email}</strong>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -211,12 +222,12 @@ function VerifyOtp() {
                 name="code"
                 render={() => (
                   <FormItem>
-                    <FormLabel>{t('Verification Code')}</FormLabel>
+                    <FormLabel>{t('auth.otp.codeLabel')}</FormLabel>
                     <FormControl>
                       <div className="flex justify-center gap-2">
-                        {Array.from({ length: 6 }, (_, index) => (
+                        {OTP_SLOT_KEYS.map((slotKey, index) => (
                           <Input
-                            key={index}
+                            key={slotKey}
                             ref={(el) => {
                               inputRefs.current[index] = el;
                             }}
@@ -238,10 +249,10 @@ function VerifyOtp() {
                     <FormDescription className="text-center">
                       {countdown > 0 ? (
                         <>
-                          {t('Code expires in')} <strong>{formatCountdown(countdown)}</strong>
+                          {t('auth.otp.expiresIn')} <strong>{formatCountdown(countdown)}</strong>
                         </>
                       ) : (
-                        <span className="text-destructive">{t('Code has expired')}</span>
+                        <span className="text-destructive">{t('auth.otp.expired')}</span>
                       )}
                     </FormDescription>
                     <FormMessage />
@@ -250,7 +261,7 @@ function VerifyOtp() {
               />
 
               <Button type="submit" className="w-full" disabled={verifying}>
-                {verifying ? t('Verifying...') : t('Verify Code')}
+                {verifying ? t('auth.otp.verifying') : t('auth.otp.verify')}
               </Button>
 
               <div className="space-y-2 text-center">
@@ -263,17 +274,17 @@ function VerifyOtp() {
                     disabled={!canResend || requesting}
                   >
                     {requesting
-                      ? t('Sending...')
+                      ? t('auth.otp.sending')
                       : canResend
-                        ? t('Resend Code')
-                        : t('Resend available in {{time}}', { time: formatCountdown(countdown) })}
+                        ? t('auth.otp.resend')
+                        : t('auth.otp.resendIn', { time: formatCountdown(countdown) })}
                   </Button>
                 </div>
 
                 <div className="text-muted-foreground text-sm">
-                  {t('Wrong email?')}{' '}
+                  {t('auth.otp.wrongEmail')}{' '}
                   <Link to="/login" className="text-foreground hover:underline">
-                    {t('Back to login')}
+                    {t('auth.forgotPassword.backToLogin')}
                   </Link>
                 </div>
               </div>

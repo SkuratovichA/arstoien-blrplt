@@ -1,6 +1,6 @@
+import { Button } from '@blrplt/ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@arstoien/shared-ui';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -40,14 +40,12 @@ function ErrorFallback({ error }: { error: Error | null }) {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">{t('Something went wrong')}</h1>
-        <p className="text-muted-foreground mb-4">
-          {t('An unexpected error occurred. Please try again.')}
-        </p>
+        <h1 className="mb-4 text-4xl font-bold">{t('error.title')}</h1>
+        <p className="text-muted-foreground mb-4">{t('error.description')}</p>
         {error && (
           <pre className="bg-muted mb-4 rounded-lg p-4 text-left text-sm">{error.message}</pre>
         )}
-        <Button onClick={() => window.location.reload()}>{t('Reload page')}</Button>
+        <Button onClick={() => window.location.reload()}>{t('error.reload')}</Button>
       </div>
     </div>
   );

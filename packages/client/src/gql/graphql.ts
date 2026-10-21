@@ -1,714 +1,238 @@
-/* eslint-disable */
-import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
-export type Maybe<T> = T | null;
-export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+/** Internal type. DO NOT USE DIRECTLY. */
+type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+/** Internal type. DO NOT USE DIRECTLY. */
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
-/** All built-in and custom scalars, mapped to their actual values */
-export type Scalars = {
-  ID: { input: string; output: string; }
-  String: { input: string; output: string; }
-  Boolean: { input: boolean; output: boolean; }
-  Int: { input: number; output: number; }
-  Float: { input: number; output: number; }
-  /** Date custom scalar type */
-  Date: { input: any; output: any; }
-  /** A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format. */
-  DateTime: { input: any; output: any; }
-};
-
-export type AdminPendingCountsType = {
-  __typename?: 'AdminPendingCountsType';
-  /** Number of users pending approval */
-  pendingUsers: Scalars['Int']['output'];
-};
-
-export type AdminStatsType = {
-  __typename?: 'AdminStatsType';
-  pendingUsers: Scalars['Int']['output'];
-  todayRegistrations: Scalars['Int']['output'];
-  totalUsers: Scalars['Int']['output'];
-};
-
-export type ApproveUserInput = {
-  approved: Scalars['Boolean']['input'];
-  reason?: InputMaybe<Scalars['String']['input']>;
-  userId: Scalars['ID']['input'];
-};
-
-export type AuditLogObjectType = {
-  __typename?: 'AuditLogObjectType';
-  action: Scalars['String']['output'];
-  createdAt: Scalars['DateTime']['output'];
-  entityId?: Maybe<Scalars['String']['output']>;
-  entityType: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  ipAddress?: Maybe<Scalars['String']['output']>;
-  userAgent?: Maybe<Scalars['String']['output']>;
-  userId?: Maybe<Scalars['String']['output']>;
-};
-
+import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 /** Authentication provider used by the user */
-export enum AuthProvider {
-  Email = 'EMAIL',
-  Google = 'GOOGLE'
-}
-
-export type AuthResponse = {
-  __typename?: 'AuthResponse';
-  accessToken: Scalars['String']['output'];
-  refreshToken: Scalars['String']['output'];
-  user: UserResponse;
-};
-
-export type BasicResponse = {
-  __typename?: 'BasicResponse';
-  message: Scalars['String']['output'];
-  success: Scalars['Boolean']['output'];
-};
-
-export type BulkUpdateOtpInput = {
-  enabled: Scalars['Boolean']['input'];
-  /** Specific user IDs to update. If not provided, updates all users. */
-  userIds?: InputMaybe<Array<Scalars['String']['input']>>;
-};
-
-export type BulkUpdateResultType = {
-  __typename?: 'BulkUpdateResultType';
-  message?: Maybe<Scalars['String']['output']>;
-  success: Scalars['Boolean']['output'];
-  updated: Scalars['Int']['output'];
-};
+export type AuthProvider =
+  | 'EMAIL'
+  | 'GOOGLE';
 
 export type ChangePasswordInputType = {
-  currentPassword: Scalars['String']['input'];
-  newPassword: Scalars['String']['input'];
-};
-
-export type CreateUserInput = {
-  email: Scalars['String']['input'];
-  firstName: Scalars['String']['input'];
-  lastName: Scalars['String']['input'];
-  password?: InputMaybe<Scalars['String']['input']>;
-  phone?: InputMaybe<Scalars['String']['input']>;
-  role?: InputMaybe<Scalars['String']['input']>;
+  currentPassword: string;
+  newPassword: string;
 };
 
 export type DeleteAccountInputType = {
-  confirmText?: InputMaybe<Scalars['String']['input']>;
-  password?: InputMaybe<Scalars['String']['input']>;
-  reason?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type DeleteUserInput = {
-  hardDelete?: InputMaybe<Scalars['Boolean']['input']>;
-  reason?: InputMaybe<Scalars['String']['input']>;
-  userId: Scalars['String']['input'];
+  confirmText?: string | null | undefined;
+  password?: string | null | undefined;
+  reason?: string | null | undefined;
 };
 
 export type ForgotPasswordInput = {
-  email: Scalars['String']['input'];
+  email: string;
 };
 
 export type LoginInput = {
-  email: Scalars['String']['input'];
-  password: Scalars['String']['input'];
-};
-
-export type Mutation = {
-  __typename?: 'Mutation';
-  approveUser: UserObjectType;
-  bulkUpdateOtp: BulkUpdateResultType;
-  /** Change user password */
-  changePassword: BasicResponse;
-  createUser: UserObjectType;
-  /** Delete user account */
-  deleteAccount: BasicResponse;
-  /** Delete notification */
-  deleteNotification: Notification;
-  deleteUser: UserObjectType;
-  /** Request password reset email. Returns true even if email does not exist (security). */
-  forgotPassword: Scalars['Boolean']['output'];
-  /** Login with email and password */
-  login: AuthResponse;
-  /** Logout user and clear authentication cookies */
-  logout: Scalars['Boolean']['output'];
-  /** Mark all notifications as read */
-  markAllNotificationsAsRead: Scalars['Int']['output'];
-  /** Mark notification as read */
-  markNotificationAsRead: Notification;
-  /** Refresh access token using refresh token from cookies */
-  refresh?: Maybe<Scalars['String']['output']>;
-  /** User registration with personal details and optional company ICO. Admin approval required. */
-  register: RegisterResponse;
-  /** Register new user account with password (legacy) */
-  registerWithPassword: AuthResponse;
-  rejectUser: UserObjectType;
-  /** Request OTP code for passwordless login */
-  requestOtpLogin: BasicResponse;
-  /** Resend email verification link to user */
-  resendVerificationEmail: BasicResponse;
-  /** Reset password using token from email. Token valid for 30 minutes. */
-  resetPassword: Scalars['Boolean']['output'];
-  /** Set password for users in FRESHLY_CREATED_REQUIRES_PASSWORD status and return auth tokens */
-  setPassword: AuthResponse;
-  /** Set password using verification token from email and return auth tokens */
-  setPasswordWithToken: AuthResponse;
-  /** Update current user profile (including locale and currency preferences) */
-  updateProfile: UserObjectType;
-  /** Update system settings (admin only) */
-  updateSystemSettings: SystemSettingsObjectType;
-  updateUser: UserObjectType;
-  updateUserStatus: UserObjectType;
-  /** Verify email address using token from verification email */
-  verifyEmail: BasicResponse;
-  /** Verify OTP code and complete login */
-  verifyOtpLogin: AuthResponse;
-};
-
-
-export type MutationApproveUserArgs = {
-  input: ApproveUserInput;
-};
-
-
-export type MutationBulkUpdateOtpArgs = {
-  input: BulkUpdateOtpInput;
-};
-
-
-export type MutationChangePasswordArgs = {
-  input: ChangePasswordInputType;
-};
-
-
-export type MutationCreateUserArgs = {
-  input: CreateUserInput;
-};
-
-
-export type MutationDeleteAccountArgs = {
-  input: DeleteAccountInputType;
-};
-
-
-export type MutationDeleteNotificationArgs = {
-  notificationId: Scalars['ID']['input'];
-};
-
-
-export type MutationDeleteUserArgs = {
-  input: DeleteUserInput;
-};
-
-
-export type MutationForgotPasswordArgs = {
-  input: ForgotPasswordInput;
-};
-
-
-export type MutationLoginArgs = {
-  input: LoginInput;
-};
-
-
-export type MutationMarkNotificationAsReadArgs = {
-  notificationId: Scalars['ID']['input'];
-};
-
-
-export type MutationRegisterArgs = {
-  input: RegisterInput;
-};
-
-
-export type MutationRegisterWithPasswordArgs = {
-  input: RegisterWithPasswordInput;
-};
-
-
-export type MutationRejectUserArgs = {
-  input: RejectUserInput;
-};
-
-
-export type MutationRequestOtpLoginArgs = {
-  email: Scalars['String']['input'];
-};
-
-
-export type MutationResetPasswordArgs = {
-  input: ResetPasswordInput;
-};
-
-
-export type MutationSetPasswordArgs = {
-  input: SetPasswordInput;
-};
-
-
-export type MutationSetPasswordWithTokenArgs = {
-  input: SetPasswordWithTokenInput;
-};
-
-
-export type MutationUpdateProfileArgs = {
-  input: UpdateProfileInputType;
-};
-
-
-export type MutationUpdateSystemSettingsArgs = {
-  input: UpdateSystemSettingsInputType;
-};
-
-
-export type MutationUpdateUserArgs = {
-  input: UpdateUserInput;
-};
-
-
-export type MutationUpdateUserStatusArgs = {
-  input: UpdateUserStatusInput;
-};
-
-
-export type MutationVerifyEmailArgs = {
-  token: Scalars['String']['input'];
-};
-
-
-export type MutationVerifyOtpLoginArgs = {
-  code: Scalars['String']['input'];
-  email: Scalars['String']['input'];
-};
-
-export type Notification = {
-  __typename?: 'Notification';
-  createdAt: Scalars['Date']['output'];
-  id: Scalars['ID']['output'];
-  message: Scalars['String']['output'];
-  readAt?: Maybe<Scalars['Date']['output']>;
-  status: NotificationStatus;
-  title: Scalars['String']['output'];
-  type: NotificationType;
-  updatedAt: Scalars['Date']['output'];
-  user?: Maybe<UserObjectType>;
-  userId: Scalars['String']['output'];
+  email: string;
+  password: string;
 };
 
 export type NotificationFiltersInputType = {
-  endDate?: InputMaybe<Scalars['String']['input']>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  startDate?: InputMaybe<Scalars['String']['input']>;
-  status?: InputMaybe<Scalars['String']['input']>;
-  type?: InputMaybe<Scalars['String']['input']>;
+  endDate?: string | null | undefined;
+  limit?: number | null | undefined;
+  offset?: number | null | undefined;
+  startDate?: string | null | undefined;
+  status?: string | null | undefined;
+  type?: string | null | undefined;
 };
 
 /** The status of a notification */
-export enum NotificationStatus {
-  Archived = 'ARCHIVED',
-  Read = 'READ',
-  Unread = 'UNREAD'
-}
+export type NotificationStatus =
+  | 'ARCHIVED'
+  | 'READ'
+  | 'UNREAD';
 
 /** The type of notification */
-export enum NotificationType {
-  SystemAnnouncement = 'SYSTEM_ANNOUNCEMENT',
-  UserVerified = 'USER_VERIFIED'
-}
-
-export type Query = {
-  __typename?: 'Query';
-  /** Get counts of pending users for admin notifications */
-  adminPendingCounts: AdminPendingCountsType;
-  adminStatistics: AdminStatsType;
-  auditLogs: Array<AuditLogObjectType>;
-  /** Get the currently authenticated user */
-  currentUser?: Maybe<UserObjectType>;
-  /** Check if OTP authentication is enabled for an email */
-  isOtpEnabled: Scalars['Boolean']['output'];
-  /** Get current user's notifications */
-  myNotifications: Array<Notification>;
-  pendingUsers: Array<UserObjectType>;
-  recentActivity: Array<RecentActivityType>;
-  /** Get system settings (admin only) */
-  systemSettings: SystemSettingsObjectType;
-  /** Get unread notification count */
-  unreadNotificationCount: Scalars['Int']['output'];
-  user: UserObjectType;
-  userAuditLogs: Array<AuditLogObjectType>;
-  userGrowthStats: UserGrowthStatsType;
-  users: Array<UserObjectType>;
-};
-
-
-export type QueryAuditLogsArgs = {
-  page?: InputMaybe<Scalars['Int']['input']>;
-  pageSize?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-export type QueryIsOtpEnabledArgs = {
-  email: Scalars['String']['input'];
-};
-
-
-export type QueryMyNotificationsArgs = {
-  filters?: InputMaybe<NotificationFiltersInputType>;
-};
-
-
-export type QueryRecentActivityArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-export type QueryUserArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryUserAuditLogsArgs = {
-  action?: InputMaybe<Scalars['String']['input']>;
-  entityType?: InputMaybe<Scalars['String']['input']>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  take?: InputMaybe<Scalars['Int']['input']>;
-  userId: Scalars['String']['input'];
-};
-
-
-export type QueryUserGrowthStatsArgs = {
-  months?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-export type QueryUsersArgs = {
-  role?: InputMaybe<Scalars['String']['input']>;
-  search?: InputMaybe<Scalars['String']['input']>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  status?: InputMaybe<Scalars['String']['input']>;
-  take?: InputMaybe<Scalars['Int']['input']>;
-};
-
-export type RecentActivityType = {
-  __typename?: 'RecentActivityType';
-  action: Scalars['String']['output'];
-  createdAt: Scalars['Date']['output'];
-  description: Scalars['String']['output'];
-  id: Scalars['String']['output'];
-  userEmail?: Maybe<Scalars['String']['output']>;
-  userId?: Maybe<Scalars['String']['output']>;
-};
+export type NotificationType =
+  | 'SYSTEM_ANNOUNCEMENT'
+  | 'USER_VERIFIED';
 
 export type RegisterInput = {
-  companyPhone?: InputMaybe<Scalars['String']['input']>;
-  email: Scalars['String']['input'];
-  firstName: Scalars['String']['input'];
+  companyPhone?: string | null | undefined;
+  email: string;
+  firstName: string;
   /** 8-digit Czech company ID (recommended for CZ companies) */
-  ico?: InputMaybe<Scalars['String']['input']>;
-  lastName: Scalars['String']['input'];
-  phone: Scalars['String']['input'];
-};
-
-export type RegisterResponse = {
-  __typename?: 'RegisterResponse';
-  message: Scalars['String']['output'];
-  success: Scalars['Boolean']['output'];
-};
-
-export type RegisterWithPasswordInput = {
-  email: Scalars['String']['input'];
-  firstName: Scalars['String']['input'];
-  lastName: Scalars['String']['input'];
-  password: Scalars['String']['input'];
-};
-
-export type RejectUserInput = {
-  reason: Scalars['String']['input'];
-  userId: Scalars['String']['input'];
+  ico?: string | null | undefined;
+  lastName: string;
+  phone: string;
 };
 
 export type ResetPasswordInput = {
-  newPassword: Scalars['String']['input'];
-  token: Scalars['String']['input'];
-};
-
-export type SetPasswordInput = {
-  password: Scalars['String']['input'];
-  userId: Scalars['String']['input'];
+  newPassword: string;
+  token: string;
 };
 
 export type SetPasswordWithTokenInput = {
-  password: Scalars['String']['input'];
-  token: Scalars['String']['input'];
-};
-
-export type Subscription = {
-  __typename?: 'Subscription';
-  /** Subscribe to real-time updates of pending users counts */
-  adminPendingCountsChanged: AdminPendingCountsType;
-  /** Subscribe to new notifications */
-  notificationAdded: Notification;
-};
-
-export type SystemSettingsObjectType = {
-  __typename?: 'SystemSettingsObjectType';
-  createdAt: Scalars['Date']['output'];
-  id: Scalars['ID']['output'];
-  otpAuthEnabled: Scalars['Boolean']['output'];
-  supportEmail: Scalars['String']['output'];
-  updatedAt: Scalars['Date']['output'];
+  password: string;
+  token: string;
 };
 
 export type UpdateProfileInputType = {
-  avatar?: InputMaybe<Scalars['String']['input']>;
-  bio?: InputMaybe<Scalars['String']['input']>;
-  firstName?: InputMaybe<Scalars['String']['input']>;
-  lastName?: InputMaybe<Scalars['String']['input']>;
-  otpAuthEnabled?: InputMaybe<Scalars['Boolean']['input']>;
-  phone?: InputMaybe<Scalars['String']['input']>;
-  preferredCurrency?: InputMaybe<Scalars['String']['input']>;
-  preferredLocale?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type UpdateSystemSettingsInputType = {
-  otpAuthEnabled?: InputMaybe<Scalars['Boolean']['input']>;
-  supportEmail?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type UpdateUserInput = {
-  email?: InputMaybe<Scalars['String']['input']>;
-  firstName?: InputMaybe<Scalars['String']['input']>;
-  lastName?: InputMaybe<Scalars['String']['input']>;
-  otpAuthEnabled?: InputMaybe<Scalars['Boolean']['input']>;
-  phone?: InputMaybe<Scalars['String']['input']>;
-  role?: InputMaybe<Scalars['String']['input']>;
-  status?: InputMaybe<Scalars['String']['input']>;
-  userId: Scalars['String']['input'];
-};
-
-export type UpdateUserStatusInput = {
-  status: UserStatus;
-  userId: Scalars['ID']['input'];
-};
-
-export type UserGrowthDataPoint = {
-  __typename?: 'UserGrowthDataPoint';
-  activeUsers: Scalars['Int']['output'];
-  newUsers: Scalars['Int']['output'];
-  pendingUsers: Scalars['Int']['output'];
-  period: Scalars['String']['output'];
-  totalUsers: Scalars['Int']['output'];
-};
-
-export type UserGrowthStatsType = {
-  __typename?: 'UserGrowthStatsType';
-  data: Array<UserGrowthDataPoint>;
-  endDate: Scalars['Date']['output'];
-  startDate: Scalars['Date']['output'];
-};
-
-export type UserObjectType = {
-  __typename?: 'UserObjectType';
-  approvedAt?: Maybe<Scalars['Date']['output']>;
-  aresCheckedAt?: Maybe<Scalars['Date']['output']>;
-  aresError?: Maybe<Scalars['String']['output']>;
-  authProvider: AuthProvider;
-  avatar?: Maybe<Scalars['String']['output']>;
-  bio?: Maybe<Scalars['String']['output']>;
-  createdAt: Scalars['Date']['output'];
-  documentsRequestedAt?: Maybe<Scalars['Date']['output']>;
-  email: Scalars['String']['output'];
-  emailVerifiedAt?: Maybe<Scalars['Date']['output']>;
-  firstName: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  lastLoginAt?: Maybe<Scalars['Date']['output']>;
-  lastName: Scalars['String']['output'];
-  otpAuthEnabled: Scalars['Boolean']['output'];
-  phone?: Maybe<Scalars['String']['output']>;
-  preferredCurrency?: Maybe<Scalars['String']['output']>;
-  preferredLocale?: Maybe<Scalars['String']['output']>;
-  rejectionReason?: Maybe<Scalars['String']['output']>;
-  role: UserRole;
-  status: UserStatus;
-  updatedAt: Scalars['Date']['output'];
-};
-
-export type UserResponse = {
-  __typename?: 'UserResponse';
-  avatar?: Maybe<Scalars['String']['output']>;
-  createdAt: Scalars['Date']['output'];
-  email: Scalars['String']['output'];
-  emailVerifiedAt?: Maybe<Scalars['Date']['output']>;
-  firstName: Scalars['String']['output'];
-  ico?: Maybe<Scalars['String']['output']>;
-  id: Scalars['String']['output'];
-  lastName: Scalars['String']['output'];
-  role: Scalars['String']['output'];
-  status: Scalars['String']['output'];
-  updatedAt: Scalars['Date']['output'];
+  avatar?: string | null | undefined;
+  bio?: string | null | undefined;
+  firstName?: string | null | undefined;
+  lastName?: string | null | undefined;
+  otpAuthEnabled?: boolean | null | undefined;
+  phone?: string | null | undefined;
+  preferredCurrency?: string | null | undefined;
+  preferredLocale?: string | null | undefined;
 };
 
 /** The role of a user in the system */
-export enum UserRole {
-  Admin = 'ADMIN',
-  Manager = 'MANAGER',
-  Moderator = 'MODERATOR',
-  SuperAdmin = 'SUPER_ADMIN',
-  Support = 'SUPPORT',
-  User = 'USER'
-}
+export type UserRole =
+  | 'ADMIN'
+  | 'MANAGER'
+  | 'MODERATOR'
+  | 'SUPER_ADMIN'
+  | 'SUPPORT'
+  | 'USER';
 
 /** The status of a user account */
-export enum UserStatus {
-  Active = 'ACTIVE',
-  Blocked = 'BLOCKED',
-  Deleted = 'DELETED',
-  FreshlyCreatedRequiresPassword = 'FRESHLY_CREATED_REQUIRES_PASSWORD',
-  PendingApproval = 'PENDING_APPROVAL',
-  Rejected = 'REJECTED',
-  Suspended = 'SUSPENDED'
-}
+export type UserStatus =
+  | 'ACTIVE'
+  | 'BLOCKED'
+  | 'DELETED'
+  | 'FRESHLY_CREATED_REQUIRES_PASSWORD'
+  | 'PENDING_APPROVAL'
+  | 'REJECTED'
+  | 'SUSPENDED';
 
 export type RegisterMutationVariables = Exact<{
   input: RegisterInput;
 }>;
 
 
-export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'RegisterResponse', success: boolean, message: string } };
+export type RegisterMutation = { register: { success: boolean, message: string } };
 
 export type LoginMutationVariables = Exact<{
   input: LoginInput;
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'AuthResponse', accessToken: string, refreshToken: string, user: { __typename?: 'UserResponse', id: string, email: string, firstName: string, lastName: string, role: string, status: string, avatar?: string | null, emailVerifiedAt?: any | null, createdAt: any, updatedAt: any } } };
+export type LoginMutation = { login: { accessToken: string, refreshToken: string, user: { id: string, email: string, firstName: string, lastName: string, role: string, status: string, avatar: string | null, emailVerifiedAt: string | null, createdAt: string, updatedAt: string } } };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+export type LogoutMutation = { logout: boolean };
 
 export type ForgotPasswordMutationVariables = Exact<{
   input: ForgotPasswordInput;
 }>;
 
 
-export type ForgotPasswordMutation = { __typename?: 'Mutation', forgotPassword: boolean };
+export type ForgotPasswordMutation = { forgotPassword: boolean };
 
 export type ResetPasswordMutationVariables = Exact<{
   input: ResetPasswordInput;
 }>;
 
 
-export type ResetPasswordMutation = { __typename?: 'Mutation', resetPassword: boolean };
+export type ResetPasswordMutation = { resetPassword: boolean };
 
 export type SetPasswordWithTokenMutationVariables = Exact<{
   input: SetPasswordWithTokenInput;
 }>;
 
 
-export type SetPasswordWithTokenMutation = { __typename?: 'Mutation', setPasswordWithToken: { __typename?: 'AuthResponse', accessToken: string, refreshToken: string, user: { __typename?: 'UserResponse', id: string, email: string, firstName: string, lastName: string, role: string, status: string, avatar?: string | null, emailVerifiedAt?: any | null, createdAt: any, updatedAt: any } } };
+export type SetPasswordWithTokenMutation = { setPasswordWithToken: { accessToken: string, refreshToken: string, user: { id: string, email: string, firstName: string, lastName: string, role: string, status: string, avatar: string | null, emailVerifiedAt: string | null, createdAt: string, updatedAt: string } } };
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'UserObjectType', id: string, email: string, firstName: string, lastName: string, phone?: string | null, role: UserRole, status: UserStatus, authProvider: AuthProvider, emailVerifiedAt?: any | null, preferredLocale?: string | null, preferredCurrency?: string | null, createdAt: any, updatedAt: any } | null };
+export type CurrentUserQuery = { currentUser: { id: string, email: string, firstName: string, lastName: string, phone: string | null, role: UserRole, status: UserStatus, authProvider: AuthProvider, emailVerifiedAt: string | null, preferredLocale: string | null, preferredCurrency: string | null, createdAt: string, updatedAt: string } | null };
 
 export type VerifyEmailMutationVariables = Exact<{
-  token: Scalars['String']['input'];
+  token: string;
 }>;
 
 
-export type VerifyEmailMutation = { __typename?: 'Mutation', verifyEmail: { __typename?: 'BasicResponse', success: boolean, message: string } };
+export type VerifyEmailMutation = { verifyEmail: { success: boolean, message: string } };
 
 export type ResendVerificationEmailMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ResendVerificationEmailMutation = { __typename?: 'Mutation', resendVerificationEmail: { __typename?: 'BasicResponse', success: boolean, message: string } };
+export type ResendVerificationEmailMutation = { resendVerificationEmail: { success: boolean, message: string } };
 
 export type IsOtpEnabledQueryVariables = Exact<{
-  email: Scalars['String']['input'];
+  email: string;
 }>;
 
 
-export type IsOtpEnabledQuery = { __typename?: 'Query', isOtpEnabled: boolean };
+export type IsOtpEnabledQuery = { isOtpEnabled: boolean };
 
 export type RequestOtpLoginMutationVariables = Exact<{
-  email: Scalars['String']['input'];
+  email: string;
 }>;
 
 
-export type RequestOtpLoginMutation = { __typename?: 'Mutation', requestOtpLogin: { __typename?: 'BasicResponse', success: boolean, message: string } };
+export type RequestOtpLoginMutation = { requestOtpLogin: { success: boolean, message: string } };
 
 export type VerifyOtpLoginMutationVariables = Exact<{
-  email: Scalars['String']['input'];
-  code: Scalars['String']['input'];
+  email: string;
+  code: string;
 }>;
 
 
-export type VerifyOtpLoginMutation = { __typename?: 'Mutation', verifyOtpLogin: { __typename?: 'AuthResponse', accessToken: string, refreshToken: string, user: { __typename?: 'UserResponse', id: string, email: string, firstName: string, lastName: string, role: string, status: string, avatar?: string | null, emailVerifiedAt?: any | null, createdAt: any, updatedAt: any } } };
+export type VerifyOtpLoginMutation = { verifyOtpLogin: { accessToken: string, refreshToken: string, user: { id: string, email: string, firstName: string, lastName: string, role: string, status: string, avatar: string | null, emailVerifiedAt: string | null, createdAt: string, updatedAt: string } } };
 
 export type MyNotificationsQueryVariables = Exact<{
-  filters?: InputMaybe<NotificationFiltersInputType>;
+  filters?: NotificationFiltersInputType | null | undefined;
 }>;
 
 
-export type MyNotificationsQuery = { __typename?: 'Query', myNotifications: Array<{ __typename?: 'Notification', id: string, type: NotificationType, title: string, message: string, status: NotificationStatus, readAt?: any | null, createdAt: any, updatedAt: any }> };
+export type MyNotificationsQuery = { myNotifications: Array<{ id: string, type: NotificationType, title: string, message: string, status: NotificationStatus, readAt: string | null, createdAt: string, updatedAt: string }> };
 
 export type UnreadNotificationCountQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UnreadNotificationCountQuery = { __typename?: 'Query', unreadNotificationCount: number };
+export type UnreadNotificationCountQuery = { unreadNotificationCount: number };
 
 export type MarkNotificationAsReadMutationVariables = Exact<{
-  notificationId: Scalars['ID']['input'];
+  notificationId: string | number;
 }>;
 
 
-export type MarkNotificationAsReadMutation = { __typename?: 'Mutation', markNotificationAsRead: { __typename?: 'Notification', id: string, status: NotificationStatus, readAt?: any | null } };
+export type MarkNotificationAsReadMutation = { markNotificationAsRead: { id: string, status: NotificationStatus, readAt: string | null } };
 
 export type MarkAllNotificationsAsReadMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MarkAllNotificationsAsReadMutation = { __typename?: 'Mutation', markAllNotificationsAsRead: number };
+export type MarkAllNotificationsAsReadMutation = { markAllNotificationsAsRead: number };
 
 export type DeleteNotificationMutationVariables = Exact<{
-  notificationId: Scalars['ID']['input'];
+  notificationId: string | number;
 }>;
 
 
-export type DeleteNotificationMutation = { __typename?: 'Mutation', deleteNotification: { __typename?: 'Notification', id: string } };
+export type DeleteNotificationMutation = { deleteNotification: { id: string } };
 
 export type NotificationAddedSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type NotificationAddedSubscription = { __typename?: 'Subscription', notificationAdded: { __typename?: 'Notification', id: string, type: NotificationType, title: string, message: string, status: NotificationStatus, createdAt: any } };
+export type NotificationAddedSubscription = { notificationAdded: { id: string, type: NotificationType, title: string, message: string, status: NotificationStatus, createdAt: string } };
 
 export type UpdateProfileMutationVariables = Exact<{
   input: UpdateProfileInputType;
 }>;
 
 
-export type UpdateProfileMutation = { __typename?: 'Mutation', updateProfile: { __typename?: 'UserObjectType', id: string, email: string, firstName: string, lastName: string, phone?: string | null, preferredLocale?: string | null, preferredCurrency?: string | null, emailVerifiedAt?: any | null, createdAt: any } };
+export type UpdateProfileMutation = { updateProfile: { id: string, email: string, firstName: string, lastName: string, phone: string | null, preferredLocale: string | null, preferredCurrency: string | null, emailVerifiedAt: string | null, createdAt: string } };
 
 export type ChangePasswordMutationVariables = Exact<{
   input: ChangePasswordInputType;
 }>;
 
 
-export type ChangePasswordMutation = { __typename?: 'Mutation', changePassword: { __typename?: 'BasicResponse', success: boolean, message: string } };
+export type ChangePasswordMutation = { changePassword: { success: boolean, message: string } };
 
 export type DeleteAccountMutationVariables = Exact<{
   input: DeleteAccountInputType;
 }>;
 
 
-export type DeleteAccountMutation = { __typename?: 'Mutation', deleteAccount: { __typename?: 'BasicResponse', success: boolean, message: string } };
+export type DeleteAccountMutation = { deleteAccount: { success: boolean, message: string } };
 
 
 export const RegisterDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"Register"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"RegisterInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"register"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<RegisterMutation, RegisterMutationVariables>;

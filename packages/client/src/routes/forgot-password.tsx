@@ -1,32 +1,31 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useMutation } from '@apollo/client/react';
-import { AuthLayout } from '../components/layout/auth-layout';
-import { Button } from '@arstoien/shared-ui';
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@arstoien/shared-ui';
-import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from '@arstoien/shared-ui';
-import { Input } from '@arstoien/shared-ui';
-import { FORGOT_PASSWORD } from '../graphql/auth.graphql';
-import toast from 'react-hot-toast';
-import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
+  Input,
+} from '@blrplt/ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { AuthLayout } from '../components/layout/auth-layout';
+import { FORGOT_PASSWORD } from '../graphql/auth.graphql';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireGuest } from '../lib/auth-guard';
 
 export const Route = createFileRoute('/forgot-password')({
   beforeLoad: ({ context }) => {
@@ -62,9 +61,9 @@ function ForgotPassword() {
       });
 
       setEmailSent(true);
-      toast.success(t('Password reset email sent'));
+      toast.success(t('auth.forgotPassword.success'));
     } catch {
-      toast.error(t('Failed to send password reset email'));
+      toast.error(t('auth.forgotPassword.error'));
     }
   };
 
@@ -73,14 +72,12 @@ function ForgotPassword() {
       <AuthLayout>
         <Card>
           <CardHeader>
-            <CardTitle>{t('Email sent')}</CardTitle>
-            <CardDescription>
-              {t('Check your email for password reset instructions')}
-            </CardDescription>
+            <CardTitle>{t('auth.forgotPassword.emailSent')}</CardTitle>
+            <CardDescription>{t('auth.forgotPassword.checkEmail')}</CardDescription>
           </CardHeader>
           <CardFooter className="flex justify-center">
             <Link to="/login" className="text-muted-foreground hover:text-foreground text-sm">
-              {t('Back to login')}
+              {t('auth.forgotPassword.backToLogin')}
             </Link>
           </CardFooter>
         </Card>
@@ -92,10 +89,8 @@ function ForgotPassword() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('Forgot password')}</CardTitle>
-          <CardDescription>
-            {t('Enter your email to receive a password reset link')}
-          </CardDescription>
+          <CardTitle>{t('auth.forgotPassword.title')}</CardTitle>
+          <CardDescription>{t('auth.forgotPassword.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -105,9 +100,13 @@ function ForgotPassword() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Email')}</FormLabel>
+                    <FormLabel>{t('auth.fields.email')}</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder={t('Enter your email')} {...field} />
+                      <Input
+                        type="email"
+                        placeholder={t('auth.fields.emailPlaceholder')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -115,14 +114,14 @@ function ForgotPassword() {
               />
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('Loading...') : t('Send reset link')}
+                {loading ? t('common.loading') : t('auth.forgotPassword.submit')}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <Link to="/login" className="text-muted-foreground hover:text-foreground text-sm">
-            {t('Back to login')}
+            {t('auth.forgotPassword.backToLogin')}
           </Link>
         </CardFooter>
       </Card>

@@ -1,18 +1,18 @@
 import {
   BadRequestException,
-  Injectable,
-  NotFoundException,
   forwardRef,
   Inject,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '@prisma/prisma.service';
 import { Effect } from 'effect';
-import { AuditLog, User, UserStatus } from '@prisma/client';
-import { EmailService } from '@modules/notification/email.service';
-import { runEffect } from '@/common/effect';
-import { AuthService } from '@modules/auth/auth.service';
-import { PubSubService, PubSubEvents } from '@common/pubsub/pubsub.service';
-import { SettingsService } from '@modules/settings/settings.service';
+import { runEffect } from '../../common/effect/index.js';
+import { PubSubEvents, PubSubService } from '../../common/pubsub/pubsub.service.js';
+import type { Relation } from '../../common/types/relation.js';
+import { AuditLog, User, UserStatus } from '../../generated/prisma/client.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { AuthService } from '../auth/auth.service.js';
+import { EmailService } from '../notification/email.service.js';
 
 @Injectable()
 export class AdminService {
@@ -20,9 +20,8 @@ export class AdminService {
     private prisma: PrismaService,
     private emailService: EmailService,
     @Inject(forwardRef(() => AuthService))
-    private authService: AuthService,
-    private pubSubService: PubSubService,
-    private settingsService: SettingsService
+    private authService: Relation<AuthService>,
+    private pubSubService: PubSubService
   ) {}
 
   /**
@@ -33,23 +32,21 @@ export class AdminService {
    */
   approveUser(userId: string, approved: boolean, reason?: string): Effect.Effect<User, Error> {
     const self = this;
-    return Effect.gen(function* (_) {
-      const user = yield* _(
-        Effect.tryPromise({
-          try: () =>
-            self.prisma.user.findUnique({
-              where: { id: userId },
-            }),
-          catch: (error) => new Error(`Failed to find user: ${error}`),
-        })
-      );
+    return Effect.gen(function* () {
+      const user = yield* Effect.tryPromise({
+        try: () =>
+          self.prisma.user.findUnique({
+            where: { id: userId },
+          }),
+        catch: (error) => new Error(`Failed to find user: ${error}`),
+      });
 
       if (!user) {
-        yield* _(Effect.fail(new NotFoundException('User not found')));
+        return yield* Effect.fail(new NotFoundException('User not found'));
       }
 
-      if (user!.status !== UserStatus.PENDING_APPROVAL) {
-        yield* _(Effect.fail(new BadRequestException('User is not pending approval')));
+      if (user.status !== UserStatus.PENDING_APPROVAL) {
+        return yield* Effect.fail(new BadRequestException('User is not pending approval'));
       }
 
       // When approved: PENDING_APPROVAL → FRESHLY_CREATED_REQUIRES_PASSWORD
@@ -58,19 +55,17 @@ export class AdminService {
         ? UserStatus.FRESHLY_CREATED_REQUIRES_PASSWORD
         : UserStatus.REJECTED;
 
-      const updated = yield* _(
-        Effect.tryPromise({
-          try: () =>
-            self.prisma.user.update({
-              where: { id: userId },
-              data: {
-                status: newStatus,
-                ...(reason && { rejectionReason: reason }),
-              },
-            }),
-          catch: (error) => new Error(`Failed to update user: ${error}`),
-        })
-      );
+      const updated = yield* Effect.tryPromise({
+        try: () =>
+          self.prisma.user.update({
+            where: { id: userId },
+            data: {
+              status: newStatus,
+              ...(reason && { rejectionReason: reason }),
+            },
+          }),
+        catch: (error) => new Error(`Failed to update user: ${error}`),
+      });
 
       // Send email notification (fire and forget - don't block on email sending)
       if (approved) {
@@ -109,31 +104,27 @@ export class AdminService {
    */
   updateUserStatus(userId: string, status: UserStatus): Effect.Effect<User, Error> {
     const self = this;
-    return Effect.gen(function* (_) {
-      const user = yield* _(
-        Effect.tryPromise({
-          try: () =>
-            self.prisma.user.findUnique({
-              where: { id: userId },
-            }),
-          catch: (error) => new Error(`Failed to find user: ${error}`),
-        })
-      );
+    return Effect.gen(function* () {
+      const user = yield* Effect.tryPromise({
+        try: () =>
+          self.prisma.user.findUnique({
+            where: { id: userId },
+          }),
+        catch: (error) => new Error(`Failed to find user: ${error}`),
+      });
 
       if (!user) {
-        yield* _(Effect.fail(new NotFoundException('User not found')));
+        yield* Effect.fail(new NotFoundException('User not found'));
       }
 
-      return yield* _(
-        Effect.tryPromise({
-          try: () =>
-            self.prisma.user.update({
-              where: { id: userId },
-              data: { status },
-            }),
-          catch: (error) => new Error(`Failed to update user status: ${error}`),
-        })
-      );
+      return yield* Effect.tryPromise({
+        try: () =>
+          self.prisma.user.update({
+            where: { id: userId },
+            data: { status },
+          }),
+        catch: (error) => new Error(`Failed to update user status: ${error}`),
+      });
     });
   }
 
@@ -142,17 +133,15 @@ export class AdminService {
    */
   getPendingUsers(): Effect.Effect<User[], Error> {
     const self = this;
-    return Effect.gen(function* (_) {
-      return yield* _(
-        Effect.tryPromise({
-          try: () =>
-            self.prisma.user.findMany({
-              where: { status: UserStatus.PENDING_APPROVAL },
-              orderBy: { createdAt: 'desc' },
-            }),
-          catch: (error) => new Error(`Failed to fetch pending users: ${error}`),
-        })
-      );
+    return Effect.gen(function* () {
+      return yield* Effect.tryPromise({
+        try: () =>
+          self.prisma.user.findMany({
+            where: { status: UserStatus.PENDING_APPROVAL },
+            orderBy: { createdAt: 'desc' },
+          }),
+        catch: (error) => new Error(`Failed to fetch pending users: ${error}`),
+      });
     });
   }
 
@@ -168,25 +157,23 @@ export class AdminService {
     Error
   > {
     const self = this;
-    return Effect.gen(function* (_) {
+    return Effect.gen(function* () {
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
 
-      const [pendingUsers, todayRegistrations, totalUsers] = yield* _(
-        Effect.tryPromise({
-          try: () =>
-            Promise.all([
-              self.prisma.user.count({ where: { status: UserStatus.PENDING_APPROVAL } }),
-              self.prisma.user.count({
-                where: {
-                  createdAt: { gte: todayStart },
-                },
-              }),
-              self.prisma.user.count(),
-            ]),
-          catch: (error) => new Error(`Failed to fetch statistics: ${error}`),
-        })
-      );
+      const [pendingUsers, todayRegistrations, totalUsers] = yield* Effect.tryPromise({
+        try: () =>
+          Promise.all([
+            self.prisma.user.count({ where: { status: UserStatus.PENDING_APPROVAL } }),
+            self.prisma.user.count({
+              where: {
+                createdAt: { gte: todayStart },
+              },
+            }),
+            self.prisma.user.count(),
+          ]),
+        catch: (error) => new Error(`Failed to fetch statistics: ${error}`),
+      });
 
       return {
         pendingUsers,
@@ -201,18 +188,16 @@ export class AdminService {
    */
   getAuditLogs(page: number, pageSize: number): Effect.Effect<AuditLog[], Error> {
     const self = this;
-    return Effect.gen(function* (_) {
-      return yield* _(
-        Effect.tryPromise({
-          try: () =>
-            self.prisma.auditLog.findMany({
-              skip: (page - 1) * pageSize,
-              take: pageSize,
-              orderBy: { createdAt: 'desc' },
-            }),
-          catch: (error) => new Error(`Failed to fetch audit logs: ${error}`),
-        })
-      );
+    return Effect.gen(function* () {
+      return yield* Effect.tryPromise({
+        try: () =>
+          self.prisma.auditLog.findMany({
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+            orderBy: { createdAt: 'desc' },
+          }),
+        catch: (error) => new Error(`Failed to fetch audit logs: ${error}`),
+      });
     });
   }
 

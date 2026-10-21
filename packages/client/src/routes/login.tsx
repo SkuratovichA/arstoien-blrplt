@@ -1,35 +1,34 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useMutation, useLazyQuery } from '@apollo/client/react';
-import { AuthLayout } from '@components/layout';
-import { Button } from '@arstoien/shared-ui';
+import { useLazyQuery, useMutation } from '@apollo/client/react';
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@arstoien/shared-ui';
-import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from '@arstoien/shared-ui';
-import { Input, PasswordInput } from '@arstoien/shared-ui';
-import { LOGIN, CHECK_OTP_ENABLED, REQUEST_OTP_LOGIN } from '../graphql/auth.graphql.ts';
-import { useAuthStore } from '../lib/auth-store';
-import toast from 'react-hot-toast';
-import { Link } from '@tanstack/react-router';
-import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
+  Input,
+  PasswordInput,
+} from '@blrplt/ui';
+import { AuthLayout } from '@components/layout';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { tryCatch } from '@arstoien/former';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { CHECK_OTP_ENABLED, LOGIN, REQUEST_OTP_LOGIN } from '../graphql/auth.graphql.ts';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireGuest } from '../lib/auth-guard';
+import { useAuthStore } from '../lib/auth-store';
+import { errorMessageOf } from '../lib/error-message';
 
 export const Route = createFileRoute('/login')({
   beforeLoad: ({ context }) => {
@@ -64,53 +63,61 @@ function Login() {
     },
   });
 
+  const continueWithPassword = () => {
+    setShowPassword(true);
+    setEmailEntered(true);
+  };
+
   const handleEmailSubmit = async () => {
     const email = form.getValues('email');
     if (!email) return;
 
-    const [, error] = await tryCatch(
-      (async () => {
-        // Check if OTP is enabled for this email
-        const result = await checkOtpEnabled({ variables: { email } });
+    // Check if OTP is enabled for this email
+    let otpEnabled: boolean | undefined;
+    try {
+      const result = await checkOtpEnabled({ variables: { email } });
 
-        if (result.error) {
-          console.error('OTP check GraphQL error:', result.error);
-          throw result.error;
-        }
-
-        if (result.data?.isOtpEnabled) {
-          // OTP is enabled, request OTP code
-          const otpResult = await requestOtpLogin({
-            variables: { email },
-          });
-
-          if (otpResult.data?.requestOtpLogin?.success) {
-            toast.success(t('OTP code sent to your email'));
-            // Navigate to OTP verification page
-            navigate({
-              to: '/verify-otp',
-              search: { email },
-            });
-          } else {
-            const errorMsg = otpResult.data?.requestOtpLogin?.message ?? t('Failed to send OTP');
-            toast.error(errorMsg);
-            throw new Error(errorMsg);
-          }
-        } else {
-          // OTP is not enabled, show password field
-          setShowPassword(true);
-          setEmailEntered(true);
-        }
-      })()
-    );
-
-    if (error) {
+      if (result.error) {
+        console.error('OTP check GraphQL error:', result.error);
+      } else {
+        otpEnabled = result.data?.isOtpEnabled ?? false;
+      }
+    } catch (error) {
       console.error('Email check error details:', error);
-      // Show error to user but still allow password login as fallback
-      toast.error(t('Could not check OTP status. Defaulting to password login.'));
-      setShowPassword(true);
-      setEmailEntered(true);
     }
+
+    if (!otpEnabled) {
+      if (otpEnabled === undefined) {
+        // Show error to user but still allow password login as fallback
+        toast.error(t('auth.login.otpStatusError'));
+      }
+      // OTP is not enabled, show password field
+      continueWithPassword();
+      return;
+    }
+
+    // OTP is enabled, request OTP code
+    try {
+      const otpResult = await requestOtpLogin({
+        variables: { email },
+      });
+
+      if (otpResult.data?.requestOtpLogin?.success) {
+        toast.success(t('auth.login.otpSent'));
+        // Navigate to OTP verification page
+        navigate({
+          to: '/verify-otp',
+          search: { email },
+        });
+        return;
+      }
+      toast.error(otpResult.data?.requestOtpLogin?.message ?? t('auth.otp.sendError'));
+    } catch (error) {
+      console.error('OTP request error:', error);
+      toast.error(errorMessageOf(error, t));
+    }
+    // Still allow password login as fallback
+    continueWithPassword();
   };
 
   const onSubmit = async (data: LoginFormData) => {
@@ -122,7 +129,7 @@ function Login() {
 
     // Traditional password login - validate password is provided
     if (!data.password) {
-      form.setError('password', { message: t('Password is required') });
+      form.setError('password', { message: t('auth.login.passwordRequired') });
       return;
     }
 
@@ -155,15 +162,16 @@ function Login() {
           emailVerifiedAt: user.emailVerifiedAt,
           createdAt: user.createdAt,
         });
-        toast.success(t('Login successful'));
+        toast.success(t('auth.login.success'));
         navigate({ to: '/dashboard', search: {} });
       } else {
-        throw new Error(t('Login failed'));
+        toast.error(t('auth.login.error'));
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('Login failed');
-      toast.error(errorMessage);
+      toast.error(
+        errorMessageOf(error, t, { UNAUTHENTICATED: t('auth.login.invalidCredentials') })
+      );
     }
   };
 
@@ -171,8 +179,8 @@ function Login() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('Login')}</CardTitle>
-          <CardDescription>{t('Sign in to your account')}</CardDescription>
+          <CardTitle>{t('auth.login.title')}</CardTitle>
+          <CardDescription>{t('auth.login.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -182,11 +190,11 @@ function Login() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Email')}</FormLabel>
+                    <FormLabel>{t('auth.fields.email')}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder={t('Enter your email')}
+                        placeholder={t('auth.fields.emailPlaceholder')}
                         disabled={checkingOtp || requestingOtp || emailEntered}
                         {...field}
                       />
@@ -202,9 +210,12 @@ function Login() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('Password')}</FormLabel>
+                      <FormLabel>{t('auth.fields.password')}</FormLabel>
                       <FormControl>
-                        <PasswordInput placeholder={t('Enter your password')} {...field} />
+                        <PasswordInput
+                          placeholder={t('auth.fields.passwordPlaceholder')}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -218,7 +229,7 @@ function Login() {
                     to="/forgot-password"
                     className="text-muted-foreground hover:text-foreground text-sm"
                   >
-                    {t('Forgot password?')}
+                    {t('auth.login.forgotPassword')}
                   </Link>
                 </div>
               )}
@@ -229,23 +240,23 @@ function Login() {
                 disabled={loading || checkingOtp || requestingOtp}
               >
                 {loading
-                  ? t('Signing in...')
+                  ? t('auth.login.submitting')
                   : checkingOtp
-                    ? t('Checking authentication method...')
+                    ? t('auth.login.checking')
                     : requestingOtp
-                      ? t('Sending verification code...')
+                      ? t('auth.login.sendingCode')
                       : showPassword
-                        ? t('Sign in')
-                        : t('Continue')}
+                        ? t('auth.login.submit')
+                        : t('auth.login.continue')}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-muted-foreground text-sm">
-            {t("Don't have an account?")}{' '}
+            {t('auth.login.noAccount')}{' '}
             <Link to="/register" className="text-foreground hover:underline">
-              {t('Sign up')}
+              {t('auth.login.signUp')}
             </Link>
           </p>
         </CardFooter>

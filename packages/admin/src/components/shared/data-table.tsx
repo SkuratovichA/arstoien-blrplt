@@ -1,12 +1,12 @@
-import type { Table as TanStackTable } from '@tanstack/react-table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@blrplt/ui';
+import type { RowData, StockFeatures, Table as TanStackTable } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@arstoien/shared-ui';
 
-interface DataTableProps<TData> {
-  table: TanStackTable<TData>;
+interface DataTableProps<TData extends RowData> {
+  table: TanStackTable<StockFeatures, TData>;
 }
 
-export function DataTable<TData>({ table }: DataTableProps<TData>) {
+export function DataTable<TData extends RowData>({ table }: DataTableProps<TData>) {
   return (
     <div className="rounded-md border">
       <Table>

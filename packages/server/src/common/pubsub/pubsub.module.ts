@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { PubSubService } from './pubsub.service';
+import { PubSubService } from './pubsub.service.js';
 
 @Global()
 @Module({

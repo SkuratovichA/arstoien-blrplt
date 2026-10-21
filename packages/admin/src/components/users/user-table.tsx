@@ -1,17 +1,11 @@
-import { useTranslation } from 'react-i18next';
+import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, CardContent } from '@blrplt/ui';
 import { Link } from '@tanstack/react-router';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  Badge,
-  Button,
-  Card,
-  CardContent,
-} from '@arstoien/shared-ui';
-import { DataTable } from '@/components/shared/data-table';
+import { createColumnHelper, stockFeatures, useTable } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { DataTable } from '@/components/shared/data-table';
+import type { UserStatus } from '@/gql/graphql';
+import { USER_STATUS_VARIANT } from '@/lib/user-status';
 
 interface User {
   id: string;
@@ -19,7 +13,7 @@ interface User {
   firstName: string | null;
   lastName: string | null;
   role: string;
-  status: string;
+  status: UserStatus;
   avatar?: string | null;
   emailVerified: boolean;
   createdAt: string;
@@ -37,14 +31,14 @@ interface UserTableProps {
   onRefetch: () => void;
 }
 
-const columnHelper = createColumnHelper<User>();
+const columnHelper = createColumnHelper<typeof stockFeatures, User>();
 
 export function UserTable({ users, totalCount, pagination, onPaginationChange }: UserTableProps) {
   const { t } = useTranslation();
 
-  const columns = [
+  const columns = columnHelper.columns([
     columnHelper.accessor('email', {
-      header: t('User'),
+      header: t('common.user'),
       cell: (info) => {
         const user = info.row.original;
         return (
@@ -67,7 +61,7 @@ export function UserTable({ users, totalCount, pagination, onPaginationChange }:
       },
     }),
     columnHelper.accessor('role', {
-      header: t('Role'),
+      header: t('fields.role'),
       cell: (info) => {
         const role = info.getValue();
         const variant =
@@ -76,40 +70,40 @@ export function UserTable({ users, totalCount, pagination, onPaginationChange }:
       },
     }),
     columnHelper.accessor('status', {
-      header: t('Status'),
+      header: t('fields.status'),
       cell: (info) => {
         const status = info.getValue();
-        const variant =
-          status === 'ACTIVE' ? 'default' : status === 'PENDING' ? 'secondary' : 'destructive';
-        return <Badge variant={variant}>{status}</Badge>;
+        return <Badge variant={USER_STATUS_VARIANT[status]}>{status}</Badge>;
       },
     }),
     columnHelper.accessor('emailVerified', {
-      header: t('Verified'),
+      header: t('users.table.verified'),
       cell: (info) => (
         <Badge variant={info.getValue() ? 'default' : 'secondary'}>
-          {info.getValue() ? t('Yes') : t('No')}
+          {info.getValue() ? t('common.yes') : t('common.no')}
         </Badge>
       ),
     }),
     columnHelper.accessor('createdAt', {
-      header: t('Joined'),
+      header: t('users.table.joined'),
       cell: (info) => (
         <span className="text-sm">{new Date(info.getValue()).toLocaleDateString()}</span>
       ),
     }),
     columnHelper.accessor('lastLoginAt', {
-      header: t('Last Login'),
+      header: t('users.table.lastLogin'),
       cell: (info) => {
         const date = info.getValue();
         return (
-          <span className="text-sm">{date ? new Date(date).toLocaleDateString() : t('Never')}</span>
+          <span className="text-sm">
+            {date ? new Date(date).toLocaleDateString() : t('users.table.never')}
+          </span>
         );
       },
     }),
     columnHelper.display({
       id: 'actions',
-      header: t('Actions'),
+      header: t('users.table.actions'),
       cell: (info) => (
         <Link to="/users/$id" params={{ id: info.row.original.id }}>
           <Button size="sm" variant="ghost">
@@ -118,12 +112,12 @@ export function UserTable({ users, totalCount, pagination, onPaginationChange }:
         </Link>
       ),
     }),
-  ];
+  ]);
 
-  const table = useReactTable({
+  const table = useTable({
+    features: stockFeatures,
     data: users,
     columns,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     pageCount: Math.ceil(totalCount / pagination.take),
   });
@@ -134,8 +128,9 @@ export function UserTable({ users, totalCount, pagination, onPaginationChange }:
         <DataTable table={table} />
         <div className="flex items-center justify-between border-t p-4">
           <div className="text-muted-foreground text-sm">
-            {t('Showing')} {pagination.skip + 1} -{' '}
-            {Math.min(pagination.skip + pagination.take, totalCount)} {t('of')} {totalCount}
+            {t('users.table.showing')} {pagination.skip + 1} -{' '}
+            {Math.min(pagination.skip + pagination.take, totalCount)} {t('users.table.of')}{' '}
+            {totalCount}
           </div>
           <div className="flex gap-2">
             <Button
@@ -149,7 +144,7 @@ export function UserTable({ users, totalCount, pagination, onPaginationChange }:
               }
               disabled={pagination.skip === 0}
             >
-              {t('Previous')}
+              {t('users.table.previous')}
             </Button>
             <Button
               size="sm"
@@ -162,7 +157,7 @@ export function UserTable({ users, totalCount, pagination, onPaginationChange }:
               }
               disabled={pagination.skip + pagination.take >= totalCount}
             >
-              {t('Next')}
+              {t('users.table.next')}
             </Button>
           </div>
         </div>

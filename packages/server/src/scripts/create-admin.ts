@@ -4,7 +4,7 @@
  * Script to create an admin user from environment variables
  *
  * Usage:
- *   ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! yarn create:admin
+ *   ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! pnpm create:admin
  *
  * Required environment variables:
  *   - ADMIN_EMAIL: Email for the admin user
@@ -12,10 +12,10 @@
  *   - DATABASE_URL: Database connection string
  */
 
-import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
+import { createScriptPrismaClient } from '../prisma/prisma-client.factory.js';
 
-const prisma = new PrismaClient();
+const prisma = createScriptPrismaClient();
 
 async function createAdmin() {
   // Validate environment variables
@@ -26,13 +26,17 @@ async function createAdmin() {
 
   if (!email) {
     console.error('❌ Error: ADMIN_EMAIL environment variable is required');
-    console.log('Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! yarn create:admin');
+    console.log(
+      'Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! pnpm create:admin'
+    );
     process.exit(1);
   }
 
   if (!password) {
     console.error('❌ Error: ADMIN_PASSWORD environment variable is required');
-    console.log('Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! yarn create:admin');
+    console.log(
+      'Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! pnpm create:admin'
+    );
     process.exit(1);
   }
 
@@ -79,7 +83,7 @@ async function createAdmin() {
     console.log('║           Admin User Created               ║');
     console.log('╠════════════════════════════════════════════╣');
     console.log(`║ Email: ${admin.email.padEnd(36)} ║`);
-    console.log(`║ Name: ${(admin.firstName + ' ' + admin.lastName).padEnd(37)} ║`);
+    console.log(`║ Name: ${(`${admin.firstName} ${admin.lastName}`).padEnd(37)} ║`);
     console.log(`║ Role: ${admin.role.padEnd(37)} ║`);
     console.log('╚════════════════════════════════════════════╝');
     console.log('\n🔑 You can now login with the provided credentials.');

@@ -18,8 +18,8 @@ export type JwtConfig = {
 };
 
 export type GoogleOAuthConfig = {
-  clientId: string;
-  clientSecret: string;
+  clientId?: string;
+  clientSecret?: string;
   callbackUrl: string;
 };
 
@@ -52,7 +52,7 @@ export type UploadConfig = {
 };
 
 export type GraphqlConfig = {
-  playground: boolean;
+  graphiql: boolean;
   introspection: boolean;
 };
 

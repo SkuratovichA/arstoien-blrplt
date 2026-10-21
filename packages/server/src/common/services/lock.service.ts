@@ -1,9 +1,11 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Redlock, { Lock } from 'redlock';
-import Redis from 'ioredis';
-import { Effect, Data, pipe } from 'effect';
-import { BusinessLogicError } from '../effect/errors';
+import { type Lock, Redlock } from '@sesamecare-oss/redlock';
+import { Data, Effect, pipe } from 'effect';
+import { Redis } from 'ioredis';
+import { BusinessLogicError } from '../effect/errors.js';
+
+const lockLogger = new Logger('LockService');
 
 /**
  * Lock acquisition error
@@ -99,12 +101,10 @@ export class LockService implements OnModuleDestroy {
       try: () => lock.release(),
       catch: (error) => {
         // Lock may have already expired, log but don't throw
-        console.warn('Failed to release lock:', error);
+        lockLogger.warn(`Failed to release lock: ${String(error)}`);
         return undefined;
       },
-    }).pipe(
-      Effect.catchAll(() => Effect.succeed(undefined))
-    );
+    }).pipe(Effect.catch(() => Effect.succeed(undefined)));
   }
 
   /**
@@ -121,12 +121,7 @@ export class LockService implements OnModuleDestroy {
   ): Effect.Effect<A, E | LockAcquisitionError, R> {
     return pipe(
       this.acquireEffect(resource, ttl),
-      Effect.flatMap(lock =>
-        pipe(
-          fn,
-          Effect.ensuring(this.releaseEffect(lock))
-        )
-      )
+      Effect.flatMap((lock) => pipe(fn, Effect.ensuring(this.releaseEffect(lock))))
     );
   }
 
@@ -168,7 +163,7 @@ export class LockService implements OnModuleDestroy {
   }
 
   async onModuleDestroy() {
+    // Redlock quits every client it was built with, so a second quit on the same client rejects with "Connection is closed"
     await this.redlock.quit();
-    await this.redisClient.quit();
   }
 }

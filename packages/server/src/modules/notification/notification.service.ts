@@ -1,18 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Effect } from 'effect';
-import { PrismaService } from '@/prisma/prisma.service';
 import {
-  NotFoundError,
-  ExternalApiError,
   DatabaseError,
-  ValidationError,
+  ExternalApiError,
+  NotFoundError,
   promiseToEffect,
-} from '@/common/effect';
-import { CrudService } from '@/common/services';
-import { Prisma } from '@prisma/client';
-import { EmailService } from './email.service';
-import { NotificationFiltersInputType } from './dto/notification-filters.input-type';
-import { NotificationType } from '@/common/graphql/enums';
+  ValidationError,
+} from '../../common/effect/index.js';
+import { NotificationType } from '../../common/graphql/enums/index.js';
+import { CrudService } from '../../common/services/index.js';
+import { Prisma } from '../../generated/prisma/client.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { NotificationFiltersInputType } from './dto/notification-filters.input-type.js';
+import { EmailService } from './email.service.js';
 
 type Notification = {
   id: string;
@@ -64,7 +64,7 @@ export class NotificationService extends CrudService<PrismaService['notification
 
       // Send email notification (fire and forget)
       yield* self.sendEmailNotification(userId, type, data).pipe(
-        Effect.catchAll((error) => {
+        Effect.catch((error) => {
           self.logger.error(`Failed to send email notification: ${error}`);
           return Effect.succeed(undefined);
         })
@@ -88,7 +88,7 @@ export class NotificationService extends CrudService<PrismaService['notification
 
       for (const userId of userIds) {
         const notification = yield* self.sendNotification(userId, type, data).pipe(
-          Effect.catchAll((error) => {
+          Effect.catch((error) => {
             self.logger.error(`Failed to send notification to user ${userId}: ${error}`);
             return Effect.succeed(null as Notification | null);
           })

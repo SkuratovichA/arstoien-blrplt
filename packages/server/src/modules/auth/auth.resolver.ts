@@ -1,24 +1,24 @@
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Inject, Logger, UseGuards } from '@nestjs/common';
-import { Request } from 'express';
-import { AuthService } from './auth.service';
-import { AuthResponse } from './dto/auth-response.dto';
-import { LoginInput } from './dto/login.input';
-import { RegisterInput } from './dto/register.input';
-import { RegisterWithPasswordInput } from './dto/register-with-password.input';
-import { SetPasswordInput } from './dto/set-password.input';
-import { RegisterResponse } from './dto/register-response.dto';
-import { SetPasswordWithTokenInput } from './dto/set-password-with-token.input';
-import { ForgotPasswordInput } from './dto/forgot-password.input';
-import { ResetPasswordInput } from './dto/reset-password.input';
+import { HttpException, HttpStatus, Inject, Logger, UseGuards } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { appConfig } from '@config/app.config';
-import { runEffect } from '@/common/effect';
-import { BasicResponse } from '../user/dto/basic-response.dto';
-import { GqlAuthGuard } from './guards/gql-auth.guard';
-import { CurrentUser } from './decorators';
-import { User } from '@prisma/client';
-import { PrismaService } from '@/prisma/prisma.service';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Request } from 'express';
+import { runEffect } from '../../common/effect/index.js';
+import { appConfig } from '../../config/app.config.js';
+import { User } from '../../generated/prisma/client.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { BasicResponse } from '../user/dto/basic-response.dto.js';
+import { AuthService } from './auth.service.js';
+import { CurrentUser } from './decorators/index.js';
+import { AuthResponse } from './dto/auth-response.dto.js';
+import { ForgotPasswordInput } from './dto/forgot-password.input.js';
+import { LoginInput } from './dto/login.input.js';
+import { RegisterInput } from './dto/register.input.js';
+import { RegisterResponse } from './dto/register-response.dto.js';
+import { RegisterWithPasswordInput } from './dto/register-with-password.input.js';
+import { ResetPasswordInput } from './dto/reset-password.input.js';
+import { SetPasswordInput } from './dto/set-password.input.js';
+import { SetPasswordWithTokenInput } from './dto/set-password-with-token.input.js';
+import { GqlAuthGuard } from './guards/gql-auth.guard.js';
 
 @Resolver()
 export class AuthResolver {
@@ -139,16 +139,9 @@ export class AuthResolver {
     description:
       'User registration with personal details and optional company ICO. Admin approval required.',
   })
-  async register(
-    @Args('input') input: RegisterInput
-  ): Promise<RegisterResponse> {
+  async register(@Args('input') input: RegisterInput): Promise<RegisterResponse> {
     return runEffect(
-      this.authService.register(
-        input.email,
-        input.firstName,
-        input.lastName,
-        input.phone
-      )
+      this.authService.register(input.email, input.firstName, input.lastName, input.phone)
     );
   }
 
@@ -216,7 +209,7 @@ export class AuthResolver {
         include: { user: true },
       });
 
-      if (!verificationToken || verificationToken.type !== 'EMAIL_VERIFICATION') {
+      if (verificationToken?.type !== 'EMAIL_VERIFICATION') {
         this.logger.warn('Invalid email verification token');
         return {
           success: false,
@@ -276,6 +269,10 @@ export class AuthResolver {
         message: result.message,
       };
     } catch (error) {
+      // The rate limit is the one failure the client answers on its own, so it keeps its status and reaches formatError as RATE_LIMITED
+      if (error instanceof HttpException && error.getStatus() === HttpStatus.TOO_MANY_REQUESTS) {
+        throw error;
+      }
       this.logger.error('Failed to request OTP login:', error);
       return {
         success: false,

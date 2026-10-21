@@ -1,6 +1,6 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@blrplt/ui';
+import { TrendingUp, UserCheck, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@arstoien/shared-ui';
-import { Users, UserCheck, TrendingUp } from 'lucide-react';
 
 interface StatsCardsProps {
   stats?: {
@@ -19,31 +19,31 @@ export function StatsCards({ stats }: StatsCardsProps) {
 
   const cards = [
     {
-      title: t('Total Users'),
+      title: t('dashboard.totalUsers'),
       value: stats.totalUsers,
       icon: Users,
-      description: `+${stats.newUsersThisMonth} ${t('this month')}`,
+      description: `+${stats.newUsersThisMonth} ${t('dashboard.thisMonth')}`,
       trend: stats.userGrowth,
     },
     {
-      title: t('Active Users'),
+      title: t('dashboard.activeUsers'),
       value: stats.activeUsers,
       icon: UserCheck,
-      description: `${stats.pendingUsers} ${t('pending')}`,
+      description: `${stats.pendingUsers} ${t('dashboard.pending')}`,
     },
     {
-      title: t('Growth Rate'),
+      title: t('dashboard.growthRate'),
       value: `${stats.userGrowth}%`,
       icon: TrendingUp,
-      description: t('User growth this month'),
+      description: t('dashboard.growthRateDescription'),
       trend: stats.userGrowth,
     },
   ];
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {cards.map((card, index) => (
-        <Card key={index}>
+      {cards.map((card) => (
+        <Card key={card.title}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
             <card.icon className="text-muted-foreground h-4 w-4" />

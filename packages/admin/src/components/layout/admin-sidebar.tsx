@@ -1,48 +1,49 @@
+import { cn } from '@blrplt/ui';
 import { Link } from '@tanstack/react-router';
+import { Bell, FileText, LayoutDashboard, Settings, User, UserCheck, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@arstoien/shared-ui';
-import { LayoutDashboard, Users, UserCheck, FileText, Settings, Bell, User } from 'lucide-react';
-
-const navigation = [
-  {
-    name: 'Dashboard',
-    href: '/',
-    icon: LayoutDashboard,
-  },
-  {
-    name: 'Users',
-    href: '/users',
-    icon: Users,
-  },
-  {
-    name: 'Pending Users',
-    href: '/users/pending',
-    icon: UserCheck,
-  },
-  {
-    name: 'Audit Logs',
-    href: '/audit-logs',
-    icon: FileText,
-  },
-  {
-    name: 'Notifications',
-    href: '/notifications',
-    icon: Bell,
-  },
-  {
-    name: 'Settings',
-    href: '/settings',
-    icon: Settings,
-  },
-  {
-    name: 'Profile',
-    href: '/profile',
-    icon: User,
-  },
-];
 
 export function AdminSidebar() {
   const { t } = useTranslation();
+
+  // The labels are translated here, one t() call per entry, so that every key stands in the code as a literal
+  const navigation = [
+    {
+      name: t('nav.dashboard'),
+      href: '/',
+      icon: LayoutDashboard,
+    },
+    {
+      name: t('nav.users'),
+      href: '/users',
+      icon: Users,
+    },
+    {
+      name: t('nav.pendingUsers'),
+      href: '/users/pending',
+      icon: UserCheck,
+    },
+    {
+      name: t('nav.auditLogs'),
+      href: '/audit-logs',
+      icon: FileText,
+    },
+    {
+      name: t('nav.notifications'),
+      href: '/notifications',
+      icon: Bell,
+    },
+    {
+      name: t('nav.settings'),
+      href: '/settings',
+      icon: Settings,
+    },
+    {
+      name: t('nav.profile'),
+      href: '/profile',
+      icon: User,
+    },
+  ];
 
   return (
     <aside className="bg-card w-64 border-r">
@@ -61,7 +62,7 @@ export function AdminSidebar() {
             }}
           >
             <item.icon className="h-5 w-5" />
-            {t(item.name)}
+            {item.name}
           </Link>
         ))}
       </nav>

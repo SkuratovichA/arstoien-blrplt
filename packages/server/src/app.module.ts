@@ -1,31 +1,29 @@
-import { Module } from '@nestjs/common';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { ThrottlerModule } from '@nestjs/throttler';
 import { JwtService } from '@nestjs/jwt';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { Request, Response } from 'express';
-
-// Config
-import { appConfig, AppConfig } from '@config/app.config';
-// Modules
-import { PrismaModule } from '@prisma/prisma.module';
-import { PrismaService } from '@prisma/prisma.service';
-import { AuthModule } from '@modules/auth/auth.module';
-import { UserModule } from '@modules/user/user.module';
-import { NotificationModule } from '@modules/notification/notification.module';
-import { AdminModule } from '@modules/admin/admin.module';
-import { SchedulerModule } from '@modules/scheduler/scheduler.module';
-import { SettingsModule } from '@modules/settings/settings.module';
-import { HealthModule } from '@modules/health/health.module';
-
-// Common
-import { PubSubModule } from '@common/pubsub/pubsub.module';
-import { CommonModule } from '@common/common.module';
-import { DateScalar } from '@common/scalars/date.scalar';
+import { CommonModule } from './common/common.module.js';
+import { formatGraphqlError } from './common/graphql/format-error.js';
+import { PubSubModule } from './common/pubsub/pubsub.module.js';
+import { DateScalar } from './common/scalars/date.scalar.js';
+import { AppConfig, appConfig } from './config/app.config.js';
+import { AdminModule } from './modules/admin/admin.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { HealthModule } from './modules/health/health.module.js';
+import { NotificationModule } from './modules/notification/notification.module.js';
+import { SchedulerModule } from './modules/scheduler/scheduler.module.js';
+import { SettingsModule } from './modules/settings/settings.module.js';
+import { UserModule } from './modules/user/user.module.js';
+import { PrismaModule } from './prisma/prisma.module.js';
+import { PrismaService } from './prisma/prisma.service.js';
 
 // Import to ensure all GraphQL enums are registered
-import '@/common/graphql';
+import './common/graphql/index.js';
+
+const graphqlContextLogger = new Logger('GraphQLContext');
 
 interface GraphQLContext {
   req: Request & {
@@ -79,12 +77,9 @@ interface GraphQLContext {
           installSubscriptionHandlers: true,
           autoTransformHttpErrors: true,
           introspection: appConfig.graphql.introspection,
-          playground: appConfig.graphql.playground,
-          cors: appConfig.cors,
-          uploads: {
-            maxFileSize: 10000000, // 10MB
-            maxFiles: 10,
-          },
+          graphiql: appConfig.graphql.graphiql,
+          // Apollo Server 5 answers a malformed variable with HTTP 400; the clients of this API read errors from a 200 body
+          status400ForVariableCoercionErrors: false,
           context: async ({ req, res, connection }: GraphQLContext) => {
             // For subscriptions, connection.context contains user info from onConnect
             if (connection) {
@@ -93,7 +88,7 @@ interface GraphQLContext {
 
             // For regular queries/mutations - try to authenticate from JWT token
             const authHeader = req?.headers?.authorization;
-            if (authHeader && authHeader.startsWith('Bearer ')) {
+            if (authHeader?.startsWith('Bearer ')) {
               const token = authHeader.substring(7);
 
               try {
@@ -111,7 +106,7 @@ interface GraphQLContext {
                   if (user) {
                     // Attach user to request
                     req.user = user;
-                    console.log(`[GraphQL Context] Authenticated user: ${user.id} (${user.email})`);
+                    graphqlContextLogger.debug(`Authenticated user: ${user.id} (${user.email})`);
                   }
                 }
               } catch (error) {
@@ -150,11 +145,7 @@ interface GraphQLContext {
               },
             },
           },
-          formatError: (error) => ({
-            message: error.message,
-            code: error.extensions?.code ?? 'INTERNAL_SERVER_ERROR',
-            path: error.path,
-          }),
+          formatError: formatGraphqlError,
         };
       },
     }),

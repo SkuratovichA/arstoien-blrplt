@@ -1,2 +1,38 @@
 packages:
   - 'packages/*'
+
+allowBuilds:
+  '@apollo/protobufjs': false
+  '@nestjs/core': false
+  '@parcel/watcher': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@swc/core': false
+  bcrypt: true
+  esbuild: true
+  prisma: true
+
+catalog:
+  '@testing-library/dom': ^10.4.2
+  '@testing-library/jest-dom': ^7.0.1
+  '@testing-library/react': ^16.3.3
+  '@testing-library/user-event': ^14.6.8
+  '@types/node': ^26.6.5
+  '@types/react': ^19.3.0
+  '@types/react-dom': ^19.3.0
+  '@vitejs/plugin-react': ^6.1.2
+  '@vitest/coverage-v8': ^5.0.5
+  jsdom: ^30.1.3
+  lucide-react: ^1.59.0
+  react: ^19.3.1
+  react-dom: ^19.3.1
+  react-hook-form: ^7.90.0
+  typescript: ^7.0.2
+  vite: ^8.3.4
+  vitest: ^5.0.5
+  zod: ^4.6.7
+
+peerDependencyRules:
+  allowedVersions:
+    # @nestjs/graphql declares typescript ^5.5 || ^6 for its schema-first typings generator, which this repo does not use; the code-first schema is built without the compiler API and the server boots on TypeScript 7
+    '@nestjs/graphql>typescript': '7'

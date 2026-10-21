@@ -1,13 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@apollo/client/react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@blrplt/ui';
+import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { requireAuth } from '@/lib/auth-guard';
-import { DASHBOARD_STATS_QUERY, RECENT_ACTIVITY_QUERY } from '@/graphql/admin.graphql';
-import { AdminLayout } from '@/components/layout/admin-layout';
-import { StatsCards } from '@/components/dashboard/stats-cards';
 import { Charts } from '@/components/dashboard/charts';
+import { StatsCards } from '@/components/dashboard/stats-cards';
+import { AdminLayout } from '@/components/layout/admin-layout';
 import { Loading } from '@/components/shared/loading';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
+import { DASHBOARD_STATS_QUERY, RECENT_ACTIVITY_QUERY } from '@/graphql/admin.graphql';
+import { requireAuth } from '@/lib/auth-guard';
 
 export const Route = createFileRoute('/')({
   beforeLoad: () => requireAuth(),
@@ -47,8 +47,8 @@ function DashboardPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('Dashboard')}</h1>
-          <p className="text-muted-foreground">{t('Overview of your system')}</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h1>
+          <p className="text-muted-foreground">{t('dashboard.description')}</p>
         </div>
 
         <StatsCards stats={stats} />
@@ -58,20 +58,20 @@ function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>{t('Recent Activity')}</CardTitle>
-              <CardDescription>{t('Latest actions in the system')}</CardDescription>
+              <CardTitle>{t('dashboard.recentActivity')}</CardTitle>
+              <CardDescription>{t('dashboard.recentActivityDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {activities.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">{t('No recent activity')}</p>
+                  <p className="text-muted-foreground text-sm">{t('dashboard.noRecentActivity')}</p>
                 ) : (
                   activities.map((activity) => (
                     <div key={activity.id} className="flex items-start gap-4">
                       <div className="flex-1 space-y-1">
                         <p className="text-sm font-medium">{activity.description}</p>
                         <p className="text-muted-foreground text-xs">
-                          {activity.userEmail ?? t('System')}
+                          {activity.userEmail ?? t('common.system')}
                         </p>
                       </div>
                       <p className="text-muted-foreground text-xs">

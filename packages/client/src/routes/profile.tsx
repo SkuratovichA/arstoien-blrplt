@@ -1,8 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { useMutation } from '@apollo/client/react';
-import { Former } from '@arstoien/former';
-import { MainLayout } from '@components/layout';
 import {
   Button,
   Card,
@@ -11,20 +7,19 @@ import {
   CardHeader,
   CardTitle,
   Input,
-} from '@arstoien/shared-ui';
-import { CHANGE_PASSWORD, DELETE_ACCOUNT, UPDATE_PROFILE } from '../graphql/user.graphql';
-import { useAuthStore } from '../lib/auth-store';
+} from '@blrplt/ui';
+import { MainLayout } from '@components/layout';
+import { createFileRoute } from '@tanstack/react-router';
 import toast from 'react-hot-toast';
-import { type AuthGuardContext, requireAuth, requireEmailVerified } from '../lib/auth-guard';
-import { createFormComponentOverrides } from '../components/forms/form-component-overrides';
-import {
-  createProfileUpdateFormConfig,
-  type ProfileUpdateFormData,
-} from '../components/forms/profile-form-config';
-import {
-  createPasswordChangeFormConfig,
-  type PasswordChangeFormData,
-} from '../components/forms/password-form-config';
+import { useTranslation } from 'react-i18next';
+import { PasswordChangeForm } from '../components/forms/password-form';
+import type { PasswordChangeFormData } from '../components/forms/password-form-schema';
+import { ProfileUpdateForm } from '../components/forms/profile-form';
+import type { ProfileUpdateFormData } from '../components/forms/profile-form-schema';
+import { CHANGE_PASSWORD, DELETE_ACCOUNT, UPDATE_PROFILE } from '../graphql/user.graphql';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireAuth, requireEmailVerified } from '../lib/auth-guard';
+import { useAuthStore } from '../lib/auth-store';
 
 export const Route = createFileRoute('/profile')({
   beforeLoad: ({ context }) => {
@@ -68,14 +63,14 @@ function Profile() {
           phone: updated.phone ?? undefined,
           emailVerifiedAt: updated.emailVerifiedAt,
         });
-        toast.success(t('Profile updated successfully'));
+        toast.success(t('profile.updateSuccess'));
       }
     } catch {
-      toast.error(t('Failed to update profile'));
+      toast.error(t('profile.updateError'));
     }
   };
 
-  const onPasswordSubmit = async (data: PasswordChangeFormData) => {
+  const onPasswordSubmit = async (data: PasswordChangeFormData): Promise<boolean> => {
     try {
       await changePassword({
         variables: {
@@ -86,18 +81,19 @@ function Profile() {
         },
       });
 
-      toast.success(t('Password changed successfully'));
+      toast.success(t('profile.passwordChangeSuccess'));
+      return true;
     } catch {
-      toast.error(t('Failed to change password'));
+      toast.error(t('profile.passwordChangeError'));
+      return false;
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm(t('Are you sure you want to delete your account? This action cannot be undone.')))
-      return;
+    if (!confirm(t('profile.deleteAccountConfirm'))) return;
 
     try {
-      const password = prompt(t('Please enter your password to confirm'));
+      const password = prompt(t('profile.deleteAccountPrompt'));
       if (!password) return;
 
       await deleteAccount({
@@ -105,55 +101,39 @@ function Profile() {
       });
 
       logout();
-      toast.success(t('Account deleted successfully'));
+      toast.success(t('profile.deleteAccountSuccess'));
     } catch {
-      toast.error(t('Failed to delete account'));
+      toast.error(t('profile.deleteAccountError'));
     }
   };
-
-  // Create form configurations
-  const profileFormConfig = createProfileUpdateFormConfig({
-    t,
-    onSubmit: onProfileSubmit,
-    initialValues: {
-      firstName: user?.firstName ?? '',
-      lastName: user?.lastName ?? '',
-    },
-  });
-
-  const passwordFormConfig = createPasswordChangeFormConfig({
-    t,
-    onSubmit: onPasswordSubmit,
-  });
-
-  // Create component overrides for each form
-  const profileOverrides = createFormComponentOverrides<ProfileUpdateFormData>(t);
-  const passwordOverrides = createFormComponentOverrides<PasswordChangeFormData>(t);
 
   return (
     <MainLayout>
       <div className="container mx-auto max-w-4xl px-4 py-8">
-        <h1 className="mb-8 text-4xl font-bold">{t('Profile')}</h1>
+        <h1 className="mb-8 text-4xl font-bold">{t('profile.title')}</h1>
 
         <div className="space-y-6">
           {/* Profile Information */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('Personal Information')}</CardTitle>
-              <CardDescription>{t('Update your personal details')}</CardDescription>
+              <CardTitle>{t('profile.personalInfo')}</CardTitle>
+              <CardDescription>{t('profile.personalInfoDescription')}</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  {t('Email')}
+                <label
+                  htmlFor="profile-email"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {t('auth.fields.email')}
                 </label>
-                <Input value={user?.email} disabled className="mt-2" />
+                <Input id="profile-email" value={user?.email} disabled className="mt-2" />
               </div>
 
-              <Former<ProfileUpdateFormData>
-                config={profileFormConfig}
-                componentOverrides={profileOverrides}
+              <ProfileUpdateForm
+                initialValues={{ firstName: user?.firstName ?? '', lastName: user?.lastName ?? '' }}
+                onSubmit={onProfileSubmit}
               />
             </CardContent>
           </Card>
@@ -161,26 +141,19 @@ function Profile() {
           {/* Change Password */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('Change Password')}</CardTitle>
-              <CardDescription>
-                {t('Update your password to keep your account secure')}
-              </CardDescription>
+              <CardTitle>{t('profile.changePassword')}</CardTitle>
+              <CardDescription>{t('profile.changePasswordDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Former<PasswordChangeFormData>
-                config={passwordFormConfig}
-                componentOverrides={passwordOverrides}
-              />
+              <PasswordChangeForm onSubmit={onPasswordSubmit} />
             </CardContent>
           </Card>
 
           {/* Danger Zone */}
           <Card className="border-destructive">
             <CardHeader>
-              <CardTitle className="text-destructive">{t('Danger Zone')}</CardTitle>
-              <CardDescription>
-                {t('Permanently delete your account and all associated data')}
-              </CardDescription>
+              <CardTitle className="text-destructive">{t('profile.dangerZone')}</CardTitle>
+              <CardDescription>{t('profile.dangerZoneDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -188,7 +161,7 @@ function Profile() {
                 onClick={handleDeleteAccount}
                 disabled={deletingAccount}
               >
-                {deletingAccount ? t('Loading...') : t('Delete Account')}
+                {deletingAccount ? t('common.loading') : t('profile.deleteAccount')}
               </Button>
             </CardContent>
           </Card>

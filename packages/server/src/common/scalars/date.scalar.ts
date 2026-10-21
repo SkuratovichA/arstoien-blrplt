@@ -1,33 +1,51 @@
 import { CustomScalar, Scalar } from '@nestjs/graphql';
-import { Kind, ValueNode } from 'graphql';
+import { GraphQLError, Kind, ValueNode } from 'graphql';
+
+type DateInput = number | string | Date;
+
+function isDateInput(value: unknown): value is DateInput {
+  return typeof value === 'number' || typeof value === 'string' || value instanceof Date;
+}
+
+function toValidDate(value: DateInput): Date {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new GraphQLError('Date must be a valid timestamp or ISO date string');
+  }
+
+  return date;
+}
 
 @Scalar('Date', () => Date)
 export class DateScalar implements CustomScalar<number, Date> {
   description = 'Date custom scalar type';
 
-  // @ts-ignore - TypeScript version differences in CustomScalar interface
-  parseValue(value: number): Date {
-    return new Date(value); // value from the client
+  // value from the client
+  parseValue(value: unknown): Date {
+    if (!isDateInput(value)) {
+      throw new GraphQLError('Date must be a timestamp or an ISO date string');
+    }
+
+    return toValidDate(value);
   }
 
-  // @ts-ignore - TypeScript version differences in CustomScalar interface
-  serialize(value: Date): number {
-    return new Date(value).getTime(); // value sent to the client
+  // value sent to the client
+  serialize(value: unknown): number | null {
+    return isDateInput(value) ? new Date(value).getTime() : null;
   }
 
   /**
    * Ensures that we accept both string and timestamp dates.
    */
-  // @ts-ignore - TypeScript version differences in CustomScalar interface
-  parseLiteral(ast: ValueNode): Date | null {
+  parseLiteral(ast: ValueNode): Date {
     if (ast.kind === Kind.INT) {
       // ast.value is in fact a string number
-      return new Date(parseInt(ast.value, 10));
+      return toValidDate(parseInt(ast.value, 10));
     }
     if (ast.kind === Kind.STRING) {
-      return new Date(ast.value);
+      return toValidDate(ast.value);
     }
 
-    return null;
+    throw new GraphQLError('Date must be a timestamp or an ISO date string', { nodes: ast });
   }
 }

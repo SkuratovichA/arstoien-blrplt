@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { User } from '@prisma/client';
+import { User } from '../../../generated/prisma/client.js';
 
 @ObjectType()
 export class AuthResponse {

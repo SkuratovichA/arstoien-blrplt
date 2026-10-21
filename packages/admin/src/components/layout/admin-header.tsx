@@ -1,8 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { useMutation } from '@apollo/client/react';
-import { useApolloClient } from '@apollo/client/react';
-import { useAuthStore } from '@/lib/auth-store';
+import { useApolloClient, useMutation } from '@apollo/client/react';
 import {
   Avatar,
   AvatarFallback,
@@ -14,10 +10,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { LogOut, Settings, User } from 'lucide-react';
-import { LOGOUT_MUTATION } from '@/graphql/admin.graphql';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { LOGOUT_MUTATION } from '@/graphql/admin.graphql';
+import { useAuthStore } from '@/lib/auth-store';
 
 export function AdminHeader() {
   const { t, i18n } = useTranslation();
@@ -41,10 +40,10 @@ export function AdminHeader() {
       navigate({ to: '/login' });
 
       // Show success message
-      toast.success(t('Logged out successfully'));
+      toast.success(t('header.logoutSuccess'));
     } catch (error) {
       console.error('Logout error:', error);
-      toast.error(t('Failed to logout'));
+      toast.error(t('header.logoutError'));
     }
   };
 
@@ -57,7 +56,7 @@ export function AdminHeader() {
       <div className="flex h-16 items-center gap-4 px-6">
         <div className="flex flex-1 items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold">{t('Admin Panel')}</span>
+            <span className="text-xl font-bold">{t('header.adminPanel')}</span>
           </Link>
         </div>
 
@@ -100,19 +99,19 @@ export function AdminHeader() {
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
-                  {t('Profile')}
+                  {t('header.profile')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/settings" className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
-                  {t('Settings')}
+                  {t('header.settings')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
-                {t('Logout')}
+                {t('header.logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

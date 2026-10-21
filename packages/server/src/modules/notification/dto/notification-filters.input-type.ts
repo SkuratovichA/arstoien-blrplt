@@ -1,6 +1,6 @@
-import { InputType, Field, Int } from '@nestjs/graphql';
-import { IsOptional, IsEnum, IsInt, Min, Max, IsDateString } from 'class-validator';
-import { NotificationType, NotificationStatus } from '@/common/graphql/enums';
+import { Field, InputType, Int } from '@nestjs/graphql';
+import { IsDateString, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { NotificationStatus, NotificationType } from '../../../common/graphql/enums/index.js';
 
 @InputType()
 export class NotificationFiltersInputType {

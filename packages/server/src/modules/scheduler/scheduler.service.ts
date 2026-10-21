@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaService } from '@/prisma/prisma.service';
+import { errorMessage } from '../../common/effect/index.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
 
 /**
  * SchedulerService - Background jobs for system maintenance
@@ -47,7 +48,7 @@ export class SchedulerService implements OnModuleInit {
       );
     } catch (error) {
       this.logger.error(
-        `Error in cleanupOldNotifications: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Error in cleanupOldNotifications: ${errorMessage(error, 'Unknown error')}`,
         error instanceof Error ? error.stack : undefined
       );
     }

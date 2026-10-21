@@ -1,16 +1,38 @@
-import { Args, Context, ID, Int, Mutation, Query, Resolver, Subscription, } from '@nestjs/graphql';
-import { Logger, UseGuards } from '@nestjs/common';
-import { Action, CurrentUser, Permissions, RequireAuditLogAccess, RequireStatisticsAccess, Resource, } from '@modules/auth/decorators';
-import { AdminService } from './admin.service';
-import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
-import { PermissionsGuard } from '../auth/guards/permissions.guard';
-import { AuditLog, Prisma, User } from '@prisma/client';
-import { AdminPendingCountsType, AdminStatsType, ApproveUserInput, AuditLogObjectType, BulkUpdateOtpInput, BulkUpdateResultType, CreateUserInput, DeleteUserInput, RecentActivityType, RejectUserInput, UpdateUserInput, UpdateUserStatusInput, UserGrowthDataPoint, UserGrowthStatsType, } from '@modules/admin/dto';
-import { UserObjectType } from '@modules/user/dto/user.object-type';
+import { Logger, ParseEnumPipe, UseGuards } from '@nestjs/common';
+import { Args, Context, ID, Int, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import bcrypt from 'bcrypt';
 import { Effect } from 'effect';
-import { PubSubEvents, PubSubService } from '@common/pubsub/pubsub.service';
-import { PrismaService } from '@prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
+import { PubSubEvents, PubSubService } from '../../common/pubsub/pubsub.service.js';
+import { AuditLog, Prisma, User, UserRole, UserStatus } from '../../generated/prisma/client.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import {
+  Action,
+  CurrentUser,
+  Permissions,
+  RequireAuditLogAccess,
+  RequireStatisticsAccess,
+  Resource,
+} from '../auth/decorators/index.js';
+import { GqlAuthGuard } from '../auth/guards/gql-auth.guard.js';
+import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
+import { UserObjectType } from '../user/dto/user.object-type.js';
+import { AdminService } from './admin.service.js';
+import {
+  AdminPendingCountsType,
+  AdminStatsType,
+  ApproveUserInput,
+  AuditLogObjectType,
+  BulkUpdateOtpInput,
+  BulkUpdateResultType,
+  CreateUserInput,
+  DeleteUserInput,
+  RecentActivityType,
+  RejectUserInput,
+  UpdateUserInput,
+  UpdateUserStatusInput,
+  UserGrowthDataPoint,
+  UserGrowthStatsType,
+} from './dto/index.js';
 
 @Resolver()
 export class AdminResolver {
@@ -113,27 +135,41 @@ export class AdminResolver {
       periodEnd.setMonth(periodEnd.getMonth() + 1);
 
       // Count users created up to this period (cumulative)
-      const usersUpToPeriod = users.filter(u =>
-        new Date(u.createdAt) < periodEnd
-      );
+      const usersUpToPeriod = users.filter((u) => new Date(u.createdAt) < periodEnd);
 
       // Count new users in this specific period
-      const newUsersInPeriod = users.filter(u => {
+      const newUsersInPeriod = users.filter((u) => {
         const createdAt = new Date(u.createdAt);
         return createdAt >= periodStart && createdAt < periodEnd;
       });
 
       // Count active users (not suspended, blocked, or deleted)
-      const activeUsersInPeriod = usersUpToPeriod.filter(u =>
-        u.status === 'ACTIVE' || u.status === 'PENDING_APPROVAL' || u.status === 'FRESHLY_CREATED_REQUIRES_PASSWORD'
+      const activeUsersInPeriod = usersUpToPeriod.filter(
+        (u) =>
+          u.status === 'ACTIVE' ||
+          u.status === 'PENDING_APPROVAL' ||
+          u.status === 'FRESHLY_CREATED_REQUIRES_PASSWORD'
       );
 
       // Count pending users
-      const pendingUsersInPeriod = usersUpToPeriod.filter(u =>
-        u.status === 'PENDING_APPROVAL' || u.status === 'FRESHLY_CREATED_REQUIRES_PASSWORD'
+      const pendingUsersInPeriod = usersUpToPeriod.filter(
+        (u) => u.status === 'PENDING_APPROVAL' || u.status === 'FRESHLY_CREATED_REQUIRES_PASSWORD'
       );
 
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       const periodLabel = `${monthNames[periodStart.getMonth()]}`;
 
       dataPoints.push({
@@ -193,11 +229,22 @@ export class AdminResolver {
   async getUsers(
     @Args('skip', { type: () => Int, nullable: true, defaultValue: 0 }) skip?: number,
     @Args('take', { type: () => Int, nullable: true, defaultValue: 50 }) take?: number,
-    @Args('status', { nullable: true }) status?: string,
-    @Args('role', { nullable: true }) role?: string,
+    // The schema keeps these two as plain strings, the pipes turn a value that is not in the enum into a BadRequestException
+    @Args(
+      'status',
+      { type: () => String, nullable: true },
+      new ParseEnumPipe(UserStatus, { optional: true })
+    )
+    status?: UserStatus,
+    @Args(
+      'role',
+      { type: () => String, nullable: true },
+      new ParseEnumPipe(UserRole, { optional: true })
+    )
+    role?: UserRole,
     @Args('search', { nullable: true }) search?: string
   ): Promise<User[]> {
-    const where: any = {};
+    const where: Prisma.UserWhereInput = {};
 
     // Add status filter
     if (status) {
@@ -243,13 +290,16 @@ export class AdminResolver {
     });
 
     // Fetch user emails for audit logs with userIds
-    const userIds = auditLogs.filter(log => log.userId).map(log => log.userId) as string[];
-    const users = userIds.length > 0 ? await this.prisma.user.findMany({
-      where: { id: { in: userIds } },
-      select: { id: true, email: true },
-    }) : [];
+    const userIds = auditLogs.filter((log) => log.userId).map((log) => log.userId) as string[];
+    const users =
+      userIds.length > 0
+        ? await this.prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: { id: true, email: true },
+          })
+        : [];
 
-    const userMap = new Map(users.map(u => [u.id, u.email]));
+    const userMap = new Map(users.map((u) => [u.id, u.email]));
 
     return auditLogs.map((log) => {
       // Create a more descriptive message based on the action
@@ -294,7 +344,7 @@ export class AdminResolver {
     @Args('action', { nullable: true }) action?: string,
     @Args('entityType', { nullable: true }) entityType?: string
   ): Promise<AuditLog[]> {
-    const where: any = {
+    const where: Prisma.AuditLogWhereInput = {
       OR: [
         { userId }, // Actions performed by the user
         { entityId: userId, entityType: 'User' }, // Actions performed on the user
@@ -506,9 +556,15 @@ export class AdminResolver {
         changedFields.status = { from: currentUserData.status, to: input.status };
       }
 
-      if (input.otpAuthEnabled !== undefined && input.otpAuthEnabled !== currentUserData.otpAuthEnabled) {
+      if (
+        input.otpAuthEnabled !== undefined &&
+        input.otpAuthEnabled !== currentUserData.otpAuthEnabled
+      ) {
         updateData.otpAuthEnabled = input.otpAuthEnabled;
-        changedFields.otpAuthEnabled = { from: currentUserData.otpAuthEnabled, to: input.otpAuthEnabled };
+        changedFields.otpAuthEnabled = {
+          from: currentUserData.otpAuthEnabled,
+          to: input.otpAuthEnabled,
+        };
       }
 
       // Only update if there are changes
@@ -633,7 +689,9 @@ export class AdminResolver {
         });
       }
 
-      this.logger.log(`User deleted successfully: ${input.userId} (${input.hardDelete ? 'hard' : 'soft'})`);
+      this.logger.log(
+        `User deleted successfully: ${input.userId} (${input.hardDelete ? 'hard' : 'soft'})`
+      );
       return deletedUser;
     } catch (error) {
       this.logger.error(`Failed to delete user: ${input.userId}`, error);
@@ -678,7 +736,9 @@ export class AdminResolver {
         },
       });
 
-      this.logger.log(`Bulk OTP update: ${result.count} users updated to otpAuthEnabled=${input.enabled} by ${currentUser.email}`);
+      this.logger.log(
+        `Bulk OTP update: ${result.count} users updated to otpAuthEnabled=${input.enabled} by ${currentUser.email}`
+      );
 
       return {
         updated: result.count,
@@ -699,8 +759,8 @@ export class AdminResolver {
     name: 'adminPendingCountsChanged',
     description: 'Subscribe to real-time updates of pending users counts',
     filter: (
-      payload: AdminPendingCountsType,
-      variables: Record<string, unknown>,
+      _payload: AdminPendingCountsType,
+      _variables: Record<string, unknown>,
       context: Record<string, unknown>
     ): boolean => {
       // Only send to authenticated admin users

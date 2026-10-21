@@ -1,14 +1,14 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { useMutation } from '@apollo/client/react';
-import { MainLayout } from '../components/layout/main-layout';
-import { Button } from '@arstoien/shared-ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
-import { VERIFY_EMAIL, RESEND_VERIFICATION_EMAIL } from '../graphql/auth.graphql';
-import { useAuthStore, isEmailVerified } from '../lib/auth-store';
-import toast from 'react-hot-toast';
-import { requireAuth, type AuthGuardContext } from '../lib/auth-guard';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@blrplt/ui';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { MainLayout } from '../components/layout/main-layout';
+import { RESEND_VERIFICATION_EMAIL, VERIFY_EMAIL } from '../graphql/auth.graphql';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireAuth } from '../lib/auth-guard';
+import { isEmailVerified, useAuthStore } from '../lib/auth-store';
 
 export const Route = createFileRoute('/verify-email')({
   beforeLoad: ({ context }) => {
@@ -50,7 +50,7 @@ function VerifyEmail() {
             }
 
             setIsVerified(true);
-            toast.success(t('Email verified successfully'));
+            toast.success(t('auth.verifyEmail.success'));
 
             // If user is not logged in, redirect to login
             if (!user) {
@@ -59,10 +59,10 @@ function VerifyEmail() {
               }, 2000);
             }
           } else {
-            toast.error(result.data?.verifyEmail?.message ?? t('Email verification failed'));
+            toast.error(result.data?.verifyEmail?.message ?? t('auth.verifyEmail.error'));
           }
         } catch {
-          toast.error(t('Email verification failed'));
+          toast.error(t('auth.verifyEmail.error'));
         }
       };
 
@@ -73,9 +73,9 @@ function VerifyEmail() {
   const handleResend = async () => {
     try {
       await resendEmail();
-      toast.success(t('Verification email sent'));
+      toast.success(t('auth.verifyEmail.resendSuccess'));
     } catch {
-      toast.error(t('Failed to resend verification email'));
+      toast.error(t('auth.verifyEmail.resendError'));
     }
   };
 
@@ -85,8 +85,8 @@ function VerifyEmail() {
         <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle>{t('Email verified')}</CardTitle>
-              <CardDescription>{t('Your email has been successfully verified')}</CardDescription>
+              <CardTitle>{t('auth.verifyEmail.verified')}</CardTitle>
+              <CardDescription>{t('auth.verifyEmail.verifiedDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -99,7 +99,7 @@ function VerifyEmail() {
                   }
                 }}
               >
-                {user ? t('Go to dashboard') : t('Go to login')}
+                {user ? t('auth.verifyEmail.goToDashboard') : t('auth.verifyEmail.goToLogin')}
               </Button>
             </CardContent>
           </Card>
@@ -115,10 +115,8 @@ function VerifyEmail() {
         <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle>{t('Verifying email...')}</CardTitle>
-              <CardDescription>
-                {t('Please wait while we verify your email address')}
-              </CardDescription>
+              <CardTitle>{t('auth.verifyEmail.verifying')}</CardTitle>
+              <CardDescription>{t('auth.verifyEmail.verifyingDescription')}</CardDescription>
             </CardHeader>
           </Card>
         </div>
@@ -133,12 +131,12 @@ function VerifyEmail() {
         <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle>{t('Email verification')}</CardTitle>
-              <CardDescription>{t('Please log in to resend verification email')}</CardDescription>
+              <CardTitle>{t('auth.verifyEmail.loginRequiredTitle')}</CardTitle>
+              <CardDescription>{t('auth.verifyEmail.loginRequiredDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button className="w-full" onClick={() => navigate({ to: '/login', search: {} })}>
-                {t('Go to login')}
+                {t('auth.verifyEmail.goToLogin')}
               </Button>
             </CardContent>
           </Card>
@@ -152,12 +150,12 @@ function VerifyEmail() {
       <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>{t('Verify your email')}</CardTitle>
-            <CardDescription>{t('Please verify your email address to continue')}</CardDescription>
+            <CardTitle>{t('auth.verifyEmail.title')}</CardTitle>
+            <CardDescription>{t('auth.verifyEmail.description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground text-sm">
-              {t('Check your email: {{email}}', { email: user?.email })}
+              {t('auth.verifyEmail.checkEmail', { email: user?.email })}
             </p>
             <Button
               className="w-full"
@@ -165,7 +163,7 @@ function VerifyEmail() {
               disabled={resending || verifying}
               variant="outline"
             >
-              {resending ? t('Loading...') : t('Resend verification email')}
+              {resending ? t('common.loading') : t('auth.verifyEmail.resendButton')}
             </Button>
           </CardContent>
         </Card>

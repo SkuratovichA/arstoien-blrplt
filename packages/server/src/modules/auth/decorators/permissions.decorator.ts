@@ -38,11 +38,13 @@ export const Permissions = (...permissions: Permission[]) =>
 /**
  * Shorthand decorators for common permission patterns
  */
-export const RequireUserRead = () =>
-  Permissions({ resource: Resource.USER, action: Action.READ });
+export const RequireUserRead = () => Permissions({ resource: Resource.USER, action: Action.READ });
 
 export const RequireUserWrite = () =>
-  Permissions({ resource: Resource.USER, action: Action.CREATE }, { resource: Resource.USER, action: Action.UPDATE });
+  Permissions(
+    { resource: Resource.USER, action: Action.CREATE },
+    { resource: Resource.USER, action: Action.UPDATE }
+  );
 
 export const RequireUserManagement = () =>
   Permissions(

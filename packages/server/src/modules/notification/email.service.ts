@@ -1,17 +1,18 @@
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Effect } from 'effect';
-import { ExternalApiError } from '../../common/effect';
-import * as nodemailer from 'nodemailer';
-import * as handlebars from 'handlebars';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import handlebars from 'handlebars';
+import nodemailer, { type Transporter } from 'nodemailer';
+import type SMTPConnection from 'nodemailer/lib/smtp-connection/index.js';
+import type SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
+import { ExternalApiError, errorMessage } from '../../common/effect/index.js';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter | null = null;
+  private transporter: Transporter | null = null;
   private templateCache: Map<string, HandlebarsTemplateDelegate> = new Map();
 
   constructor(private readonly configService: ConfigService) {
@@ -23,12 +24,16 @@ export class EmailService {
 
     if (!emailConfig?.host) {
       this.logger.warn('Email configuration not found. Email notifications will be disabled.');
-      this.logger.warn('Please set SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS environment variables.');
+      this.logger.warn(
+        'Please set SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS environment variables.'
+      );
       return;
     }
 
     this.logger.log('Initializing email transporter...');
-    this.logger.log(`Email configuration: host=${emailConfig.host}, port=${emailConfig.port}, from=${emailConfig.from}`);
+    this.logger.log(
+      `Email configuration: host=${emailConfig.host}, port=${emailConfig.port}, from=${emailConfig.from}`
+    );
     this.logger.log(`Authentication: ${emailConfig.user ? 'configured' : 'not configured'}`);
 
     const transportConfig: SMTPTransport.Options = {
@@ -44,7 +49,9 @@ export class EmailService {
         pass: emailConfig.pass,
       };
     } else {
-      this.logger.warn('SMTP authentication not configured. This may cause issues with some email providers.');
+      this.logger.warn(
+        'SMTP authentication not configured. This may cause issues with some email providers.'
+      );
     }
 
     this.transporter = nodemailer.createTransport(transportConfig);
@@ -53,7 +60,9 @@ export class EmailService {
     this.transporter
       .verify()
       .then(() => {
-        this.logger.log(`✅ Email transporter verified and ready: ${emailConfig.host}:${emailConfig.port}`);
+        this.logger.log(
+          `✅ Email transporter verified and ready: ${emailConfig.host}:${emailConfig.port}`
+        );
         this.logger.log(`✅ Emails will be sent from: ${emailConfig.from}`);
       })
       .catch((err) => {
@@ -62,13 +71,19 @@ export class EmailService {
 
         // Log specific error details to help with debugging
         if (err.code === 'ECONNREFUSED') {
-          this.logger.error(`Cannot connect to SMTP server at ${emailConfig.host}:${emailConfig.port}`);
-          this.logger.error('Possible causes: Wrong host/port, firewall blocking, or server not running.');
+          this.logger.error(
+            `Cannot connect to SMTP server at ${emailConfig.host}:${emailConfig.port}`
+          );
+          this.logger.error(
+            'Possible causes: Wrong host/port, firewall blocking, or server not running.'
+          );
         } else if (err.code === 'EAUTH' || err.responseCode === 535) {
           this.logger.error('SMTP authentication failed.');
           this.logger.error('Please verify SMTP_USER and SMTP_PASS environment variables.');
           if (emailConfig.host.includes('amazonaws.com')) {
-            this.logger.error('For AWS SES: Ensure you are using SMTP credentials (not IAM credentials).');
+            this.logger.error(
+              'For AWS SES: Ensure you are using SMTP credentials (not IAM credentials).'
+            );
           }
         }
       });
@@ -119,15 +134,13 @@ export class EmailService {
       // Execute the effect and convert to Promise
       await Effect.runPromise(effect);
       this.logger.log(`Verification email sent to ${email}`);
-    } catch (error: any) {
+    } catch (error) {
       // Always log the full error for debugging
-      this.logger.error(`Failed to send verification email to ${email}: ${error?.message || error}`);
+      this.logger.error(`Failed to send verification email to ${email}: ${errorMessage(error)}`);
 
       // In development, log the link so developers can still test
       if (process.env.NODE_ENV !== 'production') {
-        this.logger.warn(
-          `Development mode: Verification link for ${email}: ${verificationLink}`
-        );
+        this.logger.warn(`Development mode: Verification link for ${email}: ${verificationLink}`);
         return;
       }
 
@@ -155,9 +168,9 @@ export class EmailService {
       // Execute the effect and convert to Promise
       await Effect.runPromise(effect);
       this.logger.log(`OTP email sent to ${email}`);
-    } catch (error: any) {
+    } catch (error) {
       // Always log the full error for debugging
-      this.logger.error(`Failed to send OTP email to ${email}: ${error?.message || error}`);
+      this.logger.error(`Failed to send OTP email to ${email}: ${errorMessage(error)}`);
 
       // In development, log the code so developers can still test
       if (process.env.NODE_ENV !== 'production') {
@@ -217,7 +230,9 @@ export class EmailService {
   ): Effect.Effect<void, ExternalApiError, never> {
     const isDevelopment = process.env.NODE_ENV !== 'production';
 
-    this.logger.debug(`sendTemplatedEmail called: to=${to}, subject=${subject}, template=${templateName}`);
+    this.logger.debug(
+      `sendTemplatedEmail called: to=${to}, subject=${subject}, template=${templateName}`
+    );
 
     const effect = Effect.tryPromise({
       try: async () => {
@@ -245,48 +260,62 @@ export class EmailService {
         };
 
         this.logger.debug(`Attempting to send email via SMTP to ${to} with subject: ${subject}`);
-        this.logger.debug(`SMTP Host: ${this.configService.get('app.email.host')}:${this.configService.get('app.email.port')}`);
+        this.logger.debug(
+          `SMTP Host: ${this.configService.get('app.email.host')}:${this.configService.get('app.email.port')}`
+        );
 
         // Send email
         const result = await this.transporter.sendMail(mailOptions);
 
         this.logger.log(`Email successfully sent to ${to}: ${subject}`);
-        this.logger.debug(`SMTP Response - MessageId: ${result.messageId}, Response: ${JSON.stringify(result.response)}, Accepted: ${JSON.stringify(result.accepted)}, Rejected: ${JSON.stringify(result.rejected)}`);
+        this.logger.debug(
+          `SMTP Response - MessageId: ${result.messageId}, Response: ${JSON.stringify(result.response)}, Accepted: ${JSON.stringify(result.accepted)}, Rejected: ${JSON.stringify(result.rejected)}`
+        );
       },
-      catch: (error: any) => {
+      catch: (error: unknown) => {
+        const failure: SMTPConnection.SMTPError =
+          error instanceof Error ? error : new Error(String(error));
+        const { code, response } = failure;
+
         // Enhanced error logging for AWS SES and SMTP errors
-        this.logger.error(`Failed to send email to ${to}: ${error?.message || error}`);
+        this.logger.error(`Failed to send email to ${to}: ${failure.message}`);
 
         // Log specific AWS SES error details
-        if (error?.code) {
-          this.logger.error(`Error code: ${error.code}`);
+        if (code) {
+          this.logger.error(`Error code: ${code}`);
 
           // Common AWS SES error codes
-          if (error.code === 'MessageRejected') {
-            this.logger.error('AWS SES rejected the message. Check if the sender email is verified.');
-          } else if (error.code === 'SendingQuotaExceeded') {
+          if (code === 'MessageRejected') {
+            this.logger.error(
+              'AWS SES rejected the message. Check if the sender email is verified.'
+            );
+          } else if (code === 'SendingQuotaExceeded') {
             this.logger.error('AWS SES sending quota exceeded.');
-          } else if (error.code === 'MaxSendingRateExceeded') {
+          } else if (code === 'MaxSendingRateExceeded') {
             this.logger.error('AWS SES maximum sending rate exceeded.');
-          } else if (error.code === 'ECONNREFUSED') {
-            this.logger.error(`Cannot connect to SMTP server at ${this.configService.get('app.email.host')}:${this.configService.get('app.email.port')}`);
-          } else if (error.code === 'EAUTH') {
-            this.logger.error('SMTP authentication failed. Check SMTP_USER and SMTP_PASS environment variables.');
+          } else if (code === 'ECONNREFUSED') {
+            this.logger.error(
+              `Cannot connect to SMTP server at ${this.configService.get('app.email.host')}:${this.configService.get('app.email.port')}`
+            );
+          } else if (code === 'EAUTH') {
+            this.logger.error(
+              'SMTP authentication failed. Check SMTP_USER and SMTP_PASS environment variables.'
+            );
           }
         }
 
         // Log the full error stack for debugging
-        if (error?.stack) {
-          this.logger.debug(`Error stack: ${error.stack}`);
+        if (failure.stack) {
+          this.logger.debug(`Error stack: ${failure.stack}`);
         }
 
         // Log response details if available
-        if (error?.response) {
-          this.logger.error(`SMTP Response: ${error.response}`);
+        if (response) {
+          this.logger.error(`SMTP Response: ${response}`);
         }
 
         return new ExternalApiError({
-          message: `Failed to send email: ${error?.message || 'Unknown error'}`,
+          message: `Failed to send email: ${failure.message || 'Unknown error'}`,
           service: 'Email',
           response: error,
         });
@@ -295,7 +324,7 @@ export class EmailService {
 
     // In development mode, log errors but don't fail the operation
     if (isDevelopment) {
-      return Effect.catchAll(effect, (error) => {
+      return Effect.catch(effect, (error) => {
         this.logger.warn(`Development mode: Email sending failed but operation continues`);
         this.logger.warn(`Email error details: ${error?.message || JSON.stringify(error)}`);
         // Still return void to not break the flow, but we've logged the error
@@ -311,24 +340,13 @@ export class EmailService {
    */
   private async loadTemplate(templateName: string): Promise<HandlebarsTemplateDelegate> {
     // Check cache
-    if (this.templateCache.has(templateName)) {
-      return this.templateCache.get(templateName)!;
+    const cached = this.templateCache.get(templateName);
+    if (cached) {
+      return cached;
     }
 
-    // Load template file
-    // In development: src/modules/notification/templates
-    // In production (built): dist/modules/notification/templates
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    const basePath = isDevelopment ? 'src' : 'dist';
-
-    const templatePath = path.join(
-      process.cwd(),
-      basePath,
-      'modules',
-      'notification',
-      'templates',
-      `${templateName}.hbs`
-    );
+    // The templates sit next to this file: in src for tsx and Vitest, in dist for the compiled build (scripts/copy-assets.mjs copies them there)
+    const templatePath = path.join(import.meta.dirname, 'templates', `${templateName}.hbs`);
 
     try {
       const templateContent = await fs.readFile(templatePath, 'utf-8');
@@ -339,10 +357,10 @@ export class EmailService {
 
       this.logger.debug(`Successfully loaded email template: ${templateName}`);
       return template;
-    } catch (error: any) {
+    } catch (error) {
       this.logger.error(
         `Failed to load template ${templateName} from path: ${templatePath}`,
-        error?.message || error
+        errorMessage(error)
       );
 
       // Check if file exists
@@ -395,7 +413,9 @@ export class EmailService {
         `,
       };
 
-      const fallbackHtml = fallbackTemplates[templateName] || `
+      const fallbackHtml =
+        fallbackTemplates[templateName] ||
+        `
         <html>
           <body>
             <h2>Email Notification</h2>

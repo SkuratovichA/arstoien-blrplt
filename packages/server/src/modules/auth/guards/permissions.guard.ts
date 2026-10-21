@@ -1,18 +1,23 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { UserRole } from '@prisma/client';
-import { Permission, Resource, Action, PERMISSIONS_KEY } from '../decorators/permissions.decorator';
+import { UserRole } from '../../../generated/prisma/client.js';
+import {
+  Action,
+  PERMISSIONS_KEY,
+  Permission,
+  Resource,
+} from '../decorators/permissions.decorator.js';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(
-      PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()]
-    );
+    const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(PERMISSIONS_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     // If no permissions are required, allow access
     if (!requiredPermissions || requiredPermissions.length === 0) {
@@ -30,11 +35,9 @@ export class PermissionsGuard implements CanActivate {
     const userPermissions = this.getUserPermissions(user.role);
 
     // Check if user has all required permissions
-    return requiredPermissions.every(required =>
+    return requiredPermissions.every((required) =>
       userPermissions.some(
-        perm =>
-          perm.resource === required.resource &&
-          perm.action === required.action
+        (perm) => perm.resource === required.resource && perm.action === required.action
       )
     );
   }

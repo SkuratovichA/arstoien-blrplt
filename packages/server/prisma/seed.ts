@@ -1,6 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+import { createScriptPrismaClient } from '../src/prisma/prisma-client.factory.js';
 
-const prisma = new PrismaClient();
+const prisma = createScriptPrismaClient();
 
 async function main() {
   console.log('Starting database seed...');
@@ -25,13 +26,12 @@ async function main() {
   });
 
   if (!existingAdmin) {
-    const bcrypt = await import('bcryptjs');
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
     const adminUser = await prisma.user.create({
       data: {
         email: adminEmail,
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         firstName: 'Admin',
         lastName: 'User',
         role: 'ADMIN',

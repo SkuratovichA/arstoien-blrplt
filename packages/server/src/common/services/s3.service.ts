@@ -1,15 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'node:crypto';
 import {
-  S3Client,
-  PutObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { randomUUID } from 'crypto';
-import { AppConfig } from '@config/app.config';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { imageSize } from 'image-size';
+import { AppConfig } from '../../config/app.config.js';
 
 export interface UploadResult {
   key: string;
@@ -37,7 +38,7 @@ export class S3Service {
   private readonly maxFileSize: number;
 
   constructor(private configService: ConfigService) {
-    const appConfig = this.configService.get<AppConfig>('app')!;
+    const appConfig = this.configService.getOrThrow<AppConfig>('app');
     this.maxFileSize = appConfig.upload.maxFileSize;
     const s3Config = appConfig.s3;
 
@@ -277,10 +278,8 @@ export class S3Service {
       maxHeight?: number;
     }
   ): Promise<void> {
-    const sizeOf = await import('image-size');
-
     try {
-      const dimensions = sizeOf.default(buffer);
+      const dimensions = imageSize(buffer);
 
       if (!dimensions.width || !dimensions.height) {
         throw new Error('Unable to determine image dimensions');
@@ -288,27 +287,33 @@ export class S3Service {
 
       // Validate minimum width
       if (options.minWidth && dimensions.width < options.minWidth) {
-        throw new Error(`Image width must be at least ${options.minWidth}px (current: ${dimensions.width}px)`);
+        throw new Error(
+          `Image width must be at least ${options.minWidth}px (current: ${dimensions.width}px)`
+        );
       }
 
       // Validate maximum width
       if (options.maxWidth && dimensions.width > options.maxWidth) {
-        throw new Error(`Image width must not exceed ${options.maxWidth}px (current: ${dimensions.width}px)`);
+        throw new Error(
+          `Image width must not exceed ${options.maxWidth}px (current: ${dimensions.width}px)`
+        );
       }
 
       // Validate minimum height
       if (options.minHeight && dimensions.height < options.minHeight) {
-        throw new Error(`Image height must be at least ${options.minHeight}px (current: ${dimensions.height}px)`);
+        throw new Error(
+          `Image height must be at least ${options.minHeight}px (current: ${dimensions.height}px)`
+        );
       }
 
       // Validate maximum height
       if (options.maxHeight && dimensions.height > options.maxHeight) {
-        throw new Error(`Image height must not exceed ${options.maxHeight}px (current: ${dimensions.height}px)`);
+        throw new Error(
+          `Image height must not exceed ${options.maxHeight}px (current: ${dimensions.height}px)`
+        );
       }
 
-      this.logger.debug(
-        `Image dimensions validated: ${dimensions.width}x${dimensions.height}px`
-      );
+      this.logger.debug(`Image dimensions validated: ${dimensions.width}x${dimensions.height}px`);
     } catch (error) {
       if (error instanceof Error && error.message.includes('unsupported file type')) {
         throw new Error('Invalid image format or corrupted file');
@@ -329,6 +334,6 @@ export class S3Service {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    return `${Math.round((bytes / k ** i) * 100) / 100} ${sizes[i]}`;
   }
 }

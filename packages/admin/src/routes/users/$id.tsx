@@ -1,15 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery } from '@apollo/client/react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { requireAuth } from '@/lib/auth-guard';
-import { DELETE_USER_MUTATION, UPDATE_USER_MUTATION, USER_QUERY } from '@/graphql/users.graphql';
-import { USER_AUDIT_LOGS_QUERY } from '@/graphql/audit.graphql';
-import { AdminLayout } from '@/components/layout/admin-layout';
-import { Loading } from '@/components/shared/loading';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,20 +33,21 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@arstoien/shared-ui';
+} from '@blrplt/ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Trash2 } from 'lucide-react';
-
-const userSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.string().email(),
-  role: z.enum(['USER', 'MODERATOR', 'ADMIN']),
-  status: z.enum(['ACTIVE', 'PENDING', 'SUSPENDED', 'BANNED']),
-  phoneNumber: z.string().optional(),
-  otpAuthEnabled: z.boolean().optional(),
-});
-
-type UserFormValues = z.infer<typeof userSchema>;
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { Loading } from '@/components/shared/loading';
+import type { EditUserFormValues } from '@/components/users/edit-user-form-schema';
+import { editUserSchema } from '@/components/users/edit-user-form-schema';
+import { USER_AUDIT_LOGS_QUERY } from '@/graphql/audit.graphql';
+import { DELETE_USER_MUTATION, UPDATE_USER_MUTATION, USER_QUERY } from '@/graphql/users.graphql';
+import { requireAuth } from '@/lib/auth-guard';
+import { USER_STATUSES, useUserStatusLabel } from '@/lib/user-status';
 
 export const Route = createFileRoute('/users/$id')({
   beforeLoad: () => requireAuth(),
@@ -66,6 +56,7 @@ export const Route = createFileRoute('/users/$id')({
 
 function UserDetailPage() {
   const { t } = useTranslation();
+  const statusLabel = useUserStatusLabel();
   const { id } = Route.useParams();
   const navigate = useNavigate();
 
@@ -83,22 +74,22 @@ function UserDetailPage() {
   const user = data?.user;
   const auditLogs = auditData?.userAuditLogs ?? [];
 
-  const form = useForm<UserFormValues>({
-    resolver: zodResolver(userSchema),
+  const form = useForm<EditUserFormValues>({
+    resolver: zodResolver(editUserSchema),
     values: user
       ? {
           firstName: user.firstName ?? '',
           lastName: user.lastName ?? '',
           email: user.email,
           role: user.role as 'USER' | 'MODERATOR' | 'ADMIN',
-          status: user.status as 'ACTIVE' | 'PENDING' | 'SUSPENDED' | 'BANNED',
+          status: user.status,
           phoneNumber: user.phone ?? '',
           otpAuthEnabled: user.otpAuthEnabled ?? false,
         }
       : undefined,
   });
 
-  const onSubmit = async (values: UserFormValues) => {
+  const onSubmit = async (values: EditUserFormValues) => {
     try {
       await updateUser({
         variables: {
@@ -114,9 +105,9 @@ function UserDetailPage() {
           },
         },
       });
-      toast.success(t('User updated successfully'));
+      toast.success(t('users.detail.updated'));
     } catch (error) {
-      toast.error(t('Failed to update user'));
+      toast.error(t('users.detail.updateError'));
       console.error('Update error:', error);
     }
   };
@@ -130,10 +121,10 @@ function UserDetailPage() {
           } as { userId: string; hardDelete?: boolean },
         },
       });
-      toast.success(t('User deleted successfully'));
+      toast.success(t('users.detail.deleted'));
       navigate({ to: '/users' });
     } catch (error) {
-      toast.error(t('Failed to delete user'));
+      toast.error(t('users.detail.deleteError'));
       console.error('Delete error:', error);
     }
   };
@@ -150,7 +141,7 @@ function UserDetailPage() {
     return (
       <AdminLayout>
         <div className="text-center">
-          <p className="text-muted-foreground text-lg">{t('User not found')}</p>
+          <p className="text-muted-foreground text-lg">{t('users.detail.notFound')}</p>
         </div>
       </AdminLayout>
     );
@@ -170,21 +161,19 @@ function UserDetailPage() {
             <AlertDialogTrigger asChild>
               <Button variant="destructive" disabled={deleting}>
                 <Trash2 className="mr-2 h-4 w-4" />
-                {t('Delete User')}
+                {t('users.detail.delete')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>{t('Are you sure?')}</AlertDialogTitle>
+                <AlertDialogTitle>{t('users.detail.deleteTitle')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {t(
-                    'This action cannot be undone. This will permanently delete the user account.'
-                  )}
+                  {t('users.detail.deleteDescription')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>{t('Cancel')}</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>{t('Delete')}</AlertDialogAction>
+                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -192,15 +181,15 @@ function UserDetailPage() {
 
         <Tabs defaultValue="details" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="details">{t('Details')}</TabsTrigger>
-            <TabsTrigger value="activity">{t('Activity')}</TabsTrigger>
+            <TabsTrigger value="details">{t('users.detail.tabDetails')}</TabsTrigger>
+            <TabsTrigger value="activity">{t('users.detail.tabActivity')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
             <Card>
               <CardHeader>
-                <CardTitle>{t('User Information')}</CardTitle>
-                <CardDescription>{t('Update user details')}</CardDescription>
+                <CardTitle>{t('users.detail.infoTitle')}</CardTitle>
+                <CardDescription>{t('users.detail.infoDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -211,7 +200,7 @@ function UserDetailPage() {
                         name="firstName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('First Name')}</FormLabel>
+                            <FormLabel>{t('fields.firstName')}</FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -224,7 +213,7 @@ function UserDetailPage() {
                         name="lastName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('Last Name')}</FormLabel>
+                            <FormLabel>{t('fields.lastName')}</FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -237,7 +226,7 @@ function UserDetailPage() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('Email')}</FormLabel>
+                            <FormLabel>{t('fields.email')}</FormLabel>
                             <FormControl>
                               <Input type="email" {...field} />
                             </FormControl>
@@ -250,7 +239,7 @@ function UserDetailPage() {
                         name="phoneNumber"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('Phone Number')}</FormLabel>
+                            <FormLabel>{t('fields.phone')}</FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -263,7 +252,7 @@ function UserDetailPage() {
                         name="role"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('Role')}</FormLabel>
+                            <FormLabel>{t('fields.role')}</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
@@ -271,9 +260,9 @@ function UserDetailPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="USER">{t('User')}</SelectItem>
-                                <SelectItem value="MODERATOR">{t('Moderator')}</SelectItem>
-                                <SelectItem value="ADMIN">{t('Admin')}</SelectItem>
+                                <SelectItem value="USER">{t('roles.user')}</SelectItem>
+                                <SelectItem value="MODERATOR">{t('roles.moderator')}</SelectItem>
+                                <SelectItem value="ADMIN">{t('roles.admin')}</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -285,7 +274,7 @@ function UserDetailPage() {
                         name="status"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('Status')}</FormLabel>
+                            <FormLabel>{t('fields.status')}</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
@@ -293,10 +282,11 @@ function UserDetailPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="ACTIVE">{t('Active')}</SelectItem>
-                                <SelectItem value="PENDING">{t('Pending')}</SelectItem>
-                                <SelectItem value="SUSPENDED">{t('Suspended')}</SelectItem>
-                                <SelectItem value="BANNED">{t('Banned')}</SelectItem>
+                                {USER_STATUSES.map((status) => (
+                                  <SelectItem key={status} value={status}>
+                                    {statusLabel(status)}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -311,10 +301,10 @@ function UserDetailPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 md:col-span-2">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">{t('OTP Authentication')}</FormLabel>
-                            <FormDescription>
-                              {t('Allow this user to sign in using OTP codes sent to their email')}
-                            </FormDescription>
+                            <FormLabel className="text-base">
+                              {t('users.detail.otpLabel')}
+                            </FormLabel>
+                            <FormDescription>{t('users.detail.otpDescription')}</FormDescription>
                           </div>
                           <FormControl>
                             <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -324,7 +314,7 @@ function UserDetailPage() {
                     />
 
                     <Button type="submit" disabled={updating}>
-                      {updating ? t('Saving...') : t('Save Changes')}
+                      {updating ? t('common.saving') : t('common.saveChanges')}
                     </Button>
                   </form>
                 </Form>
@@ -335,13 +325,13 @@ function UserDetailPage() {
           <TabsContent value="activity">
             <Card>
               <CardHeader>
-                <CardTitle>{t('Activity Log')}</CardTitle>
-                <CardDescription>{t('Recent user activity')}</CardDescription>
+                <CardTitle>{t('users.detail.activityTitle')}</CardTitle>
+                <CardDescription>{t('users.detail.activityDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {auditLogs.length === 0 ? (
-                    <p className="text-muted-foreground text-sm">{t('No activity found')}</p>
+                    <p className="text-muted-foreground text-sm">{t('users.detail.noActivity')}</p>
                   ) : (
                     auditLogs.map((log) => (
                       <div key={log.id} className="flex flex-col gap-2 border-b pb-4 last:border-0">

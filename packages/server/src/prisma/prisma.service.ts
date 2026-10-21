@@ -1,19 +1,19 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaClient } from '../generated/prisma/client.js';
+import { createPrismaAdapter } from './prisma-client.factory.js';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(configService: ConfigService) {
     // Fallback to process.env.DATABASE_URL for tests where ConfigModule might not be fully initialized
-    const databaseUrl = configService.get('database.url') ?? process.env.DATABASE_URL;
+    const databaseUrl = configService.get<string>('app.database.url') ?? process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      throw new Error('DATABASE_URL is not set');
+    }
 
     super({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
+      adapter: createPrismaAdapter(databaseUrl),
       log:
         configService.get('nodeEnv') === 'development'
           ? ['query', 'info', 'warn', 'error']

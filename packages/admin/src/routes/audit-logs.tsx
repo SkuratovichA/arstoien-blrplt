@@ -1,12 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@apollo/client/react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { requireAuth } from '@/lib/auth-guard';
-import { AUDIT_LOGS_QUERY } from '@/graphql/audit.graphql';
-import { AdminLayout } from '@/components/layout/admin-layout';
-import { DataTable } from '@/components/shared/data-table';
-import { Loading } from '@/components/shared/loading';
 import {
   Card,
   CardContent,
@@ -19,10 +11,21 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@arstoien/shared-ui';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+} from '@blrplt/ui';
+import { createFileRoute } from '@tanstack/react-router';
+import { createColumnHelper, stockFeatures, useTable } from '@tanstack/react-table';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { DataTable } from '@/components/shared/data-table';
+import { Loading } from '@/components/shared/loading';
+import type { AuditLogsQuery } from '@/gql/graphql';
+import { AUDIT_LOGS_QUERY } from '@/graphql/audit.graphql';
+import { requireAuth } from '@/lib/auth-guard';
 
-const columnHelper = createColumnHelper();
+type AuditLog = AuditLogsQuery['auditLogs'][number];
+
+const columnHelper = createColumnHelper<typeof stockFeatures, AuditLog>();
 
 export const Route = createFileRoute('/audit-logs')({
   beforeLoad: () => requireAuth(),
@@ -51,20 +54,20 @@ function AuditLogsPage() {
 
   const auditLogs = data?.auditLogs ?? [];
 
-  const columns = [
+  const columns = columnHelper.columns([
     columnHelper.accessor('action', {
-      header: t('Action'),
+      header: t('auditLogs.columnAction'),
       cell: (info) => <span className="font-medium">{info.getValue()}</span>,
     }),
     columnHelper.accessor('entityType', {
-      header: t('Entity'),
+      header: t('auditLogs.columnEntity'),
       cell: (info) => info.getValue(),
     }),
     columnHelper.accessor('userId', {
-      header: t('User'),
+      header: t('common.user'),
       cell: (info) => {
         const userId = info.getValue();
-        if (!userId) return <span className="text-muted-foreground">{t('System')}</span>;
+        if (!userId) return <span className="text-muted-foreground">{t('common.system')}</span>;
         return (
           <div className="flex items-center gap-2">
             <span className="text-sm">{userId}</span>
@@ -73,38 +76,38 @@ function AuditLogsPage() {
       },
     }),
     columnHelper.accessor('ipAddress', {
-      header: t('IP Address'),
+      header: t('auditLogs.columnIpAddress'),
       cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
     }),
     columnHelper.accessor('createdAt', {
-      header: t('Date'),
+      header: t('auditLogs.columnDate'),
       cell: (info) => <span className="text-sm">{new Date(info.getValue()).toLocaleString()}</span>,
     }),
-  ];
+  ]);
 
-  const table = useReactTable({
+  const table = useTable({
+    features: stockFeatures,
     data: auditLogs,
     columns,
-    getCoreRowModel: getCoreRowModel(),
   });
 
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('Audit Logs')}</h1>
-          <p className="text-muted-foreground">{t('View all system activity and changes')}</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('auditLogs.title')}</h1>
+          <p className="text-muted-foreground">{t('auditLogs.description')}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>{t('Filters')}</CardTitle>
-            <CardDescription>{t('Filter audit logs by action or entity')}</CardDescription>
+            <CardTitle>{t('common.filters')}</CardTitle>
+            <CardDescription>{t('auditLogs.filterDescription')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               <Input
-                placeholder={t('Search...')}
+                placeholder={t('auditLogs.searchPlaceholder')}
                 value={filters.search}
                 onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
               />
@@ -113,14 +116,14 @@ function AuditLogsPage() {
                 onValueChange={(value) => setFilters((prev) => ({ ...prev, action: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t('All Actions')} />
+                  <SelectValue placeholder={t('auditLogs.allActions')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CREATE">{t('Create')}</SelectItem>
-                  <SelectItem value="UPDATE">{t('Update')}</SelectItem>
-                  <SelectItem value="DELETE">{t('Delete')}</SelectItem>
-                  <SelectItem value="LOGIN">{t('Login')}</SelectItem>
-                  <SelectItem value="LOGOUT">{t('Logout')}</SelectItem>
+                  <SelectItem value="CREATE">{t('auditLogs.actionCreate')}</SelectItem>
+                  <SelectItem value="UPDATE">{t('auditLogs.actionUpdate')}</SelectItem>
+                  <SelectItem value="DELETE">{t('auditLogs.actionDelete')}</SelectItem>
+                  <SelectItem value="LOGIN">{t('auditLogs.actionLogin')}</SelectItem>
+                  <SelectItem value="LOGOUT">{t('auditLogs.actionLogout')}</SelectItem>
                 </SelectContent>
               </Select>
               <Select
@@ -130,12 +133,12 @@ function AuditLogsPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t('All Entities')} />
+                  <SelectValue placeholder={t('auditLogs.allEntities')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USER">{t('User')}</SelectItem>
-                  <SelectItem value="SETTING">{t('Setting')}</SelectItem>
-                  <SelectItem value="NOTIFICATION">{t('Notification')}</SelectItem>
+                  <SelectItem value="USER">{t('auditLogs.entityUser')}</SelectItem>
+                  <SelectItem value="SETTING">{t('auditLogs.entitySetting')}</SelectItem>
+                  <SelectItem value="NOTIFICATION">{t('auditLogs.entityNotification')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Effect } from 'effect';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '@/prisma/prisma.service';
-import { DatabaseError, promiseToEffect, ValidationError } from '@/common/effect';
+import { Prisma } from '../../generated/prisma/client.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { DatabaseError, promiseToEffect, ValidationError } from '../effect/index.js';
 
 interface CreateAuditLogParams {
   userId?: string;

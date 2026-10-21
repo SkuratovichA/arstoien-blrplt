@@ -1,10 +1,22 @@
-import { Body, Controller, ForbiddenException, Get, Logger, Post, Query, Req, Res, UseGuards, } from '@nestjs/common';
-import { Request, Response } from 'express';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Logger,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleAuthGuard } from './guards/google-auth.guard';
-import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { AuthService } from './auth.service';
-import { User } from '@prisma/client';
+import { Request, Response } from 'express';
+import { errorMessage } from '../../common/effect/index.js';
+import { User } from '../../generated/prisma/client.js';
+import { AuthService } from './auth.service.js';
+import { GoogleAuthGuard } from './guards/google-auth.guard.js';
+import { RefreshTokenGuard } from './guards/refresh-token.guard.js';
 
 /**
  * AuthController - REST endpoints for authentication
@@ -65,7 +77,7 @@ export class AuthController {
     if (redirectUri) {
       // Validate redirect_uri against whitelist
       const allowedUris = this.configService.get<string[]>('app.allowedRedirectUris');
-      if (allowedUris && allowedUris.includes(redirectUri)) {
+      if (allowedUris?.includes(redirectUri)) {
         finalRedirectUrl = redirectUri;
       } else {
         this.logger.warn(`Redirect URI not in whitelist: ${redirectUri}`);
@@ -103,8 +115,7 @@ export class AuthController {
 
       return res.send({ accessToken: newAccessToken });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.warn(`Failed to refresh token: ${errorMessage}`);
+      this.logger.warn(`Failed to refresh token: ${errorMessage(error, 'Unknown error')}`);
       const cookieOptions = this.configService.get('app.cookieOptions');
       res.clearCookie('accessToken', cookieOptions);
       res.clearCookie('refreshToken', cookieOptions);
@@ -135,7 +146,6 @@ export class AuthController {
    */
   @Post('set-password')
   async setPasswordWithToken(
-    @Req() req: Request,
     @Res() res: Response,
     @Body() body: { token: string; password: string }
   ) {
@@ -154,9 +164,9 @@ export class AuthController {
         user: authResponse.user,
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.warn(`Failed to set password: ${errorMessage}`);
-      throw new ForbiddenException(errorMessage ?? 'Failed to set password');
+      const message = errorMessage(error, 'Unknown error');
+      this.logger.warn(`Failed to set password: ${message}`);
+      throw new ForbiddenException(message ?? 'Failed to set password');
     }
   }
 }

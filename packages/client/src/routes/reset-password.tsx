@@ -1,24 +1,29 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useMutation } from '@apollo/client/react';
-import { AuthLayout } from '../components/layout/auth-layout';
-import { Button } from '@arstoien/shared-ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arstoien/shared-ui';
 import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from '@arstoien/shared-ui';
-import { PasswordInput } from '@arstoien/shared-ui';
-import { RESET_PASSWORD } from '../graphql/auth.graphql';
+  PasswordInput,
+} from '@blrplt/ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { requireGuest, type AuthGuardContext } from '../lib/auth-guard';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { AuthLayout } from '../components/layout/auth-layout';
+import { RESET_PASSWORD } from '../graphql/auth.graphql';
+import type { AuthGuardContext } from '../lib/auth-guard';
+import { requireGuest } from '../lib/auth-guard';
 
 export const Route = createFileRoute('/reset-password')({
   beforeLoad: ({ context }) => {
@@ -67,10 +72,10 @@ function ResetPassword() {
         },
       });
 
-      toast.success(t('Password reset successful'));
+      toast.success(t('auth.resetPassword.success'));
       navigate({ to: '/login' });
     } catch {
-      toast.error(t('Failed to reset password'));
+      toast.error(t('auth.resetPassword.error'));
     }
   };
 
@@ -78,8 +83,8 @@ function ResetPassword() {
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>{t('Reset password')}</CardTitle>
-          <CardDescription>{t('Enter your new password')}</CardDescription>
+          <CardTitle>{t('auth.resetPassword.title')}</CardTitle>
+          <CardDescription>{t('auth.resetPassword.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -89,9 +94,12 @@ function ResetPassword() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('New password')}</FormLabel>
+                    <FormLabel>{t('auth.resetPassword.newPassword')}</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder={t('Enter your password')} {...field} />
+                      <PasswordInput
+                        placeholder={t('auth.fields.passwordPlaceholder')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -103,9 +111,12 @@ function ResetPassword() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Confirm password')}</FormLabel>
+                    <FormLabel>{t('auth.resetPassword.confirmPassword')}</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder={t('Confirm your password')} {...field} />
+                      <PasswordInput
+                        placeholder={t('auth.fields.confirmPasswordPlaceholder')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -113,7 +124,7 @@ function ResetPassword() {
               />
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('Loading...') : t('Reset password')}
+                {loading ? t('common.loading') : t('auth.resetPassword.submit')}
               </Button>
             </form>
           </Form>

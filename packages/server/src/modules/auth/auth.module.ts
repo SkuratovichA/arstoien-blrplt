@@ -1,23 +1,22 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-
-import { AuthService } from './auth.service';
-import { AuthResolver } from './auth.resolver';
-import { AuthController } from './auth.controller';
-import { OtpService } from './otp.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
-import { LocalStrategy } from './strategies/local.strategy';
-import { GoogleStrategy } from './strategies/google.strategy';
-import { PermissionsGuard } from './guards/permissions.guard';
-import { RolesGuard } from './guards/roles.guard';
-import { UserModule } from '../user/user.module';
-import { NotificationModule } from '../notification/notification.module';
-import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
-import { AdminModule } from '../admin/admin.module';
-import { PrismaModule } from '@prisma/prisma.module';
+import { PrismaModule } from '../../prisma/prisma.module.js';
+import { AdminModule } from '../admin/admin.module.js';
+import { NotificationModule } from '../notification/notification.module.js';
+import { RefreshTokenModule } from '../refresh-token/refresh-token.module.js';
+import { UserModule } from '../user/user.module.js';
+import { AuthController } from './auth.controller.js';
+import { AuthResolver } from './auth.resolver.js';
+import { AuthService } from './auth.service.js';
+import { PermissionsGuard } from './guards/permissions.guard.js';
+import { RolesGuard } from './guards/roles.guard.js';
+import { OtpService } from './otp.service.js';
+import { GoogleStrategy } from './strategies/google.strategy.js';
+import { JwtStrategy } from './strategies/jwt.strategy.js';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy.js';
+import { LocalStrategy } from './strategies/local.strategy.js';
 
 @Module({
   imports: [
